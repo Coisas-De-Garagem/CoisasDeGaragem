@@ -57,7 +57,7 @@ export function BuyerLayout({ children }: BuyerLayoutProps) {
           className={`
             flex-1 min-h-screen
             transition-all duration-300
-            ${sidebarOpen ? 'lg:ml-64' : 'lg:ml-0'}
+            lg:ml-64
           `}
           role="main"
         >
