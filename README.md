@@ -1,6 +1,6 @@
 # **Coisas de Garagem** 🚗🛍️  
 
-**Sistema de Organização para Garage Sales**  
+**Sistema de Organização para Garage Sales desenvolvido durante a matéria Projeto Integrador III - CEUB**  
 
 Um sistema moderno e intuitivo para gerenciar vendas de garagem, conectando vendedores e compradores de forma eficiente.  
 
