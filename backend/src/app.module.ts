@@ -9,9 +9,10 @@ import { ProductsModule } from './products/products.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { PurchasesModule } from './purchases/purchases.module';
 import { QrCodesModule } from './qr-codes/qr-codes.module';
+import { HealthModule } from './health/health.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, UsersModule, AuthModule, ProductsModule, AnalyticsModule, PurchasesModule, QrCodesModule],
+  imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, UsersModule, AuthModule, ProductsModule, AnalyticsModule, PurchasesModule, QrCodesModule, HealthModule],
   controllers: [AppController],
   providers: [AppService],
 })
