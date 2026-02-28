@@ -25,10 +25,12 @@ services:
     container_name: garage_sale_backend
     ports:
       - "3000:3000"
+      - "5555:5555"
+    env_file:
+      - ./backend/.env  # <--- This forces Docker to read your specific file
     environment:
-      DATABASE_URL: postgresql://user:password@postgres:5432/garagedb?schema=public
       PORT: 3000
-      JWT_SECRET: your_super_secret_jwt_key_here
+      # (Notice we removed DATABASE_URL from here completely)
     depends_on:
       postgres:
         condition: service_healthy
