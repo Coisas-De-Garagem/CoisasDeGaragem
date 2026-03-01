@@ -12,8 +12,18 @@ import { QrCodesModule } from './qr-codes/qr-codes.module';
 import { HealthModule } from './health/health.module';
 
 @Module({
-  imports: [ConfigModule.forRoot({ isGlobal: true }), PrismaModule, UsersModule, AuthModule, ProductsModule, AnalyticsModule, PurchasesModule, QrCodesModule, HealthModule],
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true }),
+    PrismaModule,
+    UsersModule,
+    AuthModule,
+    ProductsModule,
+    AnalyticsModule,
+    PurchasesModule,
+    QrCodesModule,
+    HealthModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule { }
+export class AppModule {}
