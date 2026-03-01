@@ -3,6 +3,7 @@ import { Badge } from '@/components/common/Badge';
 import type { Product } from '@/types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPrint, faDownload, faQrcode } from '@fortawesome/free-solid-svg-icons';
+import { formatProductCondition, getConditionVariant } from '@/utils/formatters';
 
 interface QRCodeDisplayProps {
   product: Product;
@@ -83,7 +84,9 @@ export function QRCodeDisplay({ product, qrCodeUrl, onPrint, onDownload, loading
 
             <div className="flex justify-between items-start">
               <span className="text-sm text-gray-600 font-medium">Condição:</span>
-              <Badge variant="success">{product.condition || 'Bom'}</Badge>
+              <Badge variant={getConditionVariant(product.condition)}>
+                {formatProductCondition(product.condition)}
+              </Badge>
             </div>
 
             <div className="flex justify-between items-start">

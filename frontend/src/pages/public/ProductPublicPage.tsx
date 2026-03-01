@@ -10,6 +10,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faStore, faCheckCircle, faShoppingBag, faClock, faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
 import type { Product } from '@/types';
 import { useUIStore } from '@/store/uiStore';
+import { formatProductCondition, getConditionVariant } from '@/utils/formatters';
 
 export default function ProductPublicPage() {
     const { id } = useParams<{ id: string }>();
@@ -178,7 +179,9 @@ export default function ProductPublicPage() {
                             <div className="space-y-4 mb-10">
                                 <div className="flex items-center justify-between py-3 border-b border-gray-100">
                                     <span className="text-gray-500 font-medium">Condição</span>
-                                    <Badge variant="success" className="font-bold">{product.condition || 'Bom'}</Badge>
+                                    <Badge variant={getConditionVariant(product.condition)} className="font-bold">
+                                        {formatProductCondition(product.condition)}
+                                    </Badge>
                                 </div>
                                 {/* @ts-ignore - Assuming seller might have a name in the response */}
                                 {product.seller && (

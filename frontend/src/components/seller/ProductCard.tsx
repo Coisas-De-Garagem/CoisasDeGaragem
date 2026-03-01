@@ -4,6 +4,7 @@ import { Badge } from '@/components/common/Badge';
 import type { Product } from '@/types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faTrash, faQrcode, faImage, faCalendar, faFilePdf } from '@fortawesome/free-solid-svg-icons';
+import { formatProductCondition, getConditionVariant } from '@/utils/formatters';
 
 interface ProductCardProps {
   product: Product;
@@ -24,19 +25,8 @@ export function ProductCard({
   onStatusChange,
   showActions = true,
 }: ProductCardProps) {
-  const getConditionBadge = (condition?: string) => {
-    const conditionMap: Record<string, { label: string; variant: 'success' | 'warning' | 'error' }> = {
-      'NEW': { label: 'Novo', variant: 'success' },
-      'LIKE_NEW': { label: 'Como Novo', variant: 'success' },
-      'GOOD': { label: 'Bom', variant: 'success' },
-      'FAIR': { label: 'Razoável', variant: 'warning' },
-      'POOR': { label: 'Ruim', variant: 'error' },
-    };
-
-    return conditionMap[condition || 'GOOD'] || { label: 'Bom', variant: 'success' };
-  };
-
-  const conditionBadge = getConditionBadge(product.condition);
+  const conditionLabel = formatProductCondition(product.condition);
+  const conditionVariant = getConditionVariant(product.condition);
 
   return (
     <Card hoverable className="overflow-hidden h-full flex flex-col border border-gray-100 shadow-sm hover:shadow-xl transition-all duration-300 group">
@@ -67,8 +57,8 @@ export function ProductCard({
 
         {/* Condition Badge (Overlay bottom left) */}
         <div className="absolute bottom-3 left-3 z-10">
-          <Badge variant={conditionBadge.variant} className="shadow-sm font-semibold">
-            {conditionBadge.label}
+          <Badge variant={conditionVariant} className="shadow-sm font-semibold">
+            {conditionLabel}
           </Badge>
         </div>
       </div>
