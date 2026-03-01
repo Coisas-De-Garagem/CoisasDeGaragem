@@ -135,10 +135,39 @@ export function formatRatingStars(rating: number): string {
   const fullStars = Math.floor(rating);
   const hasHalfStar = rating % 1 >= 0.5;
   const emptyStars = 5 - Math.ceil(rating);
-  
+
   return (
     '★'.repeat(fullStars) +
     (hasHalfStar ? '½' : '') +
     '☆'.repeat(emptyStars)
   );
+}
+/**
+ * Format product condition to Portuguese
+ */
+export function formatProductCondition(condition?: string): string {
+  const conditionMap: Record<string, string> = {
+    'NEW': 'Novo',
+    'LIKE_NEW': 'Como Novo',
+    'GOOD': 'Bom',
+    'FAIR': 'Razoável',
+    'POOR': 'Ruim',
+  };
+
+  return conditionMap[condition || 'GOOD'] || 'Bom';
+}
+
+/**
+ * Get badge variant for product condition
+ */
+export function getConditionVariant(condition?: string): 'success' | 'warning' | 'error' {
+  const variantMap: Record<string, 'success' | 'warning' | 'error'> = {
+    'NEW': 'success',
+    'LIKE_NEW': 'success',
+    'GOOD': 'success',
+    'FAIR': 'warning',
+    'POOR': 'error',
+  };
+
+  return variantMap[condition || 'GOOD'] || 'success';
 }

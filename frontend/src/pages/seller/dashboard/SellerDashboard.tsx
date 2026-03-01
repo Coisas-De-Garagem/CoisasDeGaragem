@@ -1,6 +1,6 @@
 import { SellerLayout } from '@/components/seller/SellerLayout';
 import { Card } from '@/components/common/Card';
-import { Button } from '@/components/common/Button';
+
 import { useAuth } from '@/hooks/useAuth';
 import { useEffect, useState, useRef } from 'react';
 import { api } from '@/services/api';
@@ -16,7 +16,8 @@ import {
   faChartLine,
   faMoneyBillWave,
   faBoxOpen,
-  faQrcode
+  faQrcode,
+  faHand
 } from '@fortawesome/free-solid-svg-icons';
 import { formatCurrency } from '@/utils/formatters';
 
@@ -119,13 +120,13 @@ export default function SellerDashboard() {
     <SellerLayout>
       <div ref={containerRef} className="space-y-8">
         {/* Welcome Section */}
-        <div className="dashboard-item bg-gradient-to-r from-[#4169E1] to-[#0047AB] rounded-2xl shadow-xl p-8 text-white relative overflow-hidden">
+        <div className="dashboard-item bg-gradient-to-r from-primary-600 to-primary-800 rounded-2xl shadow-xl p-8 text-white relative overflow-hidden">
           <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full transform translate-x-1/3 -translate-y-1/3 blur-3xl"></div>
           <div className="absolute bottom-0 left-0 w-48 h-48 bg-white opacity-5 rounded-full transform -translate-x-1/3 translate-y-1/3 blur-2xl"></div>
 
           <div className="relative z-10">
-            <h1 className="text-3xl lg:text-4xl font-bold mb-3 tracking-tight">
-              Olá, {user?.name || 'Vendedor'}! 👋
+            <h1 className="text-3xl lg:text-4xl font-bold mb-3 tracking-tight flex items-center gap-3">
+              Olá, {user?.name || 'Vendedor'}! <FontAwesomeIcon icon={faHand} className="animate-wave" />
             </h1>
             <p className="text-blue-100/90 text-lg max-w-2xl">
               Aqui está o panorama da sua garagem hoje. Suas vendas estão indo bem!
@@ -149,39 +150,39 @@ export default function SellerDashboard() {
           <div className="dashboard-item lg:col-span-2">
             <Card className="p-6 h-full border border-gray-100 shadow-lg rounded-2xl">
               <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <FontAwesomeIcon icon={faBoxOpen} className="text-[#4169E1]" />
+                <FontAwesomeIcon icon={faBoxOpen} className="text-primary" />
                 Ações Rápidas
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <Button
+                <button
                   onClick={() => navigate('/seller/products', { state: { showForm: true } })}
-                  className="h-auto py-6 flex flex-col items-center justify-center gap-3 bg-blue-50 text-[#4169E1] hover:bg-[#4169E1] hover:text-white transition-all duration-300 border-none rounded-xl shadow-sm hover:shadow-md group"
+                  className="h-auto py-6 flex flex-col items-center justify-center gap-3 bg-primary-50 text-primary hover:bg-primary-600 hover:text-white transition-all duration-300 border-none rounded-xl shadow-sm hover:shadow-md group"
                 >
-                  <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-[#4169E1] shadow-sm group-hover:scale-110 transition-transform">
+                  <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:scale-110 transition-transform">
                     <FontAwesomeIcon icon={faPlus} className="text-lg" />
                   </div>
                   <span className="font-semibold">Novo Produto</span>
-                </Button>
+                </button>
 
-                <Button
+                <button
                   onClick={() => navigate('/seller/sales')}
-                  className="h-auto py-6 flex flex-col items-center justify-center gap-3 bg-emerald-50 text-emerald-600 hover:bg-emerald-600 hover:text-white transition-all duration-300 border-none rounded-xl shadow-sm hover:shadow-md group"
+                  className="h-auto py-6 flex flex-col items-center justify-center gap-3 bg-success/15 text-success hover:bg-success hover:text-white transition-all duration-300 border-none rounded-xl shadow-sm hover:shadow-md group"
                 >
-                  <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-emerald-600 shadow-sm group-hover:scale-110 transition-transform">
+                  <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-success shadow-sm group-hover:scale-110 transition-transform">
                     <FontAwesomeIcon icon={faShoppingBag} className="text-lg" />
                   </div>
                   <span className="font-semibold">Ver Vendas</span>
-                </Button>
+                </button>
 
-                <Button
+                <button
                   onClick={() => navigate('/seller/analytics')}
-                  className="h-auto py-6 flex flex-col items-center justify-center gap-3 bg-purple-600 text-white hover:bg-purple-700 transition-all duration-300 border-none rounded-xl shadow-sm hover:shadow-md group"
+                  className="h-auto py-6 flex flex-col items-center justify-center gap-3 bg-secondary-50 text-secondary hover:bg-secondary hover:text-white transition-all duration-300 border-none rounded-xl shadow-sm hover:shadow-md group"
                 >
-                  <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-purple-600 shadow-sm group-hover:scale-110 transition-transform">
+                  <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-secondary shadow-sm group-hover:scale-110 transition-transform">
                     <FontAwesomeIcon icon={faChartLine} className="text-lg" />
                   </div>
                   <span className="font-semibold">Ver Estatísticas</span>
-                </Button>
+                </button>
               </div>
             </Card>
           </div>
@@ -190,7 +191,7 @@ export default function SellerDashboard() {
           <div className="dashboard-item">
             <Card className="p-6 h-full border border-gray-100 shadow-lg rounded-2xl">
               <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <FontAwesomeIcon icon={faChartLine} className="text-[#4169E1]" />
+                <FontAwesomeIcon icon={faChartLine} className="text-primary" />
                 Atividade Recente
               </h2>
 

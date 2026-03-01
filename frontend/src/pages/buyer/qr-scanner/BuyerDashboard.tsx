@@ -6,10 +6,12 @@ import { Badge } from '@/components/common/Badge';
 import { Select } from '@/components/common/Select';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faQrcode, faShoppingBag, faLightbulb, faStore, faCheckCircle, faCreditCard } from '@fortawesome/free-solid-svg-icons';
+import { Link } from 'react-router-dom';
 import { useState } from 'react';
 import type { Product, User, PaymentMethod } from '@/types';
 import { api } from '@/services/api';
 import { useUIStore } from '@/store/uiStore';
+import { formatProductCondition, getConditionVariant } from '@/utils/formatters';
 
 export default function BuyerDashboard() {
   const [scannedProduct, setScannedProduct] = useState<Product | null>(null);
@@ -150,64 +152,64 @@ export default function BuyerDashboard() {
               <p className="text-gray-500 mb-6 text-center max-w-xs px-4">
                 Você ainda não realizou nenhuma compra. Que tal começar agora?
               </p>
-              <button
-                onClick={() => window.location.href = '/buyer/qr-scanner'}
-                className="px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium shadow-lg shadow-blue-900/10 hover:shadow-blue-900/20"
+              <Link
+                to="/buyer/qr-scanner"
+                className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium shadow-lg shadow-blue-900/10 hover:shadow-blue-900/20"
               >
                 Ir para Scanner QR
-              </button>
+              </Link>
             </div>
           </div>
         </div>
 
         {/* Getting Started Guide */}
-        <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl shadow-xl overflow-hidden text-white">
-          <div className="p-8 lg:p-12">
-            <h2 className="text-2xl font-bold mb-8 flex items-center gap-3">
-              <FontAwesomeIcon icon={faLightbulb} className="text-yellow-400" />
-              Como Começar
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="flex flex-col items-start gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
-                <div className="w-10 h-10 rounded-lg bg-blue-500/20 text-blue-300 flex items-center justify-center font-bold text-lg border border-blue-500/30">
-                  1
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold mb-2 text-blue-100">
-                    Escanear QR Code
-                  </h3>
-                  <p className="text-gray-400 text-sm leading-relaxed">
-                    Aponte a câmera do celular para o código do produto que você gostou no garage sale.
-                  </p>
-                </div>
-              </div>
+        <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 p-8 hover:shadow-lg transition-shadow duration-300">
+          <h2 className="text-xl font-bold text-neutral-900 mb-8 flex items-center gap-2">
+            <FontAwesomeIcon icon={faLightbulb} className="text-warning" />
+            Como Começar
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+            <div className="hidden md:block absolute top-6 left-1/6 right-1/6 h-0.5 bg-neutral-100 -z-10"></div>
 
-              <div className="flex flex-col items-start gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
-                <div className="w-10 h-10 rounded-lg bg-indigo-500/20 text-indigo-300 flex items-center justify-center font-bold text-lg border border-indigo-500/30">
-                  2
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold mb-2 text-indigo-100">
-                    Ver Minhas Compras
-                  </h3>
-                  <p className="text-gray-400 text-sm leading-relaxed">
-                    Acesse seu histórico completo e detalhes de cada item adquirido.
-                  </p>
-                </div>
+            <div className="relative flex flex-col items-center text-center gap-4 z-10">
+              <div className="w-12 h-12 rounded-full bg-primary-50 text-primary flex items-center justify-center font-bold text-lg border-4 border-white shadow-sm ring-1 ring-primary/10">
+                1
               </div>
+              <div>
+                <h3 className="font-bold text-neutral-800 mb-2">
+                  Escanear QR Code
+                </h3>
+                <p className="text-neutral-500 text-sm leading-relaxed max-w-[250px] mx-auto">
+                  Aponte a câmera do celular para o código do produto que você gostou no garage sale.
+                </p>
+              </div>
+            </div>
 
-              <div className="flex flex-col items-start gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
-                <div className="w-10 h-10 rounded-lg bg-emerald-500/20 text-emerald-300 flex items-center justify-center font-bold text-lg border border-emerald-500/30">
-                  3
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold mb-2 text-emerald-100">
-                    Configurar Perfil
-                  </h3>
-                  <p className="text-gray-400 text-sm leading-relaxed">
-                    Mantenha seus dados atualizados para facilitar o contato com vendedores.
-                  </p>
-                </div>
+            <div className="relative flex flex-col items-center text-center gap-4 z-10">
+              <div className="w-12 h-12 rounded-full bg-secondary-50 text-secondary flex items-center justify-center font-bold text-lg border-4 border-white shadow-sm ring-1 ring-secondary/10">
+                2
+              </div>
+              <div>
+                <h3 className="font-bold text-neutral-800 mb-2">
+                  Ver Minhas Compras
+                </h3>
+                <p className="text-neutral-500 text-sm leading-relaxed max-w-[250px] mx-auto">
+                  Acesse seu histórico completo e detalhes de cada item adquirido.
+                </p>
+              </div>
+            </div>
+
+            <div className="relative flex flex-col items-center text-center gap-4 z-10">
+              <div className="w-12 h-12 rounded-full bg-success/10 text-success flex items-center justify-center font-bold text-lg border-4 border-white shadow-sm ring-1 ring-success/20">
+                3
+              </div>
+              <div>
+                <h3 className="font-bold text-neutral-800 mb-2">
+                  Configurar Perfil
+                </h3>
+                <p className="text-neutral-500 text-sm leading-relaxed max-w-[250px] mx-auto">
+                  Mantenha seus dados atualizados para facilitar o contato com vendedores.
+                </p>
               </div>
             </div>
           </div>
@@ -283,7 +285,9 @@ export default function BuyerDashboard() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 text-center">
                     <div className="text-xs text-gray-500 uppercase font-bold mb-1">Condição</div>
-                    <Badge variant="success">{scannedProduct.condition || 'Bom'}</Badge>
+                    <Badge variant={getConditionVariant(scannedProduct.condition)}>
+                      {formatProductCondition(scannedProduct.condition)}
+                    </Badge>
                   </div>
                   <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 text-center">
                     <div className="text-xs text-gray-500 uppercase font-bold mb-1">Vendedor</div>

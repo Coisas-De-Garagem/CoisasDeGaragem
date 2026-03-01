@@ -19,8 +19,8 @@ export function Card({
   hoverable = false,
   onClick,
 }: CardProps) {
-  const baseClasses = 'bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden';
-  const hoverClasses = hoverable ? 'hover:shadow-md hover:border-primary-100 transition-all duration-300 cursor-pointer hover:-translate-y-0.5' : '';
+  const baseClasses = 'bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden';
+  const hoverClasses = hoverable ? 'hover:shadow-lg hover:border-primary-100 transition-all duration-300 cursor-pointer hover:-translate-y-1' : '';
 
   return (
     <div
@@ -30,7 +30,7 @@ export function Card({
       tabIndex={hoverable ? 0 : undefined}
     >
       {header && (
-        <div className="px-6 py-4 border-b border-gray-200 bg-gray-50">
+        <div className="px-6 py-4 border-b border-neutral-200 bg-neutral-50/50">
           {header}
         </div>
       )}
@@ -40,7 +40,7 @@ export function Card({
         </div>
       )}
       {footer && (
-        <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+        <div className="px-6 py-4 border-t border-neutral-200 bg-neutral-50/50">
           {footer}
         </div>
       )}

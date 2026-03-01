@@ -3,7 +3,7 @@ import { useAuthStore } from '@/store/authStore';
 import { Button } from '@/components/common/Button';
 import { DarkModeToggle } from '@/components/common/DarkModeToggle';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBars } from '@fortawesome/free-solid-svg-icons';
+import { faBars, faHand } from '@fortawesome/free-solid-svg-icons';
 
 export function Header() {
   const { user, isAuthenticated, logout } = useAuthStore();
@@ -32,8 +32,9 @@ export function Header() {
           <nav className="hidden md:flex items-center space-x-4">
             {isAuthenticated ? (
               <>
-                <span className="text-gray-700 dark:text-gray-200">
-                  Olá, <span className="font-medium">{user?.name}</span>
+                <span className="text-gray-700 dark:text-gray-200 flex items-center">
+                  Olá, <span className="font-medium ml-1">{user?.name}</span>
+                  <FontAwesomeIcon icon={faHand} className="animate-wave ml-2" />
                 </span>
                 <Link to="/buyer/qr-scanner" className="text-gray-700 dark:text-gray-200 hover:text-primary transition-colors">
                   Comprar
