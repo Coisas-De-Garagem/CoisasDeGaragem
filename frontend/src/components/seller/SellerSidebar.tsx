@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChartBar, faBox, faTags, faQrcode, faCog, faSignOutAlt } from '@fortawesome/free-solid-svg-icons';
+import { faChartBar, faBox, faTags, faQrcode, faSignOutAlt, faUser } from '@fortawesome/free-solid-svg-icons';
 import { Modal } from '@/components/common/Modal';
 import { Button } from '@/components/common/Button';
 import { useAuth } from '@/hooks/useAuth';
@@ -34,9 +34,9 @@ const sidebarItems: SidebarItem[] = [
     icon: <FontAwesomeIcon icon={faChartBar} className="w-5 h-5" />,
   },
   {
-    label: 'Configurações',
-    path: '/seller/settings',
-    icon: <FontAwesomeIcon icon={faCog} className="w-5 h-5" />,
+    label: 'Perfil',
+    path: '/seller/profile',
+    icon: <FontAwesomeIcon icon={faUser} className="w-5 h-5" />,
   },
 ];
 

@@ -188,7 +188,7 @@ export const api = {
       return mockApi.updateProduct(id, data);
     }
     return fetchApi<Product>(`/products/${id}`, {
-      method: 'PUT',
+      method: 'PATCH',
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       },

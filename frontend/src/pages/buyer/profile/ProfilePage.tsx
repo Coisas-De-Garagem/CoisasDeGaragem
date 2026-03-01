@@ -1,4 +1,6 @@
 import { BuyerLayout } from '@/components/buyer/BuyerLayout';
+import { SellerLayout } from '@/components/seller/SellerLayout';
+import { useLocation } from 'react-router-dom';
 import { ProfileForm } from '@/components/buyer/ProfileForm';
 import { useAuthStore } from '@/store/authStore';
 import { Spinner } from '@/components/common/Spinner';
@@ -22,6 +24,8 @@ export default function ProfilePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
+  const location = useLocation();
+  const Layout = location.pathname.includes('/seller') ? SellerLayout : BuyerLayout;
 
   const handleSubmit = async (_data: { name?: string; phone?: string; avatarUrl?: string }) => {
     setIsLoading(true);
@@ -42,16 +46,16 @@ export default function ProfilePage() {
 
   if (!user) {
     return (
-      <BuyerLayout>
+      <Layout>
         <div className="flex items-center justify-center py-12">
           <Spinner />
         </div>
-      </BuyerLayout>
+      </Layout>
     );
   }
 
   return (
-    <BuyerLayout>
+    <Layout>
       <div className="max-w-4xl mx-auto">
         {/* Header */}
         <div className="mb-6">
@@ -158,6 +162,6 @@ export default function ProfilePage() {
           </button>
         </div>
       </div>
-    </BuyerLayout>
+    </Layout>
   );
 }
