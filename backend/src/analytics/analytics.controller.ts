@@ -8,12 +8,12 @@ import { CurrentUser } from '../auth/current-user.decorator';
 
 @Controller('analytics')
 export class AnalyticsController {
-    constructor(private readonly analyticsService: AnalyticsService) { }
+  constructor(private readonly analyticsService: AnalyticsService) {}
 
-    @Get('seller')
-    @UseGuards(AuthGuard('jwt'), RolesGuard)
-    @Roles(UserRole.USER)
-    getSellerAnalytics(@CurrentUser() user: any) {
-        return this.analyticsService.getSellerAnalytics(user.userId);
-    }
+  @Get('seller')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(UserRole.USER)
+  getSellerAnalytics(@CurrentUser() user: any) {
+    return this.analyticsService.getSellerAnalytics(user.userId);
+  }
 }
