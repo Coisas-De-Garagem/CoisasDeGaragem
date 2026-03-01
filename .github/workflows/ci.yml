@@ -1,0 +1,38 @@
+name: Continuous Integration
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  backend-ci:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./backend # Tells GitHub all 'run' commands happen here
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          # Crucial: GitHub needs to find the lockfile for caching to work
+          cache-dependency-path: './backend/package-lock.json'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Prisma Generate
+        # We must generate the client even for tests to avoid "Prisma not found" errors
+        run: npx prisma generate
+
+      - name: Run Unit Tests
+        run: npm run test
+
+      - name: Verify Production Build
+        run: npm run build
