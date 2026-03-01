@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -39,8 +39,7 @@ export class ProductsService {
     async update(id: string, updateProductDto: UpdateProductDto, userId: string) {
         const product = await this.findOne(id);
         if (product.sellerId !== userId) {
-            // In real app, check for forbidden, but let's assume controller checks ownership or role
-            // Ideally throws ForbiddenException
+            throw new ForbiddenException('You do not have permission to update this product');
         }
         return this.prisma.product.update({
             where: { id },
@@ -49,7 +48,10 @@ export class ProductsService {
     }
 
     async remove(id: string, userId: string) {
-        // Check ownership
+        const product = await this.findOne(id);
+        if (product.sellerId !== userId) {
+            throw new ForbiddenException('You do not have permission to delete this product');
+        }
         return this.prisma.product.delete({
             where: { id },
         });
@@ -75,7 +77,7 @@ export class ProductsService {
     async unreserve(id: string, sellerId: string) {
         const product = await this.findOne(id);
         if (product.sellerId !== sellerId) {
-            throw new Error('Unauthorized');
+            throw new ForbiddenException('You do not have permission to unreserve this product');
         }
         return this.prisma.product.update({
             where: { id },
@@ -86,7 +88,7 @@ export class ProductsService {
     async markAsSold(id: string, sellerId: string) {
         const product = await this.findOne(id);
         if (product.sellerId !== sellerId) {
-            throw new Error('Unauthorized');
+            throw new ForbiddenException('You do not have permission to mark this product as sold');
         }
         return this.prisma.product.update({
             where: { id },
