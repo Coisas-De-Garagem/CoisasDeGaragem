@@ -30,6 +30,7 @@ async function bootstrap() {
         labels: { job: 'nestjs-logs' },
         format: winston.format.json(),
         replaceTimestamp: true,
+        batching: false,
       }),
     );
   }
