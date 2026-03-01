@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "nest-winston": "^1.10.2",
+    "winston": "^3.19.0",
+    "winston-loki": "^6.1.4"
+  }
+}
