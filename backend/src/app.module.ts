@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler'; // 1. Import Throttler
 import { APP_GUARD } from '@nestjs/core'; // 2. Import APP_GUARD
@@ -13,6 +13,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { PurchasesModule } from './purchases/purchases.module';
 import { QrCodesModule } from './qr-codes/qr-codes.module';
 import { HealthModule } from './health/health.module';
+import { Request, Response, NextFunction } from 'express';
 
 @Module({
   imports: [
@@ -46,4 +47,34 @@ import { HealthModule } from './health/health.module';
     },
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply((req: Request, res: Response, next: NextFunction) => {
+        const authHeader = req.headers.authorization;
+
+        if (!authHeader || !authHeader.startsWith('Basic ')) {
+          res.set('WWW-Authenticate', 'Basic realm="Metrics"');
+          return res.status(401).send('Authentication required');
+        }
+
+        const b64auth = authHeader.split(' ')[1];
+        const [user, pass] = Buffer.from(b64auth, 'base64')
+          .toString()
+          .split(':');
+
+        if (
+          user &&
+          pass &&
+          user === process.env.METRICS_USER &&
+          pass === process.env.METRICS_PASS
+        ) {
+          return next();
+        } else {
+          res.set('WWW-Authenticate', 'Basic realm="Metrics"');
+          return res.status(401).send('Authentication required');
+        }
+      })
+      .forRoutes('*metrics*');
+  }
+}
