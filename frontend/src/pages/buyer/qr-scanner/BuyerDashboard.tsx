@@ -163,53 +163,53 @@ export default function BuyerDashboard() {
         </div>
 
         {/* Getting Started Guide */}
-        <div className="bg-gradient-to-br from-gray-900 to-gray-800 rounded-3xl shadow-xl overflow-hidden text-white">
-          <div className="p-8 lg:p-12">
-            <h2 className="text-2xl font-bold mb-8 flex items-center gap-3">
-              <FontAwesomeIcon icon={faLightbulb} className="text-yellow-400" />
-              Como Começar
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-              <div className="flex flex-col items-start gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
-                <div className="w-10 h-10 rounded-lg bg-blue-500/20 text-blue-300 flex items-center justify-center font-bold text-lg border border-blue-500/30">
-                  1
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold mb-2 text-blue-100">
-                    Escanear QR Code
-                  </h3>
-                  <p className="text-gray-400 text-sm leading-relaxed">
-                    Aponte a câmera do celular para o código do produto que você gostou no garage sale.
-                  </p>
-                </div>
-              </div>
+        <div className="bg-white rounded-2xl shadow-sm border border-neutral-100 p-8 hover:shadow-lg transition-shadow duration-300">
+          <h2 className="text-xl font-bold text-neutral-900 mb-8 flex items-center gap-2">
+            <FontAwesomeIcon icon={faLightbulb} className="text-warning" />
+            Como Começar
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 relative">
+            <div className="hidden md:block absolute top-6 left-1/6 right-1/6 h-0.5 bg-neutral-100 -z-10"></div>
 
-              <div className="flex flex-col items-start gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
-                <div className="w-10 h-10 rounded-lg bg-indigo-500/20 text-indigo-300 flex items-center justify-center font-bold text-lg border border-indigo-500/30">
-                  2
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold mb-2 text-indigo-100">
-                    Ver Minhas Compras
-                  </h3>
-                  <p className="text-gray-400 text-sm leading-relaxed">
-                    Acesse seu histórico completo e detalhes de cada item adquirido.
-                  </p>
-                </div>
+            <div className="relative flex flex-col items-center text-center gap-4 z-10">
+              <div className="w-12 h-12 rounded-full bg-primary-50 text-primary flex items-center justify-center font-bold text-lg border-4 border-white shadow-sm ring-1 ring-primary/10">
+                1
               </div>
+              <div>
+                <h3 className="font-bold text-neutral-800 mb-2">
+                  Escanear QR Code
+                </h3>
+                <p className="text-neutral-500 text-sm leading-relaxed max-w-[250px] mx-auto">
+                  Aponte a câmera do celular para o código do produto que você gostou no garage sale.
+                </p>
+              </div>
+            </div>
 
-              <div className="flex flex-col items-start gap-4 p-4 rounded-xl hover:bg-white/5 transition-colors">
-                <div className="w-10 h-10 rounded-lg bg-emerald-500/20 text-emerald-300 flex items-center justify-center font-bold text-lg border border-emerald-500/30">
-                  3
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold mb-2 text-emerald-100">
-                    Configurar Perfil
-                  </h3>
-                  <p className="text-gray-400 text-sm leading-relaxed">
-                    Mantenha seus dados atualizados para facilitar o contato com vendedores.
-                  </p>
-                </div>
+            <div className="relative flex flex-col items-center text-center gap-4 z-10">
+              <div className="w-12 h-12 rounded-full bg-secondary-50 text-secondary flex items-center justify-center font-bold text-lg border-4 border-white shadow-sm ring-1 ring-secondary/10">
+                2
+              </div>
+              <div>
+                <h3 className="font-bold text-neutral-800 mb-2">
+                  Ver Minhas Compras
+                </h3>
+                <p className="text-neutral-500 text-sm leading-relaxed max-w-[250px] mx-auto">
+                  Acesse seu histórico completo e detalhes de cada item adquirido.
+                </p>
+              </div>
+            </div>
+
+            <div className="relative flex flex-col items-center text-center gap-4 z-10">
+              <div className="w-12 h-12 rounded-full bg-success/10 text-success flex items-center justify-center font-bold text-lg border-4 border-white shadow-sm ring-1 ring-success/20">
+                3
+              </div>
+              <div>
+                <h3 className="font-bold text-neutral-800 mb-2">
+                  Configurar Perfil
+                </h3>
+                <p className="text-neutral-500 text-sm leading-relaxed max-w-[250px] mx-auto">
+                  Mantenha seus dados atualizados para facilitar o contato com vendedores.
+                </p>
               </div>
             </div>
           </div>

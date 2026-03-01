@@ -24,14 +24,14 @@ const sidebarItems: SidebarItem[] = [
     icon: <FontAwesomeIcon icon={faShoppingBag} className="w-5 h-5" />,
   },
   {
-    label: 'Perfil',
-    path: '/buyer/profile',
-    icon: <FontAwesomeIcon icon={faUser} className="w-5 h-5" />,
-  },
-  {
     label: 'Histórico',
     path: '/buyer/history',
     icon: <FontAwesomeIcon icon={faHistory} className="w-5 h-5" />,
+  },
+  {
+    label: 'Perfil',
+    path: '/buyer/profile',
+    icon: <FontAwesomeIcon icon={faUser} className="w-5 h-5" />,
   },
 ];
 

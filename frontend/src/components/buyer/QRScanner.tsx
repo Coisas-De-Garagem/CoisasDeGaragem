@@ -23,37 +23,37 @@ export function QRScanner({ onScanSuccess }: QRScannerProps) {
   const codeReaderRef = useRef<BrowserQRCodeReader | null>(null);
 
 
+  const checkCameraPermission = async () => {
+    try {
+      // Just check permission, don't keep the stream open
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment' }
+      });
+
+      setHasPermission(true);
+      // Immediately stop the test stream
+      stream.getTracks().forEach(track => track.stop());
+
+      // Signal that camera is ready
+      setIsCameraActive(true);
+    } catch (err) {
+      if (err instanceof Error) {
+        if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
+          setError('Permissão de câmera negada. Por favor, permita o acesso à câmera nas configurações do navegador.');
+        } else if (err.name === 'NotFoundError') {
+          setError('Nenhuma câmera encontrada. Por favor, verifique se seu dispositivo possui uma câmera.');
+        } else {
+          setError(`Erro ao acessar câmera: ${err.message}`);
+        }
+      } else {
+        setError('Erro ao acessar câmera. Por favor, tente novamente.');
+      }
+      setHasPermission(false);
+    }
+  };
+
   // Check camera permission
   useEffect(() => {
-    const checkCameraPermission = async () => {
-      try {
-        // Just check permission, don't keep the stream open
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment' }
-        });
-
-        setHasPermission(true);
-        // Immediately stop the test stream
-        stream.getTracks().forEach(track => track.stop());
-
-        // Signal that camera is ready
-        setIsCameraActive(true);
-      } catch (err) {
-        if (err instanceof Error) {
-          if (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError') {
-            setError('Permissão de câmera negada. Por favor, permita o acesso à câmera nas configurações do navegador.');
-          } else if (err.name === 'NotFoundError') {
-            setError('Nenhuma câmera encontrada. Por favor, verifique se seu dispositivo possui uma câmera.');
-          } else {
-            setError(`Erro ao acessar câmera: ${err.message}`);
-          }
-        } else {
-          setError('Erro ao acessar câmera. Por favor, tente novamente.');
-        }
-        setHasPermission(false);
-      }
-    };
-
     checkCameraPermission();
 
     // Cleanup function
@@ -158,7 +158,7 @@ export function QRScanner({ onScanSuccess }: QRScannerProps) {
   const handleRetryPermission = async () => {
     setError('');
     setHasPermission(null);
-    window.location.reload();
+    checkCameraPermission();
   };
 
   // Loading state while checking permission

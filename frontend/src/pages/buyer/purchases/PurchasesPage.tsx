@@ -161,7 +161,7 @@ export default function PurchasesPage() {
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <p className="text-sm text-gray-600 mb-1">Valor Total</p>
-            <p className="text-3xl font-bold text-green-600">
+            <p className="text-3xl font-bold text-success">
               {new Intl.NumberFormat('pt-BR', {
                 style: 'currency',
                 currency: 'BRL',
@@ -172,7 +172,7 @@ export default function PurchasesPage() {
           </div>
           <div className="bg-white rounded-lg shadow p-6">
             <p className="text-sm text-gray-600 mb-1">Compras Concluídas</p>
-            <p className="text-3xl font-bold text-blue-600">
+            <p className="text-3xl font-bold text-primary">
               {sortedPurchases.filter(p => p.status === 'completed').length}
             </p>
           </div>

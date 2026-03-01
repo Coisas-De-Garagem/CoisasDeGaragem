@@ -14,7 +14,7 @@ const SellerDashboard = lazy(() => import('@/pages/seller/dashboard/SellerDashbo
 const ProductsPage = lazy(() => import('@/pages/seller/products/ProductsPage'));
 const SalesPage = lazy(() => import('@/pages/seller/sales/SalesPage'));
 const AnalyticsPage = lazy(() => import('@/pages/seller/analytics/AnalyticsPage'));
-const SettingsPage = lazy(() => import('@/pages/seller/settings/SettingsPage'));
+
 const BuyerDashboard = lazy(() => import('@/pages/buyer/qr-scanner/BuyerDashboard'));
 const PurchasesPage = lazy(() => import('@/pages/buyer/purchases/PurchasesPage'));
 const ProfilePage = lazy(() => import('@/pages/buyer/profile/ProfilePage'));
@@ -117,11 +117,11 @@ function App() {
             }
           />
           <Route
-            path="/seller/settings"
+            path="/seller/profile"
             element={
               <Suspense fallback={<Spinner />}>
                 <ProtectedRoute allowedRoles={['user']}>
-                  <SettingsPage />
+                  <ProfilePage />
                 </ProtectedRoute>
               </Suspense>
             }
