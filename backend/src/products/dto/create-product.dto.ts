@@ -1,31 +1,38 @@
-import { IsString, IsNotEmpty, IsNumber, IsOptional, IsEnum, Min } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsEnum,
+  Min,
+} from 'class-validator';
 import { ProductCondition } from '@prisma/client';
 import { Type } from 'class-transformer';
 
 export class CreateProductDto {
-    @IsNotEmpty()
-    @IsString()
-    name: string;
+  @IsNotEmpty()
+  @IsString()
+  name: string;
 
-    @IsNotEmpty()
-    @IsString()
-    description: string;
+  @IsNotEmpty()
+  @IsString()
+  description: string;
 
-    @IsNotEmpty()
-    @Type(() => Number)
-    @IsNumber({ maxDecimalPlaces: 2 })
-    @Min(0)
-    price: number;
+  @IsNotEmpty()
+  @Type(() => Number)
+  @IsNumber({ maxDecimalPlaces: 2 })
+  @Min(0)
+  price: number;
 
-    @IsOptional()
-    @IsString()
-    imageUrl?: string;
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
 
-    @IsOptional()
-    @IsString()
-    category?: string;
+  @IsOptional()
+  @IsString()
+  category?: string;
 
-    @IsOptional()
-    @IsEnum(ProductCondition)
-    condition?: ProductCondition;
+  @IsOptional()
+  @IsEnum(ProductCondition)
+  condition?: ProductCondition;
 }
