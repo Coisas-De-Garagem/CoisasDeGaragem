@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler'; // 1. Import Throttler
 import { APP_GUARD } from '@nestjs/core'; // 2. Import APP_GUARD
+import { PrometheusModule } from '@willsoto/nestjs-prometheus';
 import { PrismaModule } from './prisma/prisma.module';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -17,10 +18,15 @@ import { HealthModule } from './health/health.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     // 3. Configure the Rate Limit: 10 requests every 60 seconds per IP
-    ThrottlerModule.forRoot([{
-      ttl: 60000, 
-      limit: 10,
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000,
+        limit: 10,
+      },
+    ]),
+    PrometheusModule.register({
+      path: '/metrics',
+    }),
     PrismaModule,
     UsersModule,
     AuthModule,
