@@ -166,6 +166,12 @@ export const mockApi = {
     };
   },
 
+  // Get my products
+  getMyProducts: async (filters?: ProductFilters): Promise<ApiResponse<{ products: Product[]; pagination: any }>> => {
+    // For mock API, just return the same as getProducts, or simulate a specific user
+    return mockApi.getProducts(filters);
+  },
+
   // Get product by ID
   getProduct: async (id: string): Promise<ApiResponse<Product> | ApiError> => {
     await delay(200);

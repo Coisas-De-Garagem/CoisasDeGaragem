@@ -18,7 +18,7 @@ export function useProducts() {
 
   const fetchProducts = useCallback(
     async (newFilters?: typeof filters) => {
-      const result = await api.getProducts(newFilters || filters);
+      const result = await api.getMyProducts(newFilters || filters);
 
       if (result.success) {
         // Handle both array response (current backend) and object response (paginated)

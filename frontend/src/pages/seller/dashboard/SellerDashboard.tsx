@@ -50,7 +50,7 @@ export default function SellerDashboard() {
             endDate: endDate.toISOString(),
           }),
           api.getPurchases({ limit: 10 }), // Fetch more to build chart
-          api.getProducts({ limit: 5, sortBy: 'createdAt', sortOrder: 'desc' })
+          api.getMyProducts({ limit: 5, sortBy: 'createdAt', sortOrder: 'desc' })
         ]);
 
         if (analyticsRes.success) {

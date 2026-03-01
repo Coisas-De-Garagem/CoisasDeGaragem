@@ -158,6 +158,21 @@ export const api = {
     );
   },
 
+  getMyProducts: async (filters?: ProductFilters): Promise<ApiResult<{ products: Product[]; pagination: any }>> => {
+    if (ENABLE_MOCK_DATA) {
+      return mockApi.getMyProducts(filters);
+    }
+    return fetchApi<{ products: Product[]; pagination: any }>(
+      `/products/my-products${buildQueryString(filters)}`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      },
+    );
+  },
+
   getProduct: async (id: string): Promise<ApiResult<Product>> => {
     if (ENABLE_MOCK_DATA) {
       return mockApi.getProduct(id);
