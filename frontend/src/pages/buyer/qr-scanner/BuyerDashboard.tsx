@@ -6,7 +6,7 @@ import { Badge } from '@/components/common/Badge';
 import { Select } from '@/components/common/Select';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faQrcode, faShoppingBag, faLightbulb, faStore, faCheckCircle, faCreditCard } from '@fortawesome/free-solid-svg-icons';
-import { Link } from 'react-router-dom';
+
 import { useState } from 'react';
 import type { Product, User, PaymentMethod } from '@/types';
 import { api } from '@/services/api';
@@ -152,12 +152,12 @@ export default function BuyerDashboard() {
               <p className="text-gray-500 mb-6 text-center max-w-xs px-4">
                 Você ainda não realizou nenhuma compra. Que tal começar agora?
               </p>
-              <Link
-                to="/buyer/qr-scanner"
+              <button
+                onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
                 className="inline-flex items-center px-6 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-medium shadow-lg shadow-blue-900/10 hover:shadow-blue-900/20"
               >
-                Ir para Scanner QR
-              </Link>
+                Escanear Agora
+              </button>
             </div>
           </div>
         </div>
