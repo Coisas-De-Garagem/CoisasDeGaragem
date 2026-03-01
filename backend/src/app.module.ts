@@ -75,6 +75,6 @@ export class AppModule implements NestModule {
           return res.status(401).send('Authentication required');
         }
       })
-      .forRoutes('*metrics*');
+      .forRoutes('api/v1/metrics');
   }
 }
