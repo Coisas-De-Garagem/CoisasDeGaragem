@@ -2,9 +2,41 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import {
+  WinstonModule,
+  utilities as nestWinstonModuleUtilities,
+} from 'nest-winston';
+import * as winston from 'winston';
+import LokiTransport from 'winston-loki';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const transports: any[] = [
+    new winston.transports.Console({
+      format: winston.format.combine(
+        winston.format.timestamp(),
+        nestWinstonModuleUtilities.format.nestLike('CoisasDeGaragem', {
+          colors: true,
+          appName: true,
+        }),
+      ),
+    }),
+  ];
+
+  if (process.env.LOKI_HOST) {
+    transports.push(
+      new LokiTransport({
+        host: process.env.LOKI_HOST,
+        basicAuth: `${process.env.LOKI_USER}:${process.env.LOKI_PASS}`,
+        labels: { job: 'nestjs-logs' },
+        format: winston.format.json(),
+        replaceTimestamp: true,
+      }),
+    );
+  }
+
+  const app = await NestFactory.create(AppModule, {
+    logger: WinstonModule.createLogger({ transports }),
+  });
 
   const corsOrigins = process.env.CORS_ORIGIN
     ? process.env.CORS_ORIGIN.split(',')
