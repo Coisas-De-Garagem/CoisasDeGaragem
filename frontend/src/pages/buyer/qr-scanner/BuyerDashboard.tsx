@@ -11,6 +11,7 @@ import { useState } from 'react';
 import type { Product, User, PaymentMethod } from '@/types';
 import { api } from '@/services/api';
 import { useUIStore } from '@/store/uiStore';
+import { formatProductCondition, getConditionVariant } from '@/utils/formatters';
 
 export default function BuyerDashboard() {
   const [scannedProduct, setScannedProduct] = useState<Product | null>(null);
@@ -284,7 +285,9 @@ export default function BuyerDashboard() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 text-center">
                     <div className="text-xs text-gray-500 uppercase font-bold mb-1">Condição</div>
-                    <Badge variant="success">{scannedProduct.condition || 'Bom'}</Badge>
+                    <Badge variant={getConditionVariant(scannedProduct.condition)}>
+                      {formatProductCondition(scannedProduct.condition)}
+                    </Badge>
                   </div>
                   <div className="bg-gray-50 p-3 rounded-lg border border-gray-100 text-center">
                     <div className="text-xs text-gray-500 uppercase font-bold mb-1">Vendedor</div>

@@ -15,23 +15,23 @@ export function isValidPassword(password: string): {
   errors: string[];
 } {
   const errors: string[] = [];
-  
+
   if (password.length < 8) {
     errors.push('A senha deve ter no mínimo 8 caracteres');
   }
-  
+
   if (!/[A-Z]/.test(password)) {
     errors.push('A senha deve conter pelo menos uma letra maiúscula');
   }
-  
+
   if (!/[a-z]/.test(password)) {
     errors.push('A senha deve conter pelo menos uma letra minúscula');
   }
-  
+
   if (!/[0-9]/.test(password)) {
     errors.push('A senha deve conter pelo menos um número');
   }
-  
+
   return {
     isValid: errors.length === 0,
     errors,
@@ -212,7 +212,7 @@ export function isValidCategory(category: string): boolean {
  * Validate product condition
  */
 export function isValidProductCondition(condition: string): boolean {
-  const validConditions = ['new', 'like-new', 'good', 'fair', 'poor'];
+  const validConditions = ['NEW', 'LIKE_NEW', 'GOOD', 'FAIR', 'POOR'];
   return validConditions.includes(condition);
 }
 
