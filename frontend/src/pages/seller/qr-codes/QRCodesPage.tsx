@@ -5,9 +5,11 @@ import { useProducts } from '@/hooks/useProducts';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBox } from '@fortawesome/free-solid-svg-icons';
 import { formatCurrency } from '@/utils/formatters';
+import { useNavigate } from 'react-router-dom';
 
 export default function QRCodesPage() {
   const { products } = useProducts();
+  const navigate = useNavigate();
 
 
   const handleGenerateQR = (productId: string) => {
@@ -40,7 +42,7 @@ export default function QRCodesPage() {
             <p className="text-gray-600 mb-6">
               Gereie QR codes para seus produtos começando a vendê-los
             </p>
-            <Button variant="primary" onClick={() => window.location.href = '/seller/products'}>
+            <Button variant="primary" onClick={() => navigate('/seller/products')}>
               Gerar Primeiro QR Code
             </Button>
           </div>

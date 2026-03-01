@@ -4,6 +4,7 @@ import { useAuthStore } from '@/store/authStore';
 import { Spinner } from '@/components/common/Spinner';
 import { Alert } from '@/components/common/Alert';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faUserCog,
@@ -17,6 +18,7 @@ import {
 
 export default function ProfilePage() {
   const { user, logout } = useAuthStore();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
@@ -143,10 +145,10 @@ export default function ProfilePage() {
 
           {/* Logout Button */}
           <button
-            onClick={() => {
+            onClick={async () => {
               if (window.confirm('Tem certeza que deseja sair?')) {
-                logout();
-                window.location.href = '/';
+                await logout();
+                navigate('/');
               }
             }}
             className="w-full mt-6 px-4 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors font-medium flex items-center justify-center gap-2"
