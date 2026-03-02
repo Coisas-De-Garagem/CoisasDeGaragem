@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Coisas de Garagem</string>
+    <string name="title_activity_main">Coisas de Garagem</string>
+    <string name="package_name">com.coisasdegaragem.app</string>
+    <string name="custom_url_scheme">coisasdegaragem</string>
+</resources>
