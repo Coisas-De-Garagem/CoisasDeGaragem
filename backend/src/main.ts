@@ -47,9 +47,11 @@ async function bootstrap() {
     'https://localhost'
   ];
 
-  const corsOrigins = process.env.CORS_ORIGIN
+  const envOrigins = process.env.CORS_ORIGIN
     ? process.env.CORS_ORIGIN.split(',')
-    : fallbackOrigins;
+    : [];
+
+  const corsOrigins = [...fallbackOrigins, ...envOrigins];
 
   app.enableCors({
     origin: corsOrigins,
