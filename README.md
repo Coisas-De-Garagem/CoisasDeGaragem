@@ -62,10 +62,10 @@ Cada membro tem um papel essencial para o sucesso do projeto.
 | Etapa            | Data Limite     |  
 |------------------|----------------|  
 | Planejamento     | [03/2026]   |  
-| Prototipagem     | [04/2025]   |  
-| Desenvolvimento  | [05/2025]   |  
-| Testes           | [06/2025]   |  
-| Entrega Final    | [06/2025]   |  
+| Prototipagem     | [04/2026]   |  
+| Desenvolvimento  | [05/2026]   |  
+| Testes           | [06/2026]   |  
+| Entrega Final    | [06/2026]   |  
 
 Prazos a serem melhor definidos.
 
