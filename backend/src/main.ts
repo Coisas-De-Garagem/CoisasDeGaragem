@@ -39,17 +39,9 @@ async function bootstrap() {
     logger: WinstonModule.createLogger({ transports }),
   });
 
-  const fallbackOrigins = [
-    'http://localhost:5173',
-    'https://coisas-de-garagem-test.vercel.app',
-    'capacitor://localhost',
-    'http://localhost',
-    'https://localhost'
-  ];
-
   const corsOrigins = process.env.CORS_ORIGIN
     ? process.env.CORS_ORIGIN.split(',')
-    : fallbackOrigins;
+    : [];
 
   app.enableCors({
     origin: corsOrigins,

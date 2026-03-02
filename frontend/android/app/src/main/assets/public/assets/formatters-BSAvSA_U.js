@@ -1,1 +1,0 @@
-function t(o,n="BRL"){return new Intl.NumberFormat("pt-BR",{style:"currency",currency:n}).format(o)}function r(o){return{NEW:"Novo",LIKE_NEW:"Como Novo",GOOD:"Bom",FAIR:"Razoável",POOR:"Ruim"}[o||"GOOD"]||"Bom"}function a(o){return{NEW:"success",LIKE_NEW:"success",GOOD:"success",FAIR:"warning",POOR:"error"}[o||"GOOD"]||"success"}export{r as a,t as f,a as g};
