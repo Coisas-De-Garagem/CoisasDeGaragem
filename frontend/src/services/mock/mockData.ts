@@ -129,7 +129,7 @@ export const mockTestimonials: Testimonial[] = [
     userId: 'user-2',
     userName: 'Raul Dev',
     userAvatarUrl: 'https://avatars.githubusercontent.com/u/132016342?v=4',
-    content: 'Ótimo sistema! Utiliza bpas práticas de programação 👍',
+    content: 'Ótimo sistema! Utiliza boas práticas de programação 👍',
     rating: 5,
     isFeatured: true,
     isVisible: true,
