@@ -36,6 +36,7 @@ export class PaymentsController {
     @Headers('x-webhook-signature') signature: string,
     @Req() req: RawBodyRequest<Request>,
   ) {
-    return this.paymentsService.handleWebhook(body, signature, req.rawBody);
+    // Explicit cast to Buffer for the rawBody property provided by NestJS rawBody option
+    return this.paymentsService.handleWebhook(body, signature, req.rawBody as Buffer);
   }
 }

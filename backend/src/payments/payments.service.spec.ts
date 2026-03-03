@@ -28,21 +28,22 @@ const mockConfigService = {
 
 // Mock AbacatePay SDK
 jest.mock('abacatepay-nodejs-sdk', () => {
-  return {
-    AbacatePay: jest.fn().mockImplementation(() => ({
-      billing: {
-        create: jest.fn().mockResolvedValue({
+  return jest.fn().mockImplementation(() => ({
+    billing: {
+      create: jest.fn().mockResolvedValue({
+        error: null,
+        data: {
           id: 'billing-123',
           url: 'http://checkout.url',
           pix: {
             payload: 'pix-payload',
-            url: 'http://pix.url',
+            qrCodeUrl: 'http://pix.url',
+            expiresAt: '2026-03-03T00:00:00Z',
           },
-          expiresAt: '2026-03-03T00:00:00Z',
-        }),
-      },
-    })),
-  };
+        },
+      }),
+    },
+  }));
 });
 
 describe('PaymentsService', () => {

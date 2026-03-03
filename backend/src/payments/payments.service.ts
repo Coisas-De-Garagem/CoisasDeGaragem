@@ -1,20 +1,20 @@
 import { Injectable, NotFoundException, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
-import { AbacatePay } from 'abacatepay-nodejs-sdk';
 import { PurchaseStatus } from '@prisma/client';
 import * as crypto from 'crypto';
+import AbacatePay from 'abacatepay-nodejs-sdk';
 
 @Injectable()
 export class PaymentsService {
-  private abacatePay: AbacatePay;
+  private abacatePay: any;
 
   constructor(
     private prisma: PrismaService,
     private config: ConfigService,
   ) {
-    const apiKey = this.config.get<string>('ABACATEPAY_API_KEY');
-    this.abacatePay = new AbacatePay({ apiKey });
+    const apiKey = this.config.get<string>('ABACATEPAY_API_KEY') || '';
+    this.abacatePay = AbacatePay(apiKey);
   }
 
   async createAbacatePixCharge(purchaseId: string) {
