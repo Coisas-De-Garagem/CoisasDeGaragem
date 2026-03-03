@@ -55,6 +55,8 @@ services:
     command:
       - "http"
       - "backend:3000"
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
     ports:
       - "4040:4040"
     networks:
