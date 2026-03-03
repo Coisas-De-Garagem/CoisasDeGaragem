@@ -35,7 +35,7 @@ export class PaymentsService {
       // Assuming createBilling or similar exists.
       // TODO: Verify exact SDK method names against documentation.
       // Based on typical AbacatePay SDK structure:
-      const billing = await this.abacatePay.billing.create({
+      const response = await this.abacatePay.billing.create({
         frequency: 'ONE_TIME',
         methods: ['PIX'],
         products: [
@@ -48,31 +48,44 @@ export class PaymentsService {
         ],
         returnUrl: this.config.get<string>('FRONTEND_URL') + '/purchase/success',
         completionUrl: this.config.get<string>('FRONTEND_URL') + '/purchase/complete',
-        customerId: purchase.buyer.email, // Or use a dedicated customer ID mapping
+        customerId: purchase.buyer.email,
         customer: {
           name: purchase.buyer.name,
           email: purchase.buyer.email,
-          taxId: '00000000000', // AbacatePay might require a taxId (CPF/CNPJ)
+          taxId: '00000000000',
         },
         metadata: {
           purchaseId: purchase.id,
         },
       });
 
+      if (response.error) {
+        throw new InternalServerErrorException(response.error);
+      }
+
+      const billing = response.data;
+
       // On success, update the purchase with payment details
-      // Note: abacatePay SDK 'billing.create' response structure needs verification.
-      // Assuming 'billing.data' or similar contains the ID and PIX info.
+      // TODO: Verify exact path for PIX payload and expiry in the SDK response
+      const pixData = (billing as any).pix;
+      
       await this.prisma.purchase.update({
         where: { id: purchaseId },
         data: {
           abacatePaymentId: billing.id,
           paymentStatus: 'PENDING',
+          paymentQr: pixData?.payload,
+          paymentQrUrl: pixData?.qrCodeUrl,
+          paymentExpiresAt: pixData?.expiresAt ? new Date(pixData.expiresAt) : null,
         },
       });
 
       return {
         paymentId: billing.id,
-        paymentUrl: billing.url, // URL for the checkout page
+        paymentUrl: billing.url,
+        paymentQr: pixData?.payload,
+        paymentQrUrl: pixData?.qrCodeUrl,
+        expiresAt: pixData?.expiresAt,
       };
     } catch (error) {
       console.error('AbacatePay Charge Creation Error:', error);

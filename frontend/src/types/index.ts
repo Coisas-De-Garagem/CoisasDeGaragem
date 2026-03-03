@@ -77,6 +77,9 @@ export interface Purchase {
 export interface CreateAbacatePixPaymentResponse {
   paymentId: string;
   paymentUrl: string;
+  paymentQr?: string;
+  paymentQrUrl?: string;
+  expiresAt?: string;
 }
 
 export interface GetPaymentStatusResponse {

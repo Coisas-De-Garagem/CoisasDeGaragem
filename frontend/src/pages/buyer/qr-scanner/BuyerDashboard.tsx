@@ -5,10 +5,20 @@ import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import { Select } from '@/components/common/Select';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faQrcode, faShoppingBag, faLightbulb, faStore, faCheckCircle, faCreditCard } from '@fortawesome/free-solid-svg-icons';
+import { 
+  faQrcode, 
+  faShoppingBag, 
+  faLightbulb, 
+  faStore, 
+  faCheckCircle, 
+  faCreditCard,
+  faCopy,
+  faClock,
+  faExternalLinkAlt
+} from '@fortawesome/free-solid-svg-icons';
 
-import { useState } from 'react';
-import type { Product, User, PaymentMethod } from '@/types';
+import { useState, useEffect, useCallback } from 'react';
+import type { Product, User, PaymentMethod, CreateAbacatePixPaymentResponse } from '@/types';
 import { api } from '@/services/api';
 import { useUIStore } from '@/store/uiStore';
 import { formatProductCondition, getConditionVariant } from '@/utils/formatters';
@@ -19,12 +29,16 @@ export default function BuyerDashboard() {
   const [isBuying, setIsBuying] = useState(false);
   const [purchaseSuccess, setPurchaseSuccess] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('pix');
+  const [pixPaymentData, setPixPaymentData] = useState<CreateAbacatePixPaymentResponse | null>(null);
+  const [timeLeft, setTimeLeft] = useState<number | null>(null);
   const { addNotification } = useUIStore();
 
   const handleScanSuccess = (product: Product, seller: User) => {
     setScannedProduct(product);
     setSellerInfo(seller);
     setPurchaseSuccess(false);
+    setPixPaymentData(null);
+    setTimeLeft(null);
   };
 
   const handleBuy = async () => {
@@ -39,6 +53,30 @@ export default function BuyerDashboard() {
       });
 
       if (result.success) {
+        const purchase = result.data;
+        
+        if (paymentMethod === 'pix') {
+          const pixResult = await api.createAbacatePixPayment(purchase.id);
+          if (pixResult.success) {
+            setPixPaymentData(pixResult.data);
+            if (pixResult.data.expiresAt) {
+              const expiry = new Date(pixResult.data.expiresAt).getTime();
+              const now = new Date().getTime();
+              setTimeLeft(Math.max(0, Math.floor((expiry - now) / 1000)));
+            }
+          } else {
+            addNotification({
+              id: Date.now().toString(),
+              type: 'warning',
+              title: 'Aviso',
+              message: 'Compra registrada, mas erro ao gerar PIX. Combine o pagamento com o vendedor.',
+              createdAt: new Date().toISOString(),
+              userId: '',
+              isRead: false
+            });
+          }
+        }
+
         setPurchaseSuccess(true);
         addNotification({
           id: Date.now().toString(),
@@ -87,6 +125,37 @@ export default function BuyerDashboard() {
       setIsBuying(false);
     }
   };
+
+  useEffect(() => {
+    if (timeLeft === null || timeLeft <= 0) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => (prev && prev > 0 ? prev - 1 : 0));
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timeLeft]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const copyPixPayload = useCallback(() => {
+    if (pixPaymentData?.paymentQr) {
+      navigator.clipboard.writeText(pixPaymentData.paymentQr);
+      addNotification({
+        id: Date.now().toString(),
+        type: 'success',
+        title: 'Copiado',
+        message: 'Código PIX copiado para a área de transferência!',
+        createdAt: new Date().toISOString(),
+        userId: '',
+        isRead: false
+      });
+    }
+  }, [pixPaymentData, addNotification]);
 
   const paymentOptions = [
     { value: 'pix', label: 'PIX' },
@@ -226,19 +295,73 @@ export default function BuyerDashboard() {
         {scannedProduct && (
           <div className="space-y-6">
             {purchaseSuccess ? (
-              <div className="text-center py-8">
-                <div className="w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <FontAwesomeIcon icon={faCheckCircle} className="text-4xl" />
+              <div className="text-center py-4">
+                <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FontAwesomeIcon icon={faCheckCircle} className="text-3xl" />
                 </div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">Sucesso!</h3>
-                <p className="text-gray-600">
+                <h3 className="text-2xl font-bold text-gray-900 mb-1">Sucesso!</h3>
+                <p className="text-gray-600 mb-6">
                   Você comprou <strong>{scannedProduct.name}</strong> com sucesso.
                 </p>
-                <div className="mt-8">
-                  <Button variant="primary" onClick={() => setScannedProduct(null)} className="w-full">
-                    Fechar
-                  </Button>
-                </div>
+
+                {paymentMethod === 'pix' && pixPaymentData ? (
+                  <div className="bg-blue-50 rounded-2xl p-6 border border-blue-100 mb-6">
+                    <h4 className="text-blue-900 font-bold mb-4 flex items-center justify-center gap-2">
+                      <FontAwesomeIcon icon={faCreditCard} />
+                      Pagamento via PIX
+                    </h4>
+                    
+                    <div className="bg-white p-4 rounded-xl shadow-inner inline-block mb-4 border border-blue-100">
+                      <img 
+                        src={pixPaymentData.paymentQrUrl || `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(pixPaymentData.paymentQr || '')}`} 
+                        alt="PIX QR Code" 
+                        className="w-48 h-48 mx-auto"
+                      />
+                    </div>
+
+                    {timeLeft !== null && (
+                      <div className="flex items-center justify-center gap-2 text-blue-700 font-medium mb-4 bg-white/50 py-2 rounded-lg">
+                        <FontAwesomeIcon icon={faClock} />
+                        Expira em: <span className="font-mono text-lg">{formatTime(timeLeft)}</span>
+                      </div>
+                    )}
+
+                    <div className="space-y-3">
+                      <Button 
+                        variant="primary" 
+                        onClick={copyPixPayload} 
+                        className="w-full bg-blue-600 flex items-center justify-center gap-2"
+                      >
+                        <FontAwesomeIcon icon={faCopy} />
+                        Copiar Código PIX
+                      </Button>
+                      
+                      <a 
+                        href={pixPaymentData.paymentUrl} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="block w-full text-center py-2 text-blue-600 hover:text-blue-700 font-medium text-sm flex items-center justify-center gap-2"
+                      >
+                        <FontAwesomeIcon icon={faExternalLinkAlt} />
+                        Pagar no checkout AbacatePay
+                      </a>
+                    </div>
+
+                    <div className="mt-4 p-3 bg-blue-100/50 rounded-lg text-xs text-blue-800 leading-relaxed">
+                      <FontAwesomeIcon icon={faLightbulb} className="mr-1" />
+                      <strong>Dica:</strong> Use seu app bancário para escanear ou copiar o código PIX. A confirmação é instantânea.
+                    </div>
+                  </div>
+                ) : (
+                  <div className="bg-gray-50 rounded-xl p-6 border border-gray-100 mb-6">
+                    <p className="text-gray-700 font-medium mb-2">Método: {paymentOptions.find(o => o.value === paymentMethod)?.label}</p>
+                    <p className="text-sm text-gray-500">Combine o pagamento diretamente com o vendedor no local.</p>
+                  </div>
+                )}
+
+                <Button variant="primary" onClick={() => setScannedProduct(null)} className="w-full">
+                  Fechar
+                </Button>
               </div>
             ) : (
               <>
