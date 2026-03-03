@@ -1,7 +1,9 @@
-import { Injectable, NotFoundException, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, NotFoundException, InternalServerErrorException, UnauthorizedException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { AbacatePay } from 'abacatepay-nodejs-sdk';
+import { PurchaseStatus } from '@prisma/client';
+import * as crypto from 'crypto';
 
 @Injectable()
 export class PaymentsService {
@@ -12,8 +14,6 @@ export class PaymentsService {
     private config: ConfigService,
   ) {
     const apiKey = this.config.get<string>('ABACATEPAY_API_KEY');
-    // TODO: Verify if ABACATEPAY_BASE_URL is needed or if SDK uses a default.
-    // The SDK might not take a base URL in the constructor if it's fixed.
     this.abacatePay = new AbacatePay({ apiKey });
   }
 
@@ -62,23 +62,17 @@ export class PaymentsService {
       // On success, update the purchase with payment details
       // Note: abacatePay SDK 'billing.create' response structure needs verification.
       // Assuming 'billing.data' or similar contains the ID and PIX info.
-      const updatedPurchase = await this.prisma.purchase.update({
+      await this.prisma.purchase.update({
         where: { id: purchaseId },
         data: {
           abacatePaymentId: billing.id,
-          // paymentQr: billing.pix?.payload, // TODO: verify path
-          // paymentQrUrl: billing.pix?.url, // TODO: verify path
           paymentStatus: 'PENDING',
-          // paymentExpiresAt: new Date(billing.expiresAt), // TODO: verify path
         },
       });
 
       return {
         paymentId: billing.id,
         paymentUrl: billing.url, // URL for the checkout page
-        // paymentQr: billing.pix?.payload,
-        // paymentQrUrl: billing.pix?.url,
-        // expiresAt: billing.expiresAt,
       };
     } catch (error) {
       console.error('AbacatePay Charge Creation Error:', error);
@@ -97,5 +91,73 @@ export class PaymentsService {
     }
 
     return { status: purchase.paymentStatus };
+  }
+
+  async handleWebhook(body: any, signature: string, rawBody: Buffer) {
+    const secret = this.config.get<string>('ABACATEPAY_WEBHOOK_SECRET');
+    
+    if (signature && secret) {
+      const hmac = crypto.createHmac('sha256', secret);
+      const digest = hmac.update(rawBody).digest('hex');
+      
+      if (digest !== signature) {
+        throw new UnauthorizedException('Invalid webhook signature');
+      }
+    } else if (!signature && secret) {
+        // If secret is configured but no signature provided, and we fallback to body check
+        // but typically AbacatePay uses the header.
+        throw new UnauthorizedException('Webhook signature missing');
+    }
+
+    const { event, data } = body;
+    const purchaseId = data?.metadata?.purchaseId;
+    const abacatePaymentId = data?.id;
+
+    if (!purchaseId && !abacatePaymentId) {
+      return { received: true }; // Probably not an event we care about
+    }
+
+    const purchase = await this.prisma.purchase.findFirst({
+      where: {
+        OR: [
+          { id: purchaseId },
+          { abacatePaymentId: abacatePaymentId }
+        ]
+      },
+    });
+
+    if (!purchase) {
+      console.warn(`Webhook received for unknown purchase: ${purchaseId || abacatePaymentId}`);
+      return { received: true };
+    }
+
+    if (event === 'billing.paid' || event === 'pix.paid') {
+      await this.prisma.$transaction([
+        this.prisma.purchase.update({
+          where: { id: purchase.id },
+          data: {
+            status: PurchaseStatus.COMPLETED, // Assuming COMPLETED is the "PAID" state in schema
+            paymentStatus: 'PAID',
+          },
+        }),
+        this.prisma.product.update({
+          where: { id: purchase.productId },
+          data: {
+            isSold: true,
+            isAvailable: false,
+          },
+        }),
+      ]);
+    } else if (event === 'pix.expired' || event === 'billing.expired') {
+        await this.prisma.purchase.update({
+            where: { id: purchase.id },
+            data: {
+                status: PurchaseStatus.CANCELLED,
+                paymentStatus: 'EXPIRED',
+            },
+        });
+    }
+
+    return { received: true };
   }
 }

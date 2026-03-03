@@ -1,8 +1,9 @@
-import { Controller, Post, Get, Body, Param, UseGuards } from '@nestjs/common';
+import { Controller, Post, Get, Body, Param, UseGuards, Headers, Req, RawBodyRequest } from '@nestjs/common';
 import { PaymentsService } from './payments.service';
 import { CreateAbacatePixDto } from './dto/create-abacate-pix.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import { Request } from 'express';
 
 @ApiTags('payments')
 @Controller('payments')
@@ -25,5 +26,16 @@ export class PaymentsController {
   @ApiResponse({ status: 404, description: 'Purchase not found.' })
   async getStatus(@Param('purchaseId') purchaseId: string) {
     return this.paymentsService.getPaymentStatus(purchaseId);
+  }
+
+  @Post('abacate/webhook')
+  @ApiOperation({ summary: 'Receive AbacatePay webhook notifications' })
+  @ApiResponse({ status: 200, description: 'Webhook received and processed.' })
+  async handleWebhook(
+    @Body() body: any,
+    @Headers('x-webhook-signature') signature: string,
+    @Req() req: RawBodyRequest<Request>,
+  ) {
+    return this.paymentsService.handleWebhook(body, signature, req.rawBody);
   }
 }

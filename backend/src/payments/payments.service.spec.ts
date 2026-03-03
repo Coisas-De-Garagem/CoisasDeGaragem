@@ -2,18 +2,25 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PaymentsService } from './payments.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
-import { NotFoundException } from '@nestjs/common';
+import { NotFoundException, UnauthorizedException } from '@nestjs/common';
+import * as crypto from 'crypto';
 
 const mockPrismaService = {
   purchase: {
     findUnique: jest.fn(),
+    findFirst: jest.fn(),
     update: jest.fn(),
   },
+  product: {
+    update: jest.fn(),
+  },
+  $transaction: jest.fn((promises) => Promise.all(promises)),
 };
 
 const mockConfigService = {
   get: jest.fn((key: string) => {
     if (key === 'ABACATEPAY_API_KEY') return 'test-api-key';
+    if (key === 'ABACATEPAY_WEBHOOK_SECRET') return 'webhook-secret';
     if (key === 'FRONTEND_URL') return 'http://localhost:5173';
     return null;
   }),
@@ -40,7 +47,7 @@ jest.mock('abacatepay-nodejs-sdk', () => {
 
 describe('PaymentsService', () => {
   let service: PaymentsService;
-  let prisma: typeof mockPrismaService;
+  let prisma: any;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -53,6 +60,7 @@ describe('PaymentsService', () => {
 
     service = module.get<PaymentsService>(PaymentsService);
     prisma = module.get(PrismaService);
+    jest.clearAllMocks();
   });
 
   it('should be defined', () => {
@@ -107,6 +115,77 @@ describe('PaymentsService', () => {
       await expect(service.getPaymentStatus('non-existent')).rejects.toThrow(
         NotFoundException,
       );
+    });
+  });
+
+  describe('handleWebhook', () => {
+    const webhookSecret = 'webhook-secret';
+    const payload = {
+      event: 'billing.paid',
+      data: {
+        id: 'bill-123',
+        metadata: { purchaseId: 'purchase-123' },
+      },
+    };
+    const rawBody = Buffer.from(JSON.stringify(payload));
+    const signature = crypto
+      .createHmac('sha256', webhookSecret)
+      .update(rawBody)
+      .digest('hex');
+
+    it('should throw UnauthorizedException if signature is invalid', async () => {
+      await expect(
+        service.handleWebhook(payload, 'invalid-signature', rawBody),
+      ).rejects.toThrow(UnauthorizedException);
+    });
+
+    it('should update purchase and product when payment is confirmed', async () => {
+      const mockPurchase = {
+        id: 'purchase-123',
+        productId: 'prod-1',
+        abacatePaymentId: 'bill-123',
+      };
+      prisma.purchase.findFirst.mockResolvedValue(mockPurchase);
+
+      const result = await service.handleWebhook(payload, signature, rawBody);
+
+      expect(result).toEqual({ received: true });
+      expect(prisma.purchase.update).toHaveBeenCalledWith({
+        where: { id: 'purchase-123' },
+        data: expect.objectContaining({
+          paymentStatus: 'PAID',
+          status: 'COMPLETED',
+        }),
+      });
+      expect(prisma.product.update).toHaveBeenCalledWith({
+        where: { id: 'prod-1' },
+        data: { isSold: true, isAvailable: false },
+      });
+    });
+
+    it('should handle expired payments', async () => {
+      const expiredPayload = {
+        event: 'pix.expired',
+        data: { id: 'bill-123', metadata: { purchaseId: 'purchase-123' } },
+      };
+      const expiredRawBody = Buffer.from(JSON.stringify(expiredPayload));
+      const expiredSignature = crypto
+        .createHmac('sha256', webhookSecret)
+        .update(expiredRawBody)
+        .digest('hex');
+
+      const mockPurchase = { id: 'purchase-123', productId: 'prod-1' };
+      prisma.purchase.findFirst.mockResolvedValue(mockPurchase);
+
+      await service.handleWebhook(expiredPayload, expiredSignature, expiredRawBody);
+
+      expect(prisma.purchase.update).toHaveBeenCalledWith({
+        where: { id: 'purchase-123' },
+        data: expect.objectContaining({
+          paymentStatus: 'EXPIRED',
+          status: 'CANCELLED',
+        }),
+      });
     });
   });
 });
