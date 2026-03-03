@@ -49,6 +49,17 @@ services:
     networks:
       - garage_sale_network
 
+  ngrok:
+    image: ngrok/ngrok:latest
+    restart: unless-stopped
+    command:
+      - "http"
+      - "backend:3000"
+    ports:
+      - "4040:4040"
+    networks:
+      - garage_sale_network
+
 volumes:
   postgres_data:
 
