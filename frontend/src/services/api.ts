@@ -19,7 +19,8 @@ import type {
   TestimonialFilters,
   Notification,
   NotificationFilters,
-
+  CreateAbacatePixPaymentResponse,
+  GetPaymentStatusResponse,
   ApiResult,
 } from '@/types';
 
@@ -390,5 +391,26 @@ export const api = {
 
   markAllNotificationsAsRead: async (): Promise<ApiResult<{ message: string }>> => {
     return mockApi.markAllNotificationsAsRead();
+  },
+
+  // Payments
+  createAbacatePixPayment: async (
+    purchaseId: string,
+  ): Promise<ApiResult<CreateAbacatePixPaymentResponse>> => {
+    return fetchApi<CreateAbacatePixPaymentResponse>('/payments/abacate/pix', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: JSON.stringify({ purchaseId }),
+    });
+  },
+
+  getPaymentStatus: async (
+    purchaseId: string,
+  ): Promise<ApiResult<GetPaymentStatusResponse>> => {
+    return fetchApi<GetPaymentStatusResponse>(`/payments/${purchaseId}/status`, {
+      method: 'GET',
+    });
   },
 };

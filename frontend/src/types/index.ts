@@ -63,8 +63,24 @@ export interface Purchase {
   paymentMethod?: PaymentMethod;
   notes?: string;
   qrCodeScanned: boolean;
+  abacatePaymentId?: string;
+  paymentQr?: string;
+  paymentQrUrl?: string;
+  paymentStatus?: string;
+  paymentExpiresAt?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+// ... rest of types
+
+export interface CreateAbacatePixPaymentResponse {
+  paymentId: string;
+  paymentUrl: string;
+}
+
+export interface GetPaymentStatusResponse {
+  status: string;
 }
 
 // QR Code Types
