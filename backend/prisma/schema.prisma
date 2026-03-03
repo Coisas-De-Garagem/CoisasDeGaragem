@@ -99,6 +99,12 @@ model Purchase {
   notes         String?
   
   qrCodeScanned Boolean        @default(false)
+  
+  abacatePaymentId String?
+  paymentQr        String?
+  paymentQrUrl     String?
+  paymentStatus    String?
+  paymentExpiresAt DateTime?
 
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
