@@ -59,7 +59,7 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Coisas de Garagem API')
-    .setDescription('The Coisas de Garagem API description')
+    .setDescription('API completa para marketplace de Garage Sales Coisas De Garagem. Permite usuários venderem e comprarem itens através de QR codes, com sistema de autenticação JWT, gestão de produtos, compras, analytics e etc.')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
