@@ -2,8 +2,6 @@
 
 # 🏠 Coisas De Garagem
 
-- Documentação disponível em https://coisas-de-garagem.github.io/CoisasDeGaragem/
-
 **Plataforma de Garage Sales com QR codes**
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -13,6 +11,8 @@
 [![Prisma](https://img.shields.io/badge/Prisma-7.2-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.1-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 
+
+- Documentação disponível em https://coisas-de-garagem.github.io/CoisasDeGaragem/
 </div>
 
 ---
