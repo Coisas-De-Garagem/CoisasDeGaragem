@@ -11,8 +11,8 @@
 [![Prisma](https://img.shields.io/badge/Prisma-7.2-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.1-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
 
+Documentação disponível em https://coisas-de-garagem.github.io/CoisasDeGaragem/
 
-- Documentação disponível em https://coisas-de-garagem.github.io/CoisasDeGaragem/
 </div>
 
 ---
