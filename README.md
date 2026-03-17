@@ -2,6 +2,8 @@
 
 # 🏠 Coisas De Garagem
 
+- Documentação disponível em https://coisas-de-garagem.github.io/CoisasDeGaragem/
+
 **Plataforma de Garage Sales com QR codes**
 
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
