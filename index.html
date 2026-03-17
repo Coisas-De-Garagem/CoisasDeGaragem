@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Documentação técnica e administrativa do projeto Coisas de Garagem - Plataforma de Marketplace.">
+    <title>Coisas de Garagem | Documentação do Projeto</title>
+    <link rel="stylesheet" href="styles.css?v=1.2">
+    <!-- Fonts and Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Animation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollToPlugin.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="container">
+            <a href="#inicio" class="logo">
+                <i class="fas fa-warehouse"></i>
+                <span id="logo-text">Coisas de Garagem</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="#inicio">Início</a></li>
+                <li><a href="#documentos">Documentos</a></li>
+                <li><a href="#sobre">Sobre</a></li>
+            </ul>
+            <div class="menu-toggle" id="mobile-menu">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <header id="inicio" class="hero">
+        <div class="hero-content">
+            <h1 class="hero-title">Documentação Central do Projeto</h1>
+            <p class="hero-subtitle">Acesso completo à arquitetura, requisitos e planejamento estratégico da plataforma Coisas de Garagem.</p>
+            <div class="hero-actions">
+                <a href="#documentos" class="cta-button">
+                    <span>Explorar Documentos</span>
+                    <i class="fas fa-chevron-down"></i>
+                </a>
+            </div>
+        </div>
+        <div class="hero-background">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+        </div>
+    </header>
+
+    <main>
+        <section id="documentos" class="documents-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Documentos de Projeto</h2>
+                    <p>Repositório oficial de artefatos técnicos e manuais de implementação.</p>
+                </div>
+
+                <div class="documents-grid">
+                    <!-- Document Card 1 -->
+                    <div class="document-card">
+                        <div class="card-icon">
+                            <i class="fas fa-network-wired"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Arquitetura UML</h3>
+                            <p>Diagramas de classe, sequência e visão geral do sistema.</p>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-view" onclick="viewPDF('arquitetura_uml.pdf')">
+                                <i class="fas fa-external-link-alt"></i> Ver
+                            </button>
+                            <button class="btn-download" onclick="downloadPDF('arquitetura_uml.pdf')">
+                                <i class="fas fa-download"></i> PDF
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Document Card 2 -->
+                    <div class="document-card">
+                        <div class="card-icon">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Business Model Canvas</h3>
+                            <p>Proposta de valor, canais e estrutura de custos do Marketplace.</p>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-view" onclick="viewPDF('canvas_coisas-de-garagem_.pdf')">
+                                <i class="fas fa-external-link-alt"></i> Ver
+                            </button>
+                            <button class="btn-download" onclick="downloadPDF('canvas_coisas-de-garagem_.pdf')">
+                                <i class="fas fa-download"></i> PDF
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Document Card 3 -->
+                    <div class="document-card">
+                        <div class="card-icon">
+                            <i class="fas fa-users-gear"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Sprint Review</h3>
+                            <p>Resultados das sprints, entregáveis e feedback dos stakeholders.</p>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-view" onclick="viewPDF('Coisas de Garagem - Apresentacao - Sprint Review.pdf')">
+                                <i class="fas fa-external-link-alt"></i> Ver
+                            </button>
+                            <button class="btn-download" onclick="downloadPDF('Coisas de Garagem - Apresentacao - Sprint Review.pdf')">
+                                <i class="fas fa-download"></i> PDF
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Document Card 4 -->
+                    <div class="document-card">
+                        <div class="card-icon">
+                            <i class="fas fa-magnifying-glass-chart"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Documentação 5W2H</h3>
+                            <p>Plano de ação detalhado: o quê, quem, onde, quando e porquê.</p>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-view" onclick="viewPDF('DOCUMENTACAO Coisas de Garagem - 5w.pdf')">
+                                <i class="fas fa-external-link-alt"></i> Ver
+                            </button>
+                            <button class="btn-download" onclick="downloadPDF('DOCUMENTACAO Coisas de Garagem - 5w.pdf')">
+                                <i class="fas fa-download"></i> PDF
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Document Card 5 -->
+                    <div class="document-card">
+                        <div class="card-icon">
+                            <i class="fas fa-book-open"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Documentação Geral</h3>
+                            <p>Manual completo do projeto abrangendo todas as áreas.</p>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-view" onclick="viewPDF('DOCUMENTAÇÃO COISAS DE GARAGEM.pdf')">
+                                <i class="fas fa-external-link-alt"></i> Ver
+                            </button>
+                            <button class="btn-download" onclick="downloadPDF('DOCUMENTAÇÃO COISAS DE GARAGEM.pdf')">
+                                <i class="fas fa-download"></i> PDF
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Document Card 6 -->
+                    <div class="document-card">
+                        <div class="card-icon">
+                            <i class="fas fa-bullseye"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Documento de Visão</h3>
+                            <p>Necessidades do mercado e visão estratégica global do produto.</p>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-view" onclick="viewPDF('Documento_Visao-CoisasDeGaragem.pdf')">
+                                <i class="fas fa-external-link-alt"></i> Ver
+                            </button>
+                            <button class="btn-download" onclick="downloadPDF('Documento_Visao-CoisasDeGaragem.pdf')">
+                                <i class="fas fa-download"></i> PDF
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Document Card 7 -->
+                    <div class="document-card">
+                        <div class="card-icon">
+                            <i class="fas fa-clipboard-list"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Requisitos de Software</h3>
+                            <p>Especificação detalhada de funções e restrições do sistema.</p>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-view" onclick="viewPDF('ESPECIFICAÇÃO DE REQUISITOS DE SOFTWARE - COISAS DE GARAGEM.pdf')">
+                                <i class="fas fa-external-link-alt"></i> Ver
+                            </button>
+                            <button class="btn-download" onclick="downloadPDF('ESPECIFICAÇÃO DE REQUISITOS DE SOFTWARE - COISAS DE GARAGEM.pdf')">
+                                <i class="fas fa-download"></i> PDF
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Document Card 8 -->
+                    <div class="document-card">
+                        <div class="card-icon">
+                            <i class="fas fa-calendar-check"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Plano de Projeto</h3>
+                            <p>Cronograma de atividades, marcos e gestão de riscos.</p>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-view" onclick="viewPDF('plano_de_projeto-CoisasDeGaragem.pdf')">
+                                <i class="fas fa-external-link-alt"></i> Ver
+                            </button>
+                            <button class="btn-download" onclick="downloadPDF('plano_de_projeto-CoisasDeGaragem.pdf')">
+                                <i class="fas fa-download"></i> PDF
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Document Card 9 -->
+                    <div class="document-card">
+                        <div class="card-icon">
+                            <i class="fas fa-file-signature"></i>
+                        </div>
+                        <div class="card-content">
+                            <h3>Termos Legais</h3>
+                            <p>Termos de anuência e conformidade regulamentar.</p>
+                        </div>
+                        <div class="card-actions">
+                            <button class="btn-view" onclick="viewPDF('Termo_de_Anuencia_-_ACE_-_Cyber_Point_assinado_assinado.pdf')">
+                                <i class="fas fa-external-link-alt"></i> Ver
+                            </button>
+                            <button class="btn-download" onclick="downloadPDF('Termo_de_Anuencia_-_ACE_-_Cyber_Point_assinado_assinado.pdf')">
+                                <i class="fas fa-download"></i> PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="sobre" class="about-section">
+            <div class="container">
+                <div class="about-content">
+                    <div class="about-text">
+                        <h2>Excelência em Documentação</h2>
+                        <p>O projeto <strong>Coisas de Garagem</strong> preza pela transparência e organização. Esta plataforma centraliza todo o conhecimento técnico acumulado durante o desenvolvimento.</p>
+                        <p>Nosso objetivo é garantir que cada membro da equipe e stakeholder tenha acesso imediato às definições que guiam a construção do nosso Marketplace.</p>
+                    </div>
+                    <div class="about-stats">
+                        <div class="stat-item">
+                            <span class="stat-number">9</span>
+                            <span class="stat-label">Arquivos PDF</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">100%</span>
+                            <span class="stat-label">Integrado</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">V1.0</span>
+                            <span class="stat-label">Versão Docs</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal for PDF View -->
+    <div id="pdf-modal" class="pdf-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Visualizar Documento</h3>
+                <button class="close-modal" onclick="closeModal()" aria-label="Fechar modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <iframe id="pdf-frame" title="PDF Viewer"></iframe>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-download-modal" onclick="downloadCurrentPDF()">
+                    <i class="fas fa-download"></i> Baixar Arquivo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <div class="container">
+            <p>&copy; <span id="current-year">2026</span> Coisas de Garagem.</p>
+        </div>
+    </footer>
+
+    <script src="script.js?v=1.2"></script>
+</body>
+</html>
