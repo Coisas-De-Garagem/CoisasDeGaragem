@@ -22,8 +22,8 @@
             </a>
             <ul class="nav-links">
                 <li><a href="#inicio">Início</a></li>
-                <li><a href="#documentos">Documentos</a></li>
                 <li><a href="#sobre">Sobre</a></li>
+                <li><a href="#documentos">Documentos</a></li>
             </ul>
             <div class="menu-toggle" id="mobile-menu">
                 <span></span>
@@ -52,6 +52,65 @@
     </header>
 
     <main>
+        <section id="sobre" class="about-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Nossa Equipe</h2>
+                    <p>Somos uma equipe de 4 alunos do CEUB, desenvolvendo este projeto para a matéria de Projeto Integrador III, orientado pela professora Kadidja Valeria.</p>
+                </div>
+
+                <div class="team-grid">
+                    <div class="team-card">
+                        <div class="team-avatar">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div class="team-info">
+                            <h3>Raul Falluh</h3>
+                            <a href="https://github.com/1harz" target="_blank" rel="noopener noreferrer" class="team-link">
+                                <i class="fab fa-github"></i> github.com/1harz
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="team-card">
+                        <div class="team-avatar">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div class="team-info">
+                            <h3>Rodrigo Lemos</h3>
+                            <a href="https://github.com/rodrigoHLemos" target="_blank" rel="noopener noreferrer" class="team-link">
+                                <i class="fab fa-github"></i> github.com/rodrigoHLemos
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="team-card">
+                        <div class="team-avatar">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div class="team-info">
+                            <h3>Rodrigo Castro</h3>
+                            <a href="https://github.com/rodrigocsc5" target="_blank" rel="noopener noreferrer" class="team-link">
+                                <i class="fab fa-github"></i> github.com/rodrigocsc5
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="team-card">
+                        <div class="team-avatar">
+                            <i class="fas fa-user-circle"></i>
+                        </div>
+                        <div class="team-info">
+                            <h3>Rafael Irvine</h3>
+                            <a href="https://github.com/Rafael-irvine" target="_blank" rel="noopener noreferrer" class="team-link">
+                                <i class="fab fa-github"></i> github.com/Rafael-irvine
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         <section id="documentos" class="documents-section">
             <div class="container">
                 <div class="section-header">
@@ -230,30 +289,23 @@
                             </button>
                         </div>
                     </div>
-                </div>
-            </div>
-        </section>
 
-        <section id="sobre" class="about-section">
-            <div class="container">
-                <div class="about-content">
-                    <div class="about-text">
-                        <h2>Excelência em Documentação</h2>
-                        <p>O projeto <strong>Coisas de Garagem</strong> preza pela transparência e organização. Esta plataforma centraliza todo o conhecimento técnico acumulado durante o desenvolvimento.</p>
-                        <p>Nosso objetivo é garantir que cada membro da equipe e stakeholder tenha acesso imediato às definições que guiam a construção do nosso Marketplace.</p>
-                    </div>
-                    <div class="about-stats">
-                        <div class="stat-item">
-                            <span class="stat-number">9</span>
-                            <span class="stat-label">Arquivos PDF</span>
+                    <!-- Document Card 10 -->
+                    <div class="document-card">
+                        <div class="card-icon">
+                            <i class="fas fa-database"></i>
                         </div>
-                        <div class="stat-item">
-                            <span class="stat-number">100%</span>
-                            <span class="stat-label">Integrado</span>
+                        <div class="card-content">
+                            <h3>Esquema do Banco de Dados</h3>
+                            <p>Diagrama entidade-relacionamento e estrutura das tabelas do sistema.</p>
                         </div>
-                        <div class="stat-item">
-                            <span class="stat-number">V1.0</span>
-                            <span class="stat-label">Versão Docs</span>
+                        <div class="card-actions">
+                            <button class="btn-view" onclick="viewPDF('esquema_bd.png')">
+                                <i class="fas fa-external-link-alt"></i> Ver
+                            </button>
+                            <button class="btn-download" onclick="downloadPDF('esquema_bd.png')">
+                                <i class="fas fa-download"></i> PNG
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -272,6 +324,7 @@
             </div>
             <div class="modal-body">
                 <iframe id="pdf-frame" title="PDF Viewer"></iframe>
+                <img id="image-viewer" class="image-viewer" alt="Visualização do documento">
             </div>
             <div class="modal-footer">
                 <button class="btn-download-modal" onclick="downloadCurrentPDF()">
