@@ -7,6 +7,7 @@ const menuToggle = document.querySelector('.menu-toggle');
 const navLinks = document.querySelector('.nav-links');
 const pdfModal = document.getElementById('pdf-modal');
 const pdfFrame = document.getElementById('pdf-frame');
+const imageViewer = document.getElementById('image-viewer');
 const modalTitle = document.getElementById('modal-title');
 let currentPDF = '';
 
@@ -92,42 +93,34 @@ function initDocumentCardsAnimation() {
     });
 }
 
-// About Section Animation
+// About / Team Section Animation
 function initAboutSectionAnimation() {
-    gsap.from('.about-text', {
-        scrollTrigger: {
-            trigger: '.about-section',
-            start: 'top 80%',
-            toggleActions: 'play none none reverse'
-        },
-        x: -50,
-        opacity: 0,
-        duration: 1,
-        ease: 'power3.out'
+    const teamCards = document.querySelectorAll('.team-card');
+
+    gsap.set(teamCards, { opacity: 0, y: 40 });
+
+    ScrollTrigger.batch(teamCards, {
+        onEnter: batch => gsap.to(batch, { opacity: 1, y: 0, stagger: 0.1, duration: 0.8, ease: 'back.out(1.7)' }),
+        onLeaveBack: batch => gsap.set(batch, { opacity: 0, y: 40 }),
+        start: 'top 95%'
     });
 
-    const statNumbers = document.querySelectorAll('.stat-number');
-    statNumbers.forEach(stat => {
-        const finalValue = stat.textContent;
-        const isPercentage = finalValue.includes('%');
-        const numericValue = parseInt(finalValue) || 0;
-        
-        stat.textContent = '0' + (isPercentage ? '%' : '');
+    teamCards.forEach(card => {
+        const avatar = card.querySelector('.team-avatar');
+        card.addEventListener('mouseenter', () => {
+            gsap.to(avatar, {
+                scale: 1.15,
+                duration: 0.4,
+                ease: 'power2.out'
+            });
+        });
 
-        gsap.to(stat, {
-            scrollTrigger: {
-                trigger: '.about-stats',
-                start: 'top 90%',
-                toggleActions: 'play none none reverse'
-            },
-            innerText: numericValue,
-            duration: 2.5,
-            ease: 'power2.out',
-            snap: { innerText: 1 },
-            onUpdate: function() {
-                const val = Math.floor(stat.innerText);
-                stat.textContent = val + (isPercentage ? '%' : '');
-            }
+        card.addEventListener('mouseleave', () => {
+            gsap.to(avatar, {
+                scale: 1,
+                duration: 0.4,
+                ease: 'power2.out'
+            });
         });
     });
 }
@@ -181,9 +174,19 @@ function initMobileMenu() {
 // PDF Viewer Functions
 function viewPDF(pdfPath) {
     currentPDF = pdfPath;
-    modalTitle.textContent = pdfPath.replace('.pdf', '').replace(/_/g, ' ').replace(/-/g, ' ');
+    const isImage = /\.(png|jpe?g|gif|svg|webp|bmp)$/i.test(pdfPath);
     
-    pdfFrame.src = pdfPath;
+    modalTitle.textContent = pdfPath.replace(/\.\w+$/, '').replace(/_/g, ' ').replace(/-/g, ' ');
+    
+    if (isImage) {
+        pdfFrame.style.display = 'none';
+        imageViewer.style.display = 'block';
+        imageViewer.src = pdfPath;
+    } else {
+        imageViewer.style.display = 'none';
+        pdfFrame.style.display = 'block';
+        pdfFrame.src = pdfPath;
+    }
     
     pdfModal.style.display = 'flex';
     gsap.fromTo(pdfModal, 
@@ -207,6 +210,9 @@ function closeModal() {
         onComplete: () => {
             pdfModal.style.display = 'none';
             pdfFrame.src = '';
+            imageViewer.src = '';
+            imageViewer.style.display = 'none';
+            pdfFrame.style.display = 'block';
             document.body.style.overflow = '';
         }
     });
