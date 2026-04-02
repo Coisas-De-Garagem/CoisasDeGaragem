@@ -1,188 +1,239 @@
-<div align="center">
+# Coisas de Garagem
 
-# 🏠 Coisas De Garagem
+Plataforma web para apoiar vendas de garagem, conectando vendedores e compradores por meio de cadastro de produtos, autenticação, leitura de QR Code e registro de compras.
 
-**Plataforma de Garage Sales com QR codes**
+## Visão geral
 
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
-[![React](https://img.shields.io/badge/React-19.2-61DAFB?logo=react&logoColor=black)](https://react.dev/)
-[![NestJS](https://img.shields.io/badge/NestJS-11.0-E0234E?logo=nestjs&logoColor=white)](https://nestjs.com/)
-[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169E1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
-[![Prisma](https://img.shields.io/badge/Prisma-7.2-2D3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
-[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.1-38B2AC?logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
+O projeto foi estruturado como uma aplicação full stack com frontend e backend desacoplados. A interface foi desenvolvida em React com Vite, enquanto a API foi construída com NestJS. A persistência utiliza PostgreSQL com Prisma como camada de acesso aos dados.
 
-</div>
+Atualmente, o sistema contempla o fluxo principal de cadastro e gerenciamento de produtos, autenticação, consulta por QR Code, histórico de compras e métricas para o vendedor. A integração com **AbacatePay/PIX** está prevista, mas ainda se encontra em desenvolvimento.
 
----
+## Arquitetura atual
 
-## 📖 Índice
+A arquitetura do projeto considera dois cenários complementares.
 
-- [Visão Geral](#-visão-geral)
-- [Stack Tecnológico](#-stack-tecnológico)
-- [Estrutura do Projeto](#-estrutura-do-projeto)
-- [Instalação](#-instalação)
-- [API Endpoints](#-api-endpoints)
-- [Desenvolvimento](#-desenvolvimento)
-- [Deploy](#-deploy)
+No **ambiente de desenvolvimento**, a equipe pode executar o frontend e o backend localmente, utilizando PostgreSQL em contêiner Docker para facilitar testes, integração e padronização do ambiente entre os integrantes do grupo.
 
----
+No **ambiente de produção**, a arquitetura prevista separa as camadas da aplicação, com frontend hospedado em serviço de publicação web, backend implantado em serviço Node.js em nuvem e banco PostgreSQL gerenciado no Neon.
 
-## 🎯 Visão Geral
+Resumo da arquitetura:
 
-CoisasDeGaragem é uma plataforma full-stack para vendas de garagem que permite:
+- **Frontend:** React + Vite + TypeScript
+- **Backend:** NestJS + TypeScript
+- **Banco de dados:** PostgreSQL
+- **ORM:** Prisma com `@prisma/adapter-pg`
+- **Autenticação:** JWT
+- **Banco em produção:** Neon
+- **Deploy previsto:** Vercel (frontend) + Render (backend) + Neon (database)
 
-- **Vendedores**: Listar produtos com QR codes, gerenciar vendas e visualizar análises
-- **Compradores**: Navegar por produtos, escanear QR codes e gerenciar compras
-- **Autenticação**: Login/registro com JWT e controle de acesso por roles
-- **QR Codes**: Geração automática e escaneamento de QR codes para produtos
-
----
-
-## 🛠️ Stack Tecnológico
+## Stack utilizada
 
 ### Frontend
-- **React 19.2** + **TypeScript 5.9**
-- **Vite 7.2** (Build tool)
-- **Tailwind CSS 4.1** (Estilização)
-- **React Router 7.12** (Roteamento)
-- **Zustand 5.0** (State management)
-- **React Hook Form 7.71** (Formulários)
-- **Zod 4.3** (Validação)
+
+- React 19
+- Vite 7
+- TypeScript 5.9
+- React Router DOM
+- Zustand
+- React Hook Form
+- Zod
+- Recharts
+- GSAP
+- html2canvas
+- jsPDF
+- @zxing/library
 
 ### Backend
-- **NestJS 11.0** + **TypeScript 5.7**
-- **Prisma 7.2** (ORM)
-- **PostgreSQL 15** (Database)
-- **JWT** (Autenticação)
-- **Passport** (Auth strategy)
-- **Bcrypt** (Password hashing)
 
----
+- NestJS 11
+- TypeScript 5.7
+- Prisma 7
+- PostgreSQL
+- `pg`
+- `@prisma/adapter-pg`
+- JWT
+- Passport
+- bcrypt
+- Swagger
 
-## 📁 Estrutura do Projeto
+## Estrutura do repositório
 
-```
+```text
 CoisasDeGaragem/
 ├── backend/
 │   ├── prisma/
-│   │   ├── schema.prisma      # Schema do banco de dados
-│   │   ├── migrations/        # Migrations
-│   │   └── seed.ts          # Seed data
-│   └── src/
-│       ├── auth/             # Autenticação
-│       ├── products/         # Gestão de produtos
-│       ├── purchases/        # Gestão de compras
-│       ├── analytics/        # Análises de vendas
-│       ├── qr-codes/        # QR codes
-│       └── users/           # Usuários
-│
+│   │   ├── migrations/
+│   │   ├── schema.prisma
+│   │   └── seed.ts
+│   ├── src/
+│   │   ├── analytics/
+│   │   ├── auth/
+│   │   ├── prisma/
+│   │   ├── products/
+│   │   ├── purchases/
+│   │   ├── qr-codes/
+│   │   └── users/
+│   └── package.json
 ├── frontend/
-│   └── src/
-│       ├── components/       # Componentes reutilizáveis
-│       ├── pages/           # Páginas da aplicação
-│       │   ├── auth/       # Login, Register
-│       │   ├── buyer/      # Dashboard, Compras, Histórico
-│       │   ├── seller/     # Produtos, Vendas, Análises
-│       │   ├── landing/    # Landing page
-│       │   └── public/    # Sobre, Ajuda, Contato
-│       ├── hooks/           # Custom hooks
-│       ├── services/        # API services
-│       ├── store/           # Zustand stores
-│       └── types/          # TypeScript types
-│
-└── docker-compose.yml       # PostgreSQL container
+│   ├── public/
+│   ├── src/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── pages/
+│   │   ├── services/
+│   │   ├── store/
+│   │   ├── styles/
+│   │   ├── types/
+│   │   └── utils/
+│   └── package.json
+├── specs/
+├── docker-compose.yml
+├── README.md
+└── DEPLOYMENT.md
 ```
 
----
+## Funcionalidades já implementadas
 
-## 🚀 Instalação
+- cadastro e autenticação de usuários com JWT;
+- cadastro, edição, remoção e consulta de produtos;
+- geração lógica e leitura de QR Code para consulta de itens;
+- painel do vendedor com produtos, vendas e métricas;
+- área do comprador com histórico e fluxo de consulta por QR Code;
+- documentação da API via Swagger;
+- suporte a ambiente local com Docker para banco PostgreSQL.
 
-### Pré-requisitos
+## Funcionalidades em desenvolvimento
 
-- Node.js >= 18.0.0
-- npm >= 9.0.0
-- PostgreSQL >= 15 (ou Docker)
+- integração com **AbacatePay/PIX**;
+- refinamentos de fluxo de pagamento e confirmação de transações;
+- consolidação final da documentação técnica e acadêmica.
 
-### Passo 1: Clone o repositório
+## Pré-requisitos
+
+Para executar o projeto localmente, recomenda-se ter instalado:
+
+- Node.js 18 ou superior;
+- npm 9 ou superior;
+- Docker e Docker Compose, caso o banco local seja executado por contêiner.
+
+## Como executar em desenvolvimento
+
+### 1. Clone o repositório
 
 ```bash
-git clone https://github.com/yourusername/CoisasDeGaragem.git
+git clone https://github.com/Coisas-De-Garagem/CoisasDeGaragem.git
 cd CoisasDeGaragem
 ```
 
-### Passo 2: Inicie o PostgreSQL
+### 2. Suba o PostgreSQL local com Docker
+
+Se a equipe quiser utilizar o banco local padronizado, execute:
 
 ```bash
-docker-compose up -d
+docker-compose up -d postgres
 ```
 
-Credenciais padrão:
-- Database: `garagedb`
-- User: `user`
-- Password: `password`
+As credenciais configuradas no `docker-compose.yml` são:
 
-### Passo 3: Configure o Backend
+```env
+POSTGRES_DB=garagedb
+POSTGRES_USER=user
+POSTGRES_PASSWORD=password
+```
+
+> Também é possível subir toda a stack definida no `docker-compose.yml`, mas, para desenvolvimento, é comum levantar apenas o banco e executar frontend e backend manualmente.
+
+### 3. Configure e execute o backend
 
 ```bash
 cd backend
-
-# Instale as dependências
 npm install
-
-# Configure as variáveis de ambiente
-cp .env.example .env
-# Edite .env com suas configurações
-
-# Execute as migrations
-npx prisma migrate dev
-
-# Inicie o servidor de desenvolvimento
-npm run start:dev
 ```
 
-Backend disponível em: `http://localhost:3000`
+Crie um arquivo `.env` com base no exemplo abaixo:
 
-### Passo 4: Configure o Frontend
-
-```bash
-cd frontend
-
-# Instale as dependências
-npm install
-
-# Inicie o servidor de desenvolvimento
-npm run dev
-```
-
-Frontend disponível em: `http://localhost:5173`
-
-### Variáveis de Ambiente
-
-**Backend (.env)**
 ```env
 DATABASE_URL="postgresql://user:password@localhost:5432/garagedb?schema=public"
-JWT_SECRET="sua-chave-secreta-jwt"
+JWT_SECRET="sua-chave-secreta"
 JWT_EXPIRES_IN="7d"
 PORT=3000
 NODE_ENV=development
-CORS_ORIGIN="http://localhost:5173"
-
-# AbacatePay Integration
-ABACATEPAY_API_KEY="abc_dev_..."
-ABACATEPAY_WEBHOOK_SECRET="whsec_..."
+FRONTEND_URL="http://localhost:5173"
 ```
 
-**Frontend (.env)**
+Depois execute:
+
+```bash
+npx prisma generate
+npx prisma migrate dev
+npm run start:dev
+```
+
+O backend ficará disponível em:
+
+```text
+http://localhost:3000
+```
+
+A API utiliza o prefixo global:
+
+```text
+/api/v1
+```
+
+A documentação Swagger fica em:
+
+```text
+http://localhost:3000/api
+```
+
+### 4. Configure e execute o frontend
+
+Em outro terminal:
+
+```bash
+cd frontend
+npm install
+```
+
+Crie um arquivo `.env` com o seguinte conteúdo:
+
 ```env
-VITE_API_URL=http://localhost:3000
-VITE_APP_NAME="CoisasDeGaragem"
+VITE_API_BASE_URL="http://localhost:3000/api/v1"
+VITE_ENABLE_MOCK_DATA="false"
 ```
 
-> **Note:** For a detailed guide on setting up the PIX payment integration, including webhooks and local testing, please see the [AbacatePay PIX Setup Guide](docs/abacate-pay/SETUP.md).
+Depois execute:
 
----
+```bash
+npm run dev
+```
 
-## 📚 API Endpoints
+O frontend ficará disponível em:
+
+```text
+http://localhost:5173
+```
+
+## Execução com Docker Compose
+
+O repositório inclui um `docker-compose.yml` com três serviços:
+
+- `postgres`;
+- `backend`;
+- `frontend`.
+
+Para subir tudo de uma vez:
+
+```bash
+docker-compose up --build
+```
+
+Nesse cenário, o compose já injeta as variáveis básicas para comunicação entre os serviços.
+
+## Endpoints principais da API
+
+Todos os endpoints abaixo consideram o prefixo `/api/v1`.
 
 ### Autenticação
 
@@ -195,115 +246,104 @@ GET  /auth/me
 ### Produtos
 
 ```http
-GET    /products              # Listar todos
-GET    /products/my-products   # Meus produtos (Seller)
-GET    /products/:id          # Detalhes do produto
-POST   /products              # Criar produto (Seller)
-PATCH  /products/:id          # Atualizar produto (Seller)
-DELETE /products/:id          # Deletar produto (Seller)
+GET    /products
+GET    /products/my-products
+GET    /products/:id
+POST   /products
+PATCH  /products/:id
+DELETE /products/:id
+PATCH  /products/:id/reserve
+PATCH  /products/:id/unreserve
+PATCH  /products/:id/sold
 ```
 
 ### Compras
 
 ```http
-GET    /purchases            # Listar compras/vendas
-GET    /purchases/history    # Histórico de compras (Buyer)
-GET    /purchases/sales      # Vendas (Seller)
-GET    /purchases/:id        # Detalhes da compra
-POST   /purchases            # Criar compra (Buyer)
+GET  /purchases
+GET  /purchases/history
+GET  /purchases/sales
+GET  /purchases/:id
+POST /purchases
 ```
 
 ### QR Codes
 
 ```http
-GET  /qr-codes/:productId   # Gerar QR code
-POST /qr-codes/scan         # Escanear QR code
+GET  /qr-codes/:productId
+POST /qr-codes/scan
 ```
 
-### Análises
+### Analytics
 
 ```http
-GET /analytics/seller       # Análises do vendedor
+GET /analytics/seller
 ```
 
----
+## Banco de dados
 
-## 💻 Desenvolvimento
+O modelo atual do banco está centrado em três entidades principais:
+
+- **User**;
+- **Product**;
+- **Purchase**.
+
+Além disso, o schema define enums para papel do usuário, condição do produto, status da compra e método de pagamento.
+
+Em produção, a conexão principal prevista é com **Neon**, utilizando PostgreSQL gerenciado. Em desenvolvimento, o projeto pode operar com PostgreSQL local em Docker.
+
+## Produção e deploy
+
+O arranjo previsto para produção é o seguinte:
+
+- **Frontend:** Vercel;
+- **Backend:** Render;
+- **Banco de dados:** Neon.
+
+O passo a passo detalhado de implantação está documentado em `DEPLOYMENT.md`.
+
+## Observações importantes
+
+- o frontend utiliza `VITE_API_BASE_URL` como variável principal para a URL da API;
+- o backend utiliza `FRONTEND_URL` para montar o link público associado aos QR Codes;
+- a aplicação backend usa prefixo global `/api/v1`;
+- a integração com AbacatePay/PIX ainda deve ser apresentada como funcionalidade em desenvolvimento;
+- a arquitetura atual substitui a proposta antiga baseada em Supabase/FastAPI, adotando NestJS + Prisma + PostgreSQL.
+
+## Comandos úteis
 
 ### Backend
 
 ```bash
-# Desenvolvimento
-npm run start:dev          # Watch mode
-npm run start:debug        # Debug mode
-
-# Produção
-npm run build              # Build
-npm run start:prod         # Start production
-
-# Testes
-npm run test               # Unit tests
-npm run test:e2e           # E2E tests
-npm run test:cov           # Coverage
-
-# Database
-npx prisma generate        # Generate client
-npx prisma migrate dev     # Create migration
-npx prisma studio         # Open GUI
+npm run start:dev
+npm run build
+npm run start:prod
+npm run test
+npm run test:e2e
+npm run test:cov
+npx prisma generate
+npx prisma migrate dev
+npx prisma studio
 ```
 
 ### Frontend
 
 ```bash
-# Desenvolvimento
-npm run dev               # Start dev server
-npm run build             # Build for production
-npm run preview           # Preview build
-
-# Qualidade
-npm run lint             # ESLint
+npm run dev
+npm run build
+npm run preview
+npm run lint
 ```
 
----
+## Equipe
 
-## 🌐 Deploy
+Projeto desenvolvido por:
 
-### Backend (Render)
+- Rafael Irvine
+- Raul Falluh
+- Rodrigo Castro
+- Rodrigo Lemos
 
-1. Push para GitHub
-2. Criar Web Service no Render
-3. Configurar:
-   - Root Directory: `backend`
-   - Build Command: `npm run build`
-   - Start Command: `npm run start:prod`
-4. Adicionar variáveis de ambiente
+## Licença
 
-### Frontend (Vercel)
-
-```bash
-npm i -g vercel
-cd frontend
-vercel
-```
-
-### Database (Neon)
-
-1. Criar projeto no [Neon](https://neon.tech)
-2. Copiar connection string
-3. Atualizar `DATABASE_URL` no backend
-4. Executar migrations: `npx prisma migrate deploy`
-
----
-
-## 📄 Licença
-
-MIT License - veja [LICENSE](LICENSE) para detalhes.
-
----
-
-<div align="center">
-
-[⬆ Voltar ao Topo](#-coisasdegaragem)
-
-</div>
-
+Este projeto foi desenvolvido para fins acadêmicos na disciplina de Projeto Integrador III.
