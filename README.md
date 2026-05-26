@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🏠 Coisas De Garagem
+# Coisas De Garagem
 
 **Plataforma de Garage Sales com QR codes**
 
@@ -17,7 +17,7 @@ Documentação disponível em https://coisas-de-garagem.github.io/CoisasDeGarage
 
 ---
 
-## 📖 Índice
+## Índice
 
 - [Visão Geral](#-visão-geral)
 - [Stack Tecnológico](#-stack-tecnológico)
@@ -29,7 +29,7 @@ Documentação disponível em https://coisas-de-garagem.github.io/CoisasDeGarage
 
 ---
 
-## 🎯 Visão Geral
+## Visão Geral
 
 CoisasDeGaragem é uma plataforma full-stack para vendas de garagem que permite:
 
@@ -40,7 +40,7 @@ CoisasDeGaragem é uma plataforma full-stack para vendas de garagem que permite:
 
 ---
 
-## 🛠️ Stack Tecnológico
+## Stack Tecnológico
 
 ### Frontend
 - **React 19.2** + **TypeScript 5.9**
@@ -61,7 +61,7 @@ CoisasDeGaragem é uma plataforma full-stack para vendas de garagem que permite:
 
 ---
 
-## 📁 Estrutura do Projeto
+## Estrutura do Projeto
 
 ```
 CoisasDeGaragem/
@@ -97,7 +97,7 @@ CoisasDeGaragem/
 
 ---
 
-## 🚀 Instalação
+## Instalação
 
 ### Pré-requisitos
 
@@ -178,7 +178,7 @@ VITE_APP_NAME="CoisasDeGaragem"
 
 ---
 
-## 📚 API Endpoints
+## API Endpoints
 
 ### Autenticação
 
@@ -224,7 +224,7 @@ GET /analytics/seller       # Análises do vendedor
 
 ---
 
-## 💻 Desenvolvimento
+## Desenvolvimento
 
 ### Backend
 
@@ -262,7 +262,7 @@ npm run lint             # ESLint
 
 ---
 
-## 🌐 Deploy
+## Deploy
 
 ### Backend (Render)
 
