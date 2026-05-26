@@ -291,7 +291,7 @@ vercel
 
 ---
 
-## 📄 Licença
+## Licença
 
 MIT License - veja [LICENSE](LICENSE) para detalhes.
 
