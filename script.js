@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initNavbarScroll();
     initDocumentCardsAnimation();
     initAboutSectionAnimation();
+    initDemoSectionAnimation();
     initFloatingShapes();
     initMobileMenu();
     initFooterYear();
@@ -90,6 +91,24 @@ function initDocumentCardsAnimation() {
                 ease: 'power2.out'
             });
         });
+    });
+}
+
+// Demo Section Animation
+function initDemoSectionAnimation() {
+    const wrapper = document.querySelector('.demo-video-wrapper');
+    if (!wrapper) return;
+
+    gsap.from(wrapper, {
+        opacity: 0,
+        y: 50,
+        scale: 0.96,
+        duration: 1,
+        ease: 'power3.out',
+        scrollTrigger: {
+            trigger: wrapper,
+            start: 'top 85%'
+        }
     });
 }
 
