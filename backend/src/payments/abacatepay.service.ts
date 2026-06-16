@@ -54,6 +54,7 @@ export class AbacatePayService {
     name: string;
     description: string;
     priceInCents: number;
+    currency?: string;
   }): Promise<string> {
     try {
       this.logger.log(`Criando produto no Abacate Pay: externalId=${params.externalId}`);
@@ -68,6 +69,7 @@ export class AbacatePayService {
           name: params.name,
           description: params.description || undefined,
           price: params.priceInCents,
+          currency: params.currency || 'BRL',
         }),
       });
 

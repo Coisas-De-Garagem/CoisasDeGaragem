@@ -80,6 +80,7 @@ export class PurchasesService {
           name: product.name,
           description: product.description,
           priceInCents,
+          currency: product.currency,
         });
 
         // 3. Create checkout session
