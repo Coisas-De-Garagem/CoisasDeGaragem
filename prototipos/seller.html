@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Vendedor - Coisas de Garagem</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📦</text></svg>">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/seller.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <div class="nav-logo">
+                <a href="index.html" class="nav-logo" style="text-decoration: none;">
+                    <i class="fas fa-box"></i>
+                    <span>Coisas de Garagem</span>
+                </a>
+            </div>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">Início</a>
+                <a href="#dashboard" class="nav-link">Dashboard</a>
+                <a href="#products" class="nav-link">Produtos</a>
+                <a href="#sales" class="nav-link">Vendas</a>
+            </div>
+            <div class="nav-buttons">
+                <div class="user-menu">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Raul</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <section id="dashboard" class="dashboard">
+            <div class="container">
+                <div class="page-header">
+                    <h1>Painel do Vendedor</h1>
+                    <p>Gerencie seus produtos e acompanhe suas vendas</p>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-box"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="total-products">12</h3>
+                            <p>Produtos Cadastrados</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="total-sales">8</h3>
+                            <p>Vendas Realizadas</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="total-revenue">R$ 450</h3>
+                            <p>Receita Total</p>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i class="fas fa-qrcode"></i>
+                        </div>
+                        <div class="stat-content">
+                            <h3 id="qr-generated">12</h3>
+                            <p>QR Codes Gerados</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="products" class="products-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Meus Produtos</h2>
+                    <button class="btn btn-primary" id="add-product-btn">
+                        <i class="fas fa-plus"></i>
+                        Adicionar Produto
+                    </button>
+                </div>
+
+                <div class="add-product-form" id="add-product-form">
+                    <div class="form-container">
+                        <h3>Adicionar Novo Produto</h3>
+                        <form id="product-form">
+                            <div class="form-group">
+                                <label for="product-name">Nome do Produto</label>
+                                <input type="text" id="product-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="product-price">Preço (R$)</label>
+                                <input type="number" id="product-price" step="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="product-description">Descrição</label>
+                                <textarea id="product-description" rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="product-image">Imagem do Produto</label>
+                                <input type="file" id="product-image" accept="image/*">
+                            </div>
+                            <div class="form-buttons">
+                                <button type="button" class="btn btn-outline" id="cancel-btn">Cancelar</button>
+                                <button type="submit" class="btn btn-primary">Adicionar Produto</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <div class="products-grid" id="products-grid">
+
+                </div>
+            </div>
+        </section>
+
+        <section id="sales" class="sales-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Histórico de Vendas</h2>
+                </div>
+                <div class="sales-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Produto</th>
+                                <th>Comprador</th>
+                                <th>Preço</th>
+                                <th>Data</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="sales-tbody">
+                            <tr>
+                                <td>Bicicleta Infantil</td>
+                                <td>Maria Santos</td>
+                                <td>R$ 80,00</td>
+                                <td>15/12/2024</td>
+                                <td><span class="status-badge success">Concluída</span></td>
+                            </tr>
+                            <tr>
+                                <td>Mesa de Centro</td>
+                                <td>Carlos Silva</td>
+                                <td>R$ 120,00</td>
+                                <td>14/12/2024</td>
+                                <td><span class="status-badge success">Concluída</span></td>
+                            </tr>
+                            <tr>
+                                <td>Livros Diversos</td>
+                                <td>Ana Costa</td>
+                                <td>R$ 25,00</td>
+                                <td>13/12/2024</td>
+                                <td><span class="status-badge success">Concluída</span></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div class="modal" id="qr-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>QR Code do Produto</h3>
+                <button class="close-btn" id="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="qr-container">
+                    <canvas id="qr-canvas"></canvas>
+                </div>
+                <div class="product-info">
+                    <h4 id="modal-product-name"></h4>
+                    <p id="modal-product-price"></p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="close-modal-btn">Fechar</button>
+                <button class="btn btn-primary" id="download-pdf-btn">
+                    <i class="fas fa-download"></i>
+                    Baixar PDF
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="success-toast">
+        <div class="toast-content">
+            <i class="fas fa-check-circle"></i>
+            <span id="toast-message">Produto adicionado com sucesso!</span>
+        </div>
+    </div>
+
+    <script src="js/seller.js"></script>
+</body>
+</html>
+

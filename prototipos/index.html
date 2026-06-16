@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coisas de Garagem - Sistema de Garage Sales</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📦</text></svg>">
+    <link rel="stylesheet" href="css/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo" style="text-decoration: none;">
+                <i class="fas fa-box"></i>
+                <span>Coisas de Garagem</span>
+            </a>
+            <div class="nav-menu" id="nav-menu">
+                <a href="#home" class="nav-link">Início</a>
+                <a href="#features" class="nav-link">Funcionalidades</a>
+                <a href="#how-it-works" class="nav-link">Como Funciona</a>
+                <a href="seller.html" class="nav-link" style="color: var(--primary-color)">Espaço Vendedor</a>
+                <div class="nav-buttons-mobile">
+                    <a href="seller.html" class="btn btn-outline">Sou Vendedor</a>
+                    <a href="buyer.html" class="btn btn-primary">Sou Comprador</a>
+                </div>
+            </div>
+
+            <div class="hamburger" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </nav>
+
+    <section id="home" class="hero">
+        <div class="hero-container">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    Transforme sua <span class="gradient-text">Garage Sale</span> 
+                    em uma experiência digital
+                </h1>
+                <p class="hero-description">
+                    Sistema moderno e intuitivo para gerenciar vendas de garagem, 
+                    conectando vendedores e compradores de forma eficiente com QR codes.
+                </p>
+                <div class="hero-buttons">
+                    <a href="seller.html" class="btn btn-primary btn-large">
+                        <i class="fas fa-store"></i>
+                        Começar a Vender
+                    </a>
+                    <a href="buyer.html" class="btn btn-outline btn-large">
+                        <i class="fas fa-shopping-cart"></i>
+                        Começar a Comprar
+                    </a>
+                </div>
+                <div class="hero-stats">
+                    <div class="stat">
+                        <span class="stat-number">500+</span>
+                        <span class="stat-label">Vendas Realizadas</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">150+</span>
+                        <span class="stat-label">Vendedores Ativos</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">98%</span>
+                        <span class="stat-label">Satisfação</span>
+                    </div>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="hero-card">
+                    <div class="qr-demo">
+                        <img src="src/img/coisas.png" alt="logo" class="logo_hero">
+                        <p>Escaneie e Compre</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="features" class="features">
+        <div class="container">
+            <div class="section-header">
+                <h2>Funcionalidades Principais</h2>
+                <p>Tudo que você precisa para uma garage sale de sucesso</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-qrcode"></i>
+                    </div>
+                    <h3>QR Codes Automáticos</h3>
+                    <p>Gere QR codes únicos para cada produto automaticamente. Compradores escaneiam e compram instantaneamente.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-mobile-alt"></i>
+                    </div>
+                    <h3>100% Mobile</h3>
+                    <p>Interface otimizada para dispositivos móveis. Venda e compre de qualquer lugar, a qualquer hora.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <h3>Dashboard Completo</h3>
+                    <p>Acompanhe suas vendas em tempo real com relatórios detalhados e métricas de performance.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Seguro e Confiável</h3>
+                    <p>Sistema seguro com autenticação robusta e proteção de dados dos usuários.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-download"></i>
+                    </div>
+                    <h3>Download de PDFs</h3>
+                    <p>Baixe PDFs com QR codes dos produtos para impressão e exposição física.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <h3>Histórico Completo</h3>
+                    <p>Mantenha registro de todas as transações com histórico detalhado de vendas e compras.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <div class="section-header">
+                <h2>Como Funciona</h2>
+                <p>Processo simples em 3 passos</p>
+            </div>
+            <div class="steps-container">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h3>Cadastre seus Produtos</h3>
+                        <p>Adicione fotos, descrições e preços dos seus produtos de forma rápida e intuitiva.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h3>Gere QR Codes</h3>
+                        <p>O sistema gera automaticamente QR codes únicos para cada produto. Imprima ou exiba digitalmente.</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h3>Venda Instantânea</h3>
+                        <p>Compradores escaneiam o QR code, fazem login e registram a compra automaticamente.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="cta">
+        <div class="container">
+            <div class="cta-content">
+                <h2>Pronto para começar?</h2>
+                <p>Junte-se a centenas de vendedores que já transformaram suas garage sales</p>
+                <div class="cta-buttons">
+                    <a href="seller.html" class="btn btn-primary btn-large">
+                        Começar Agora
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <i class="fas fa-car"></i>
+                        <span>Coisas de Garagem</span>
+                    </div>
+                    <p>Transformando garage sales em experiências digitais modernas e eficientes.</p>
+                </div>
+                <div class="footer-section">
+                    <h4>Links Rápidos</h4>
+                    <ul>
+                        <li><a href="#home">Início</a></li>
+                        <li><a href="#features">Funcionalidades</a></li>
+                        <li><a href="#how-it-works">Como Funciona</a></li>
+                        <li><a href="seller.html">Para Vendedores</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Suporte</h4>
+                    <ul>
+                        <li><a href="#">Central de Ajuda</a></li>
+                        <li><a href="#">Contato</a></li>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Termos de Uso</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Conecte-se</h4>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 Coisas de Garagem. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/script.js"></script>
+</body>
+</html>
+
