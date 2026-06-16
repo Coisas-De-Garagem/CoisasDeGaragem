@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Painel do Comprador - Coisas de Garagem</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📦</text></svg>">
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/buyer.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+</head>
+
+<div class="modal" id="login-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Identifique-se para Comprar</h3>
+            <button class="close-btn" id="close-login-modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="user-name">Nome Completo</label>
+                    <input type="text" id="user-name" required>
+                </div>
+                <div class="form-group">
+                    <label for="user-cpf">CPF</label>
+                    <input type="text" id="user-cpf" required maxlength="14" placeholder="000.000.000-00">
+                </div>
+                <div class="form-group">
+                    <label for="user-email">E-mail</label>
+                    <input type="email" id="user-email" required>
+                </div>
+                <div class="form-group">
+                    <label for="user-phone">Telefone</label>
+                    <input type="tel" id="user-phone" required placeholder="(99) 99999-9999">
+                </div>
+                <button type="submit" class="btn btn-primary">Salvar e Continuar</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="nav-logo" style="text-decoration: none;">
+                <i class="fas fa-box"></i>
+                <span>Coisas de Garagem</span>
+            </a>
+            <div class="nav-menu">
+                <a href="index.html" class="nav-link">Início</a>
+                <a href="#scanner" class="nav-link">Scanner</a>
+                <a href="#products" class="nav-link">Produtos</a>
+                <a href="#purchases" class="nav-link">Minhas Compras</a>
+            </div>
+            <div class="nav-buttons">
+                <div class="user-menu">
+                    <i class="fas fa-user-circle"></i>
+                    <span>Raul</span>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <main class="main-content">
+        <section id="scanner" class="scanner-section">
+            <div class="container">
+                <div class="page-header">
+                    <h1>Scanner de QR Code</h1>
+                    <p>Escaneie o QR code do produto para visualizar detalhes e realizar a compra</p>
+                </div>
+
+                <div class="scanner-container">
+                    <div class="scanner-card">
+                        <div class="scanner-header">
+                            <h3>Câmera do Dispositivo</h3>
+                            <button class="btn btn-outline btn-small" id="toggle-camera">
+                                <i class="fas fa-camera"></i>
+                                Ativar Câmera
+                            </button>
+                        </div>
+                        <div class="scanner-area">
+                            <div id="qr-reader" class="qr-reader"></div>
+                            <div class="scanner-placeholder" id="scanner-placeholder">
+                                <i class="fas fa-qrcode"></i>
+                                <p>Clique em "Ativar Câmera" para começar a escanear</p>
+                            </div>
+                        </div>
+                        <div class="scanner-status" id="scanner-status">
+                            <p>Posicione o QR code dentro da área de escaneamento</p>
+                        </div>
+                    </div>
+
+                    <div class="manual-input-card">
+                        <h3>Entrada Manual</h3>
+                        <p>Ou digite o código do produto manualmente</p>
+                        <div class="input-group">
+                            <input type="text" id="manual-code" placeholder="Digite o código do produto">
+                            <button class="btn btn-primary" id="search-product">
+                                <i class="fas fa-search"></i>
+                                Buscar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="products" class="products-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Produtos Disponíveis</h2>
+                    <div class="filter-buttons">
+                        <button class="filter-btn active" data-filter="all">Todos</button>
+                        <button class="filter-btn" data-filter="electronics">Eletrônicos</button>
+                        <button class="filter-btn" data-filter="furniture">Móveis</button>
+                        <button class="filter-btn" data-filter="books">Livros</button>
+                        <button class="filter-btn" data-filter="toys">Brinquedos</button>
+                    </div>
+                </div>
+
+                <div class="products-grid" id="available-products">
+
+                </div>
+            </div>
+        </section>
+
+        <section id="purchases" class="purchases-section">
+            <div class="container">
+                <div class="section-header">
+                    <h2>Minhas Compras</h2>
+                    <div class="stats-summary">
+                        <div class="summary-item">
+                            <span class="summary-number" id="total-purchases">8</span>
+                            <span class="summary-label">Compras Realizadas</span>
+                        </div>
+                        <div class="summary-item">
+                            <span class="summary-number" id="total-spent">R$ 325</span>
+                            <span class="summary-label">Total Gasto</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="purchases-grid" id="purchases-grid">
+
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <div class="modal" id="product-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Detalhes do Produto</h3>
+                <button class="close-btn" id="close-product-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="product-details">
+                    <div class="product-image-large" id="modal-product-image">
+                        <i class="fas fa-image"></i>
+                    </div>
+                    <div class="product-info-detailed">
+                        <h4 id="modal-product-name">Nome do Produto</h4>
+                        <div class="product-price-large" id="modal-product-price">R$ 0,00</div>
+                        <p id="modal-product-description">Descrição do produto...</p>
+                        <div class="seller-info">
+                            <i class="fas fa-store"></i>
+                            <span id="modal-seller-name">Nome do Vendedor</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="close-product-modal-btn">Fechar</button>
+                <button class="btn btn-primary" id="buy-product-btn">
+                    <i class="fas fa-shopping-cart"></i>
+                    Comprar Produto
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="purchase-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Confirmar Compra</h3>
+                <button class="close-btn" id="close-purchase-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="purchase-summary">
+                    <div class="purchase-item">
+                        <span>Produto:</span>
+                        <span id="purchase-product-name">-</span>
+                    </div>
+                    <div class="purchase-item">
+                        <span>Preço:</span>
+                        <span id="purchase-product-price">R$ 0,00</span>
+                    </div>
+                    <div class="purchase-item">
+                        <span>Vendedor:</span>
+                        <span id="purchase-seller-name">-</span>
+                    </div>
+                    <div class="purchase-total">
+                        <span>Total:</span>
+                        <span id="purchase-total-price">R$ 0,00</span>
+                    </div>
+                </div>
+                
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" id="cancel-purchase-btn">Cancelar</button>
+                <button class="btn btn-primary" id="confirm-purchase-btn">
+                    <i class="fas fa-check"></i>
+                    Confirmar Compra
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="toast" id="success-toast">
+        <div class="toast-content">
+            <i class="fas fa-check-circle"></i>
+            <span id="toast-message">Compra realizada com sucesso!</span>
+        </div>
+    </div>
+
+    <script src="js/buyer.js"></script>
+</body>
+</html>
