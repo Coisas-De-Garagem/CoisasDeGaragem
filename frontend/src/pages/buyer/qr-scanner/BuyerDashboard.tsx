@@ -39,6 +39,12 @@ export default function BuyerDashboard() {
       });
 
       if (result.success) {
+        const paymentUrl = result.data?.paymentUrl;
+        if (paymentUrl) {
+          window.location.href = paymentUrl;
+          return;
+        }
+
         setPurchaseSuccess(true);
         addNotification({
           id: Date.now().toString(),
