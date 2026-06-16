@@ -73,14 +73,20 @@ export class PurchasesService {
           phone: buyer.phone || undefined,
         });
 
-        // 2. Create checkout session
+        // 2. Create product in Abacate Pay
         const priceInCents = Math.round(Number(product.price) * 100);
+        const apProductId = await this.abacatePayService.createProduct({
+          externalId: purchase.id, // Use purchase ID to avoid duplicate product conflicts
+          name: product.name,
+          description: product.description,
+          priceInCents,
+        });
+
+        // 3. Create checkout session
         paymentUrl = await this.abacatePayService.createCheckout({
           customerId,
           purchaseId: purchase.id,
-          productName: product.name,
-          productDescription: product.description,
-          priceInCents,
+          apProductId,
           paymentMethod: createPurchaseDto.paymentMethod,
         });
       }

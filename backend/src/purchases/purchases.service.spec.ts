@@ -7,6 +7,7 @@ import { AbacatePayService } from '../payments/abacatepay.service';
 const abacatePayServiceMock = {
   getOrCreateCustomer: jest.fn(),
   createCheckout: jest.fn(),
+  createProduct: jest.fn().mockResolvedValue('ap-prod-id'),
 };
 
 describe('PurchasesService', () => {

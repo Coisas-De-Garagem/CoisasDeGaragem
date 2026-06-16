@@ -47,14 +47,51 @@ export class AbacatePayService {
   }
 
   /**
+   * Creates a product in Abacate Pay.
+   */
+  async createProduct(params: {
+    externalId: string;
+    name: string;
+    description: string;
+    priceInCents: number;
+  }): Promise<string> {
+    try {
+      this.logger.log(`Criando produto no Abacate Pay: externalId=${params.externalId}`);
+      const response = await fetch(`${this.apiUrl}/products/create`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          externalId: params.externalId,
+          name: params.name,
+          description: params.description || undefined,
+          price: params.priceInCents,
+        }),
+      });
+
+      const result: any = await response.json();
+      if (!response.ok) {
+        this.logger.error(`Erro da API Abacate Pay ao criar produto: ${JSON.stringify(result)}`);
+        throw new Error(result.error || result.message || 'Erro desconhecido');
+      }
+
+      this.logger.log(`Produto criado com sucesso no Abacate Pay. ID: ${result.data.id}`);
+      return result.data.id;
+    } catch (error) {
+      this.logger.error(`Falha ao criar produto no Abacate Pay: ${error.message}`);
+      throw new InternalServerErrorException(`Erro ao registrar produto no gateway: ${error.message}`);
+    }
+  }
+
+  /**
    * Creates a checkout session for Pix and Card payments.
    */
   async createCheckout(params: {
     customerId: string;
     purchaseId: string;
-    productName: string;
-    productDescription: string;
-    priceInCents: number;
+    apProductId: string;
     paymentMethod: 'PIX' | 'CARD';
   }): Promise<string> {
     try {
@@ -67,13 +104,10 @@ export class AbacatePayService {
         frequency: 'ONE_TIME',
         // Select methods based on payment method selection
         methods: params.paymentMethod === 'PIX' ? ['PIX'] : ['PIX', 'CARD'],
-        products: [
+        items: [
           {
-            externalId: params.purchaseId,
-            name: params.productName,
-            description: params.productDescription,
+            id: params.apProductId,
             quantity: 1,
-            price: params.priceInCents,
           },
         ],
         returnUrl: `${frontendUrl}/buyer/history`,
