@@ -16,6 +16,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
 import { PurchasesModule } from './purchases/purchases.module';
 import { QrCodesModule } from './qr-codes/qr-codes.module';
 import { HealthModule } from './health/health.module';
+import { PaymentsModule } from './payments/payments.module';
 import { Request, Response, NextFunction } from 'express';
 
 @Module({
@@ -39,6 +40,7 @@ import { Request, Response, NextFunction } from 'express';
     PurchasesModule,
     QrCodesModule,
     HealthModule,
+    PaymentsModule,
   ],
   controllers: [AppController],
   providers: [

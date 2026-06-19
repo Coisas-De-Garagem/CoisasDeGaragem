@@ -330,7 +330,7 @@ export const api = {
 
   createPurchase: async (
     data: CreatePurchaseRequest,
-  ): Promise<ApiResult<Purchase>> => {
+  ): Promise<ApiResult<Purchase & { paymentUrl?: string }>> => {
     if (ENABLE_MOCK_DATA) {
       return mockApi.createPurchase(data);
     }
@@ -344,7 +344,7 @@ export const api = {
 
     console.log('Sending purchase payload:', payload);
 
-    return fetchApi<Purchase>('/purchases', {
+    return fetchApi<Purchase & { paymentUrl?: string }>('/purchases', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,

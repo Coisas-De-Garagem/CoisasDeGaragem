@@ -6,10 +6,14 @@ import {
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
 import { PurchaseStatus } from '@prisma/client';
+import { AbacatePayService } from '../payments/abacatepay.service';
 
 @Injectable()
 export class PurchasesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private abacatePayService: AbacatePayService,
+  ) {}
 
   async create(createPurchaseDto: CreatePurchaseDto, buyerId: string) {
     const product = await this.prisma.product.findUnique({
@@ -50,7 +54,48 @@ export class PurchasesService {
         data: { isAvailable: false },
       });
 
-      return purchase;
+      let paymentUrl: string | null = null;
+
+      // Handle Abacate Pay integration for digital payment methods (PIX, CARD)
+      if (createPurchaseDto.paymentMethod === 'PIX' || createPurchaseDto.paymentMethod === 'CARD') {
+        const buyer = await prisma.user.findUnique({
+          where: { id: buyerId },
+        });
+
+        if (!buyer) {
+          throw new NotFoundException('Buyer not found');
+        }
+
+        // 1. Get or create customer in Abacate Pay
+        const customerId = await this.abacatePayService.getOrCreateCustomer({
+          email: buyer.email,
+          name: buyer.name,
+          phone: buyer.phone || undefined,
+        });
+
+        // 2. Create product in Abacate Pay
+        const priceInCents = Math.round(Number(product.price) * 100);
+        const apProductId = await this.abacatePayService.createProduct({
+          externalId: purchase.id, // Use purchase ID to avoid duplicate product conflicts
+          name: product.name,
+          description: product.description,
+          priceInCents,
+          currency: product.currency,
+        });
+
+        // 3. Create checkout session
+        paymentUrl = await this.abacatePayService.createCheckout({
+          customerId,
+          purchaseId: purchase.id,
+          apProductId,
+          paymentMethod: createPurchaseDto.paymentMethod,
+        });
+      }
+
+      return {
+        ...purchase,
+        paymentUrl,
+      };
     });
   }
 

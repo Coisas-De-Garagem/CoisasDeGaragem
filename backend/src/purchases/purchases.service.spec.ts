@@ -2,6 +2,13 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { PurchasesService } from './purchases.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { prismaMock } from '../prisma/__mocks__/prisma.service';
+import { AbacatePayService } from '../payments/abacatepay.service';
+
+const abacatePayServiceMock = {
+  getOrCreateCustomer: jest.fn(),
+  createCheckout: jest.fn(),
+  createProduct: jest.fn().mockResolvedValue('ap-prod-id'),
+};
 
 describe('PurchasesService', () => {
   let service: PurchasesService;
@@ -11,6 +18,7 @@ describe('PurchasesService', () => {
       providers: [
         PurchasesService,
         { provide: PrismaService, useValue: prismaMock },
+        { provide: AbacatePayService, useValue: abacatePayServiceMock },
       ],
     }).compile();
 
