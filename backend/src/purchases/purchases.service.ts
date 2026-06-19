@@ -48,10 +48,10 @@ export class PurchasesService {
         },
       });
 
-      // Mark product not available
+      // Mark product as reserved (unavailable for others)
       await prisma.product.update({
         where: { id: product.id },
-        data: { isAvailable: false },
+        data: { isAvailable: false, isReserved: true },
       });
 
       let paymentUrl: string | null = null;

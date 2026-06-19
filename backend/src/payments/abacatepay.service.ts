@@ -112,6 +112,7 @@ export class AbacatePayService {
             quantity: 1,
           },
         ],
+        expiresIn: 900, // Checkout expires in 15 minutes (900 seconds)
         returnUrl: `${frontendUrl}/buyer/history`,
         completionUrl: `${frontendUrl}/buyer/history?success=true`,
       };
