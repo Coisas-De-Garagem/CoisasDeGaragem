@@ -1,0 +1,52 @@
+name: Deploy Backend to Azure App Service
+
+on:
+  push:
+    branches:
+      - master
+    paths:
+      - 'backend/**'
+      - '.github/workflows/azure-backend-deploy.yml'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: 'npm'
+          cache-dependency-path: 'backend/package-lock.json'
+
+      - name: Install Dependencies
+        run: |
+          cd backend
+          npm ci
+
+      - name: Generate Prisma Client
+        run: |
+          cd backend
+          npx prisma generate
+
+      - name: Build Application
+        run: |
+          cd backend
+          npm run build
+
+      - name: Zip Deployment Artifact
+        run: |
+          # Package dist, package.json, package-lock.json, and the prisma schema folder
+          cd backend
+          zip -r ../deploy.zip dist package.json package-lock.json prisma
+
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'coisas-de-garagem-api-1451'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: 'deploy.zip'

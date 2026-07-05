@@ -308,3 +308,8 @@ $RECYCLE.BIN/
 .directory
 .Trash-*
 .nfs*
+
+# Azure deployment secrets and scripts
+deploy-to-azure.sh
+deploy.zip
+publish_profile_temp.xml
