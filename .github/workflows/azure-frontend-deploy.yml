@@ -24,7 +24,7 @@ jobs:
       - name: Install and Build Frontend
         run: |
           cd frontend
-          npm ci
+          npm ci --legacy-peer-deps
           VITE_API_BASE_URL=https://coisas-de-garagem-api-1451.azurewebsites.net/api/v1 VITE_ENABLE_MOCK_DATA=false npm run build
 
       - name: Deploy to Azure Static Web App
