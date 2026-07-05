@@ -38,11 +38,16 @@ jobs:
           cd backend
           npm run build
 
+      - name: Prune Development Dependencies
+        run: |
+          cd backend
+          npm prune --production
+
       - name: Zip Deployment Artifact
         run: |
-          # Package dist, package.json, package-lock.json, and the prisma schema folder
+          # Package dist, node_modules, package.json, package-lock.json, and the prisma schema folder
           cd backend
-          zip -r ../deploy.zip dist package.json package-lock.json prisma
+          zip -r ../deploy.zip dist node_modules package.json package-lock.json prisma
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
