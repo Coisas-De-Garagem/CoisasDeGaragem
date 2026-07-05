@@ -24,8 +24,17 @@ jobs:
       - name: Install and Build Frontend
         run: |
           cd frontend
-          npm ci --legacy-peer-deps
-          VITE_API_BASE_URL=https://coisas-de-garagem-api-1451.azurewebsites.net/api/v1 VITE_ENABLE_MOCK_DATA=false npm run build
+          echo "=== Running npm ci ===" > build-debug.log
+          npm ci --legacy-peer-deps >> build-debug.log 2>&1
+          echo "=== Running npm run build ===" >> build-debug.log
+          VITE_API_BASE_URL=https://coisas-de-garagem-api-1451.azurewebsites.net/api/v1 VITE_ENABLE_MOCK_DATA=false npm run build >> build-debug.log 2>&1
+
+      - name: Upload Build Debug Log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build-debug-log
+          path: frontend/build-debug.log
 
       - name: Deploy to Azure Static Web App
         uses: Azure/static-web-apps-deploy@v1
