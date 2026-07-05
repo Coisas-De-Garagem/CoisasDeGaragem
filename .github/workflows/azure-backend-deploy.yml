@@ -1,3 +1,4 @@
+# Trigger run with valid publish profile credentials
 name: Deploy Backend to Azure App Service
 
 on:
