@@ -125,7 +125,7 @@ docker-compose.override.yml
 # Node (caso use frontend com Node.js depois)
 node_modules/
 jspm_packages/
-package-lock.json
+# package-lock.json
 yarn.lock
 pnpm-lock.yaml
 
