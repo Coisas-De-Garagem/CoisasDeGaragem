@@ -45,6 +45,24 @@ export function useAuth() {
     [login, navigate],
   );
 
+  const handleGoogleLogin = useCallback(
+    async (googleToken: string) => {
+      const result = await api.googleLogin(googleToken);
+
+      if (result.success) {
+        const { user: userData, token: userToken } = result.data;
+        login(userData, userToken);
+        localStorage.setItem('token', userToken);
+
+        // Redirect all users to buyer/qr-scanner (main hub)
+        navigate('/buyer/qr-scanner', { replace: true });
+      } else {
+        throw new Error(result.error.message);
+      }
+    },
+    [login, navigate],
+  );
+
   const handleLogout = useCallback(() => {
     api.logout();
     logout();
@@ -73,6 +91,7 @@ export function useAuth() {
     isAuthenticated,
     login: handleLogin,
     register: handleRegister,
+    loginWithGoogle: handleGoogleLogin,
     logout: handleLogout,
     updateProfile: handleUpdateProfile,
   };

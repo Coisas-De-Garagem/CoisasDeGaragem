@@ -106,6 +106,37 @@ export const api = {
     return response;
   },
 
+  googleLogin: async (token: string): Promise<ApiResult<LoginResponse>> => {
+    if (ENABLE_MOCK_DATA) {
+      return {
+        success: true,
+        data: {
+          token: 'mock-google-token',
+          expiresIn: 3600,
+          user: {
+            id: 'mock-google-user-id',
+            email: 'mock-google-user@example.com',
+            name: 'Mock Google User',
+            role: 'user' as any,
+            password: '',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+            isActive: true,
+          },
+        },
+      };
+    }
+    const response = await fetchApi<LoginResponse>('/auth/google', {
+      method: 'POST',
+      body: JSON.stringify({ token }),
+    });
+
+    if (response.success && response.data.user) {
+      response.data.user.role = response.data.user.role.toLowerCase() as UserRole;
+    }
+    return response;
+  },
+
   logout: async (): Promise<ApiResult<{ message: string }>> => {
     if (ENABLE_MOCK_DATA) {
       return mockApi.logout();

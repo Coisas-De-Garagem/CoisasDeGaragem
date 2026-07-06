@@ -5,6 +5,7 @@ import {
   Get,
   UseGuards,
   Request,
+  BadRequestException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -103,6 +104,35 @@ export class AuthController {
   @ApiBody({ type: RegisterDto })
   async register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
+  }
+
+  @Post('google')
+  @ApiOperation({
+    summary: 'Autenticação com Google',
+    description: 'Autentica o usuário a partir de um ID Token do Google. Se o usuário não existir, ele é registrado automaticamente.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Login realizado com sucesso',
+    schema: {
+      example: {
+        token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        expiresIn: 3600,
+        user: {
+          id: 'user-id',
+          email: 'usuario@exemplo.com',
+          name: 'João Silva',
+          role: 'USER',
+          avatarUrl: 'https://lh3.googleusercontent.com/...',
+        },
+      },
+    },
+  })
+  async googleLogin(@Body('token') token: string) {
+    if (!token) {
+      throw new BadRequestException('Google ID token is required');
+    }
+    return this.authService.googleLogin(token);
   }
 
   @UseGuards(AuthGuard('jwt'))
