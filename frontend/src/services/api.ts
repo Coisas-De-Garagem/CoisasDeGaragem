@@ -361,7 +361,7 @@ export const api = {
 
   createPurchase: async (
     data: CreatePurchaseRequest,
-  ): Promise<ApiResult<Purchase & { paymentUrl?: string }>> => {
+  ): Promise<ApiResult<Purchase & { paymentUrl?: string; qrCode?: string; pixKey?: string; chargeId?: string; expiresInSeconds?: number }>> => {
     if (ENABLE_MOCK_DATA) {
       return mockApi.createPurchase(data);
     }
@@ -375,12 +375,19 @@ export const api = {
 
     console.log('Sending purchase payload:', payload);
 
-    return fetchApi<Purchase & { paymentUrl?: string }>('/purchases', {
+    return fetchApi<Purchase & { paymentUrl?: string; qrCode?: string; pixKey?: string; chargeId?: string; expiresInSeconds?: number }>('/purchases', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
       body: JSON.stringify(payload),
+    });
+  },
+
+  simulatePayment: async (chargeId: string, purchaseId?: string): Promise<ApiResult<any>> => {
+    return fetchApi<any>('/payments/simulate', {
+      method: 'POST',
+      body: JSON.stringify({ chargeId, purchaseId }),
     });
   },
 

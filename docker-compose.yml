@@ -30,7 +30,7 @@ services:
       - ./backend/.env  # <--- This forces Docker to read your specific file
     environment:
       PORT: 3000
-      # (Notice we removed DATABASE_URL from here completely)
+      DATABASE_URL: "postgresql://user:password@postgres:5432/garagedb?schema=public"
     depends_on:
       postgres:
         condition: service_healthy

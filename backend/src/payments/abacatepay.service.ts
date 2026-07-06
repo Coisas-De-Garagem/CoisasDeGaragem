@@ -88,6 +88,83 @@ export class AbacatePayService {
   }
 
   /**
+   * Creates a transparent Pix charge.
+   */
+  async createTransparentPix(params: {
+    purchaseId: string;
+    amountInCents: number;
+    description: string;
+    buyer: { email: string; name: string; phone?: string };
+    expiresInSeconds: number;
+  }): Promise<{ brCode: string; brCodeBase64: string; chargeId: string }> {
+    try {
+      this.logger.log(`Criando PIX transparente para a compra: ${params.purchaseId}`);
+      
+      const payload = {
+        method: 'PIX',
+        data: {
+          amount: params.amountInCents,
+          expiresIn: params.expiresInSeconds,
+          description: params.description,
+          externalId: params.purchaseId,
+        },
+      };
+
+      const response = await fetch(`${this.apiUrl}/transparents/create`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(payload),
+      });
+
+      const result: any = await response.json();
+      if (!response.ok) {
+        this.logger.error(`Erro da API Abacate Pay ao criar transparent: ${JSON.stringify(result)}`);
+        throw new Error(result.error || result.message || 'Erro desconhecido');
+      }
+
+      this.logger.log(`PIX transparente criado com sucesso para compra ${params.purchaseId}`);
+      return {
+        brCode: result.data.brCode,
+        brCodeBase64: result.data.brCodeBase64,
+        chargeId: result.data.id,
+      };
+    } catch (error) {
+      this.logger.error(`Falha ao criar transparent PIX no Abacate Pay: ${error.message}`);
+      throw new InternalServerErrorException(`Erro ao gerar PIX transparente: ${error.message}`);
+    }
+  }
+
+  /**
+   * Simulates a payment for a transparent checkout charge (Dev mode only).
+   */
+  async simulateTransparentPix(chargeId: string): Promise<any> {
+    try {
+      this.logger.log(`Simulando pagamento no Abacate Pay para cobrança: ${chargeId}`);
+      const response = await fetch(`${this.apiUrl}/transparents/simulate-payment?id=${chargeId}`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${this.apiKey}`,
+        },
+      });
+
+      const result: any = await response.json();
+      if (!response.ok) {
+        this.logger.error(`Erro da API Abacate Pay ao simular pagamento: ${JSON.stringify(result)}`);
+        throw new Error(result.error || result.message || 'Erro desconhecido');
+      }
+
+      this.logger.log(`Simulação de pagamento enviada com sucesso para cobrança ${chargeId}`);
+      return result;
+    } catch (error) {
+      this.logger.error(`Falha ao simular pagamento no Abacate Pay: ${error.message}`);
+      throw new InternalServerErrorException(`Erro ao simular pagamento: ${error.message}`);
+    }
+  }
+
+  /**
    * Creates a checkout session for Pix and Card payments.
    */
   async createCheckout(params: {
@@ -95,7 +172,7 @@ export class AbacatePayService {
     purchaseId: string;
     apProductId: string;
     paymentMethod: 'PIX' | 'CARD';
-  }): Promise<string> {
+  }): Promise<{ url: string; id: string }> {
     try {
       this.logger.log(`Criando checkout de pagamento para a compra: ${params.purchaseId}`);
       const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:5173';
@@ -112,6 +189,7 @@ export class AbacatePayService {
             quantity: 1,
           },
         ],
+        expiresIn: 60, // Checkout expires in 60 seconds (for testing)
         returnUrl: `${frontendUrl}/buyer/history`,
         completionUrl: `${frontendUrl}/buyer/history?success=true`,
       };
@@ -132,7 +210,10 @@ export class AbacatePayService {
       }
 
       this.logger.log(`Sessão de checkout criada com sucesso. URL: ${result.data.url}`);
-      return result.data.url;
+      return {
+        url: result.data.url,
+        id: result.data.id,
+      };
     } catch (error) {
       this.logger.error(`Falha ao criar checkout no Abacate Pay: ${error.message}`);
       throw new InternalServerErrorException(`Erro ao gerar link de pagamento: ${error.message}`);

@@ -1,9 +1,10 @@
-import { Controller, Post, Headers, Req, Res, HttpStatus, UnauthorizedException, Logger } from '@nestjs/common';
+import { Controller, Post, Headers, Req, Res, HttpStatus, UnauthorizedException, Logger, Body, BadRequestException } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { PurchaseStatus } from '@prisma/client';
 import * as crypto from 'crypto';
+import { AbacatePayService } from './abacatepay.service';
 
 @Controller('payments')
 export class PaymentsController {
@@ -13,6 +14,7 @@ export class PaymentsController {
   constructor(
     private prisma: PrismaService,
     private configService: ConfigService,
+    private abacatePayService: AbacatePayService,
   ) {
     this.webhookSecret = this.configService.get<string>('ABACATEPAY_WEBHOOK_SECRET') || '';
   }
@@ -68,7 +70,7 @@ export class PaymentsController {
 
     this.logger.log(`Webhook recebido: evento=${event}, id=${payload.id}`);
 
-    if (event === 'checkout.completed') {
+    if (event === 'checkout.completed' || event === 'transparent.completed') {
       const purchaseId = data.externalId;
       // Abacate Pay status can be 'PAID' or 'COMPLETED'
       const status = data.status;
@@ -107,7 +109,7 @@ export class PaymentsController {
           }
         });
       }
-    } else if (event === 'checkout.lost' || event === 'checkout.refunded') {
+    } else if (event === 'checkout.lost' || event === 'checkout.refunded' || event === 'transparent.refunded') {
       const purchaseId = data.externalId;
       this.logger.log(`Cancelando/Expirando a compra ${purchaseId} devido ao evento ${event}`);
       await this.prisma.$transaction(async (prisma) => {
@@ -142,5 +144,61 @@ export class PaymentsController {
     }
 
     return res.status(HttpStatus.OK).json({ received: true });
+  }
+
+  @Post('simulate')
+  async simulatePayment(
+    @Body('chargeId') chargeId: string,
+    @Body('purchaseId') purchaseId?: string,
+  ) {
+    if (!chargeId) {
+      throw new BadRequestException('Missing chargeId');
+    }
+
+    let result: any = null;
+    let apiError: string | null = null;
+
+    try {
+      // Abacate Pay's simulate-payment API is only for transparent Pix charges (typically start with pix_char_)
+      // If it's a checkout session ID (starts with bill_), we don't call the API to prevent gateway crash
+      if (chargeId && !chargeId.startsWith('bill_')) {
+        result = await this.abacatePayService.simulateTransparentPix(chargeId);
+      }
+    } catch (err) {
+      apiError = err.message;
+      this.logger.warn(`Gateway simulation error: ${err.message}. Proceeding with local sync.`);
+    }
+
+    if (purchaseId) {
+      this.logger.log(`[Dev Mode] Sincronizando localmente a compra ${purchaseId} após simulação.`);
+      await this.prisma.$transaction(async (prisma) => {
+        const purchase = await prisma.purchase.findUnique({
+          where: { id: purchaseId },
+        });
+
+        if (purchase && purchase.status === PurchaseStatus.PENDING) {
+          await prisma.purchase.update({
+            where: { id: purchaseId },
+            data: { status: PurchaseStatus.COMPLETED },
+          });
+
+          await prisma.product.update({
+            where: { id: purchase.productId },
+            data: {
+              isAvailable: false,
+              isReserved: false,
+              isSold: true,
+            },
+          });
+          this.logger.log(`[Dev Mode] Compra ${purchaseId} concluída localmente com sucesso.`);
+        }
+      });
+    }
+
+    if (!result && apiError && !purchaseId) {
+      throw new BadRequestException(`Erro ao simular no gateway: ${apiError}`);
+    }
+
+    return result || { success: true, localSync: true };
   }
 }

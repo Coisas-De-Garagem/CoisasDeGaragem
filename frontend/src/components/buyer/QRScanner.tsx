@@ -85,7 +85,7 @@ export function QRScanner({ onScanSuccess }: QRScannerProps) {
         await codeReader.decodeFromConstraints(
           constraints,
           videoRef.current!,
-          (result, error) => {
+          (result, _error) => {
             if (!isActive) return;
 
             if (result && !isProcessing) {
@@ -107,10 +107,7 @@ export function QRScanner({ onScanSuccess }: QRScannerProps) {
               }
             }
 
-            // Optionally log errors for debugging
-            if (error && !(error.name === 'NotFoundException')) {
-              console.debug('Scanner error (normal):', error.message);
-            }
+            // Scanner errors are normal when no QR code is in frame, so we don't log them to avoid console spam.
           }
         );
       } catch (err) {

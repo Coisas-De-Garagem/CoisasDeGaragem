@@ -22,11 +22,11 @@ import { Request, Response, NextFunction } from 'express';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    // 3. Configure the Rate Limit: 10 requests every 60 seconds per IP
+    // 3. Configure the Rate Limit: 120 requests every 60 seconds per IP (safe margin for normal user behaviour)
     ThrottlerModule.forRoot([
       {
         ttl: 60000,
-        limit: 10,
+        limit: 120,
       },
     ]),
     PrometheusModule.register({
