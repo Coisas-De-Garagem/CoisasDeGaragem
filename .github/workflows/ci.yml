@@ -7,6 +7,9 @@ on:
     branches: [ master ]
 
 jobs:
+  # -------------------------------------------------------------
+  # 1. DevSecOps Security Job
+  # -------------------------------------------------------------
   security:
     name: 🔐 DevSecOps Security Audits
     runs-on: ubuntu-latest
@@ -20,38 +23,43 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: 🔍 SAST (Semgrep)
-        run: |
-          pip install semgrep
-          semgrep scan --config auto --error
+        uses: semgrep/semgrep-action@v1
+        with:
+          config: auto
 
       - name: 📦 SCA (Grype)
-        run: |
-          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
-          grype dir:. --fail-on medium
+        uses: anchore/scan-action@v3
+        with:
+          path: "."
+          fail-build: true
+          severity-cutoff: high
 
+  # -------------------------------------------------------------
+  # 2. Backend CI
+  # -------------------------------------------------------------
   backend-ci:
+    name: ☕ Backend CI
     needs: security
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: ./backend # Tells GitHub all 'run' commands happen here
+        working-directory: ./backend
 
     steps:
-      - uses: actions/checkout@v4
+      - name: 📥 Checkout do Código
+        uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '20'
           cache: 'npm'
-          # Crucial: GitHub needs to find the lockfile for caching to work
           cache-dependency-path: './backend/package-lock.json'
 
       - name: Install Dependencies
         run: npm ci
 
       - name: Prisma Generate
-        # We must generate the client even for tests to avoid "Prisma not found" errors
         run: npx prisma generate
 
       - name: Run Unit Tests
@@ -59,3 +67,35 @@ jobs:
 
       - name: Verify Production Build
         run: npm run build
+
+  # -------------------------------------------------------------
+  # 3. Frontend CI
+  # -------------------------------------------------------------
+  frontend-ci:
+    name: ⚛️ Frontend CI
+    needs: security
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+      - name: 📥 Checkout do Código
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: './frontend/package-lock.json'
+
+      - name: Install Dependencies
+        run: npm ci
+
+      - name: Lint Code
+        run: npm run lint
+
+      - name: Verify Production Build
+        run: npm run build
+
