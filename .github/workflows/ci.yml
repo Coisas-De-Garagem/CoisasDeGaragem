@@ -7,7 +7,30 @@ on:
     branches: [ master ]
 
 jobs:
+  security:
+    name: 🔐 DevSecOps Security Audits
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout do Código
+        uses: actions/checkout@v4
+
+      - name: 🔑 Secrets Scanning (Gitleaks)
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔍 SAST (Semgrep)
+        run: |
+          pip install semgrep
+          semgrep scan --config auto --error
+
+      - name: 📦 SCA (Grype)
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/grype/main/install.sh | sh -s -- -b /usr/local/bin
+          grype dir:. --fail-on medium
+
   backend-ci:
+    needs: security
     runs-on: ubuntu-latest
     defaults:
       run:

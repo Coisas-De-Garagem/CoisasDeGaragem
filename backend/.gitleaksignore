@@ -1,0 +1,9 @@
+# Gitleaks ignore file
+# Ignore false positive swagger dummy tokens in auth.controller.ts
+src\auth\auth.controller.ts:generic-api-key:37
+src\auth\auth.controller.ts:generic-api-key:119
+src/auth/auth.controller.ts:generic-api-key:37
+src/auth/auth.controller.ts:generic-api-key:119
+
+# Ignore dummy CircleCI token in README.md template
+README.md:generic-api-key:5

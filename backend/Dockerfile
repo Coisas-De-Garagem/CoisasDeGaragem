@@ -16,5 +16,7 @@ COPY --from=builder /app/package.json /app/package.json
 COPY --from=builder /app/prisma.config.ts ./prisma.config.ts
 COPY --from=builder /app/prisma ./prisma
 
+USER node
+
 EXPOSE 3000
 CMD [ "npm", "run", "start:prod" ]
