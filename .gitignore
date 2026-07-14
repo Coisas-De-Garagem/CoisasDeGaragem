@@ -314,3 +314,8 @@ deploy-to-azure.sh
 deploy.zip
 *.zip
 publish_profile_temp.xml
+
+# Local security tools
+bin/
+install-security-tools.sh
+run-security-checks.sh
