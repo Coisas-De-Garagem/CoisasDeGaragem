@@ -73,7 +73,7 @@ export function ProductForm({ product, onSubmit, onCancel, isLoading }: ProductF
   };
 
   return (
-    <form onSubmit={handleSubmit} className="px-5 py-5 space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {error && (
         <Alert variant="error" dismissible onDismiss={() => setError('')}>
           {error}

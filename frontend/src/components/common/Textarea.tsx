@@ -36,7 +36,7 @@ export function Textarea({
           border border-border-strong rounded-lg
           focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none
           disabled:opacity-50 disabled:cursor-not-allowed
-          transition-colors duration-200 resize-y
+          transition-colors duration-200 resize-none
           ${error ? 'border-error focus:border-error focus:ring-error/20' : ''}
           ${className}
         `}

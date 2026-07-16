@@ -3,43 +3,49 @@ import { useLocation } from 'react-router-dom';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPlus, faBoxOpen, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { faPlus, faBoxOpen } from '@fortawesome/free-solid-svg-icons';
 import { ProductCard } from '@/components/seller/ProductCard';
 import { ProductForm } from '@/components/seller/ProductForm';
 import { Button } from '@/components/common/Button';
 import { Modal } from '@/components/common/Modal';
 import { Card } from '@/components/common/Card';
 import { Select } from '@/components/common/Select';
-import { Alert } from '@/components/common/Alert';
 import { EmptyState } from '@/components/common/EmptyState';
 import { SearchInput } from '@/components/common/SearchInput';
 import { Pagination } from '@/components/common/Pagination';
 import { CardGridSkeleton } from '@/components/common/PageSkeletons';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { QRCodeDisplay } from '@/components/seller/QRCodeDisplay';
 import { useProducts } from '@/hooks/useProducts';
 import { api } from '@/services/api';
 import { useProductsStore } from '@/store/productsStore';
+import { useUIStore } from '@/store/uiStore';
+import { makeNotifier } from '@/utils/notifications';
 import { generateProductPDF } from '@/utils/pdfGenerator';
 import type { Product, CreateProductRequest, UpdateProductRequest } from '@/types';
 
 export default function ProductsPage() {
   const { products, fetchProducts } = useProducts();
   const { addProduct, updateProduct, deleteProduct } = useProductsStore();
+  const { addNotification } = useUIStore();
   const containerRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
 
-  const [showForm, setShowForm] = useState(location.state?.showForm || false);
+  const [isFormOpen, setIsFormOpen] = useState(location.state?.showForm || false);
   const [editingProduct, setEditingProduct] = useState<Product | undefined>(undefined);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [qrProduct, setQrProduct] = useState<Product | null>(null);
-  const [formError, setFormError] = useState('');
+  const [productToDelete, setProductToDelete] = useState<Product | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<'name' | 'price' | 'date'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
   const pageSize = 9;
+
+  const notify = makeNotifier(addNotification);
 
   const filteredProducts = (products || []).filter(
     (product) =>
@@ -103,25 +109,30 @@ export default function ProductsPage() {
 
   const handleCreate = () => {
     setEditingProduct(undefined);
-    setShowForm(true);
-    setFormError('');
+    setIsFormOpen(true);
   };
 
   const handleEdit = (product: Product) => {
     setEditingProduct(product);
-    setShowForm(true);
-    setFormError('');
+    setIsFormOpen(true);
   };
 
-  const handleDelete = async (productId: string) => {
-    if (window.confirm('Tem certeza que deseja excluir este produto?')) {
-      try {
-        const result = await api.deleteProduct(productId);
-        if (result.success) deleteProduct(productId);
-        else alert(result.error?.message || 'Erro ao excluir produto');
-      } catch {
-        alert('Erro ao excluir produto');
+  const handleDelete = async () => {
+    if (!productToDelete) return;
+    setIsDeleting(true);
+    try {
+      const result = await api.deleteProduct(productToDelete.id);
+      if (result.success) {
+        deleteProduct(productToDelete.id);
+        notify('success', 'Produto excluído', 'O produto foi removido com sucesso.');
+      } else {
+        notify('error', 'Erro ao excluir', result.error?.message || 'Não foi possível excluir o produto.');
       }
+    } catch {
+      notify('error', 'Erro ao excluir', 'Ocorreu um erro inesperado ao excluir o produto.');
+    } finally {
+      setIsDeleting(false);
+      setProductToDelete(null);
     }
   };
 
@@ -133,16 +144,16 @@ export default function ProductsPage() {
         updateProduct(product.id, updatedProduct);
         setQrProduct(updatedProduct);
       } else {
-        alert(result.error?.message || 'Erro ao gerar QR code');
+        notify('error', 'Erro ao gerar QR code', result.error?.message || 'Tente novamente.');
       }
     } catch {
-      alert('Erro ao gerar QR code');
+      notify('error', 'Erro ao gerar QR code', 'Ocorreu um erro inesperado.');
     }
   };
 
   const handleDownloadPDF = async (product: Product) => {
     if (!product.qrCodeUrl) {
-      alert('Gere o QR code antes de baixar o PDF');
+      notify('warning', 'QR code pendente', 'Gere o QR code antes de baixar o PDF.');
       return;
     }
     try {
@@ -153,8 +164,9 @@ export default function ProductsPage() {
         qrCodeUrl: product.qrCodeUrl,
         category: product.category,
       });
+      notify('success', 'PDF gerado', 'O PDF do produto foi gerado com sucesso.');
     } catch {
-      alert('Erro ao gerar PDF');
+      notify('error', 'Erro ao gerar PDF', 'Ocorreu um erro ao gerar o PDF.');
     }
   };
 
@@ -168,24 +180,28 @@ export default function ProductsPage() {
       else if (status === 'sold') result = await api.markProductAsSold(productId);
       else return;
 
-      if (result.success) updateProduct(productId, result.data);
-      else alert(result.error?.message || 'Erro ao alterar status');
+      if (result.success) {
+        updateProduct(productId, result.data);
+        notify('success', 'Status atualizado', 'O status do produto foi atualizado.');
+      } else {
+        notify('error', 'Erro ao alterar status', result.error?.message || 'Tente novamente.');
+      }
     } catch {
-      alert('Erro ao alterar status');
+      notify('error', 'Erro ao alterar status', 'Ocorreu um erro inesperado.');
     }
   };
 
   const handleSubmit = async (data: CreateProductRequest | UpdateProductRequest) => {
     setIsSubmitting(true);
-    setFormError('');
     try {
       if (editingProduct) {
         const result = await api.updateProduct(editingProduct.id, data as UpdateProductRequest);
         if (result.success) {
           updateProduct(editingProduct.id, result.data);
-          setShowForm(false);
+          setIsFormOpen(false);
+          notify('success', 'Produto atualizado', 'As alterações foram salvas.');
         } else {
-          setFormError(result.error?.message || 'Erro ao atualizar produto');
+          notify('error', 'Erro ao atualizar', result.error?.message || 'Tente novamente.');
         }
       } else {
         const result = await api.createProduct(data as CreateProductRequest);
@@ -197,57 +213,19 @@ export default function ProductsPage() {
             console.error('Error fetching QR after create:', qrErr);
           }
           addProduct(result.data);
-          setShowForm(false);
+          setIsFormOpen(false);
+          notify('success', 'Produto criado', 'O produto foi cadastrado com sucesso.');
         } else {
-          setFormError(result.error?.message || 'Erro ao criar produto');
+          notify('error', 'Erro ao criar produto', result.error?.message || 'Tente novamente.');
         }
       }
     } catch {
-      setFormError('Erro ao salvar produto');
+      notify('error', 'Erro ao salvar', 'Ocorreu um erro inesperado ao salvar o produto.');
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // ---- Form view ----
-  if (showForm) {
-    return (
-      <div className="max-w-3xl mx-auto product-form-container">
-        <div className="mb-4">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setShowForm(false)}
-            leftIcon={<FontAwesomeIcon icon={faArrowLeft} />}
-          >
-            Voltar para a lista
-          </Button>
-        </div>
-        {formError && (
-          <div className="mb-4">
-            <Alert variant="error" dismissible onDismiss={() => setFormError('')}>
-              {formError}
-            </Alert>
-          </div>
-        )}
-        <Card>
-          <div className="px-5 py-4 border-b border-border">
-            <h2 className="text-lg font-semibold text-text-main">
-              {editingProduct ? 'Editar produto' : 'Novo produto'}
-            </h2>
-          </div>
-          <ProductForm
-            product={editingProduct}
-            onSubmit={handleSubmit}
-            onCancel={() => setShowForm(false)}
-            isLoading={isSubmitting}
-          />
-        </Card>
-      </div>
-    );
-  }
-
-  // ---- List view ----
   return (
     <div ref={containerRef} className="space-y-6">
       {/* Cabeçalho */}
@@ -400,6 +378,33 @@ export default function ProductsPage() {
           />
         )}
       </Modal>
+
+      {/* Modal: criar/editar produto */}
+      <Modal
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        title={editingProduct ? 'Editar produto' : 'Novo produto'}
+        size="lg"
+      >
+        <ProductForm
+          product={editingProduct}
+          onSubmit={handleSubmit}
+          onCancel={() => setIsFormOpen(false)}
+          isLoading={isSubmitting}
+        />
+      </Modal>
+
+      {/* Confirmação de exclusão */}
+      <ConfirmDialog
+        isOpen={!!productToDelete}
+        onClose={() => setProductToDelete(null)}
+        onConfirm={handleDelete}
+        title="Excluir produto"
+        description={`Tem certeza que deseja excluir "${productToDelete?.name}"? Esta ação não pode ser desfeita.`}
+        confirmLabel="Sim, excluir"
+        danger
+        isLoading={isDeleting}
+      />
     </div>
   );
 }

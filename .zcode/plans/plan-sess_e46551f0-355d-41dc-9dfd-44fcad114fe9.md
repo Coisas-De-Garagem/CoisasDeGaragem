@@ -1,50 +1,33 @@
-# Plano: Feature de Eventos (Garage Sales) — Full-stack + Compartilhar Link
+# Plano: Formulários via Modal + remover alerts/confirm + Textarea sem resize
 
-## Regras de negócio (confirmadas)
-- Vínculo produto↔evento: **1-para-1** (campo `eventId` em `Product`), só produtos disponíveis.
-- Ciclo de vida: datas início/fim + status (`DRAFT`/`PUBLISHED`/`ACTIVE`/`ENDED`/`CANCELLED`) + editar sempre; excluir só se não houver vendas vinculadas.
-- Comprador: QR do evento → vitrine pública `/event/:id`; produtos vendidos/reservados continuam visíveis com badge.
-- Insights: financeiras + ranking de produtos + scans do QR (contar todos) + comparativo entre eventos.
-- Local: endereço estruturado (rua/número/bairro/cidade/CEP).
-- **Compartilhar link com mensagem** (novo): Web Share API nativa no mobile + fallback WhatsApp/Telegram/copiar no desktop, todos com mensagem pré-preenchida.
-- Migrate dev por último.
+## ETAPA 1 — Textarea: `resize-y` → `resize-none`
+`components/common/Textarea.tsx` (linha 39): trocar `resize-y` por `resize-none`. Asim todos os Textareas do sistema ficam sem resize (3 usos: ProductForm, EventFormPage, ContactPage).
 
-## ETAPA 1 — Backend: Schema Prisma (migração no final)
-`prisma/schema.prisma`:
-- Novo enum `EventStatus { DRAFT PUBLISHED ACTIVE ENDED CANCELLED }`
-- Novo `model GarageEvent` (id, sellerId, name, description?, status, startDate?, endDate?, endereço estruturado, `qrCode @unique`, timestamps, relações products[] e visits[])
-- Novo `model EventVisit` (id, eventId, createdAt) — contador de scans
-- Em `Product`: `eventId String?` + `event GarageEvent?`
-- Em `User`: relação `events GarageEvent[] @relation("SellerEvents")`
+## ETAPA 2 — Componente `ConfirmDialog` reutilizável (NOVO)
+`components/common/ConfirmDialog.tsx` — wrapper sobre o `Modal` existente para substituir os 2 `window.confirm`. Props: `isOpen`, `onClose`, `onConfirm`, `title`, `description`, `confirmLabel`, `danger?`, `isLoading?`. Renderiza um `Modal size="sm"` com footer de botões Cancelar + confirmar (danger quando aplicável). Usa o design system atual (Button/Modal).
 
-## ETAPA 2 — Backend: Módulo events (copia padrão de `products/`)
-`backend/src/events/`: module, controller, service, dto/create + dto/update, spec.
-- **Service** (PrismaService): create (qrCode=randomUUID), findAllBySeller, findOne (NotFoundException), update (ownership real → ForbiddenException), remove (bloqueia se houver Purchase de produtos do evento → ConflictException), getPublicEvent, recordVisit, linkProduct (valida dono+disponível+sem evento), unlinkProduct, getInsights.
-- **Controller** `@Controller('events')`: CRUD guardiado + `POST/DELETE /:id/products/:productId` (vincular/desvincular) + `GET /:id/qr` (padrão api.qrserver.com → FRONTEND_URL/event/:id) + `POST /:id/visit` (público) + `GET /:id/insights`.
-- Registrar `EventsModule` em `app.module.ts`.
+## ETAPA 3 — `ProductForm`: adaptar para caber no Modal
+`components/seller/ProductForm.tsx`:
+- Separar o rodapé de botões (Cancelar/Salvar) do `<form>` — quando usado dentro de um Modal, os botões vão para o slot `footer`. Adiciono um modo `embedded` (default mantém o comportamento atual com rodapé próprio para compatibilidade) — na prática vou refatorar para que o form expõe um `submitLabel` e renderiza botões via render-prop ou via ref. **Abordagem mais simples:** manter o `ProductForm` renderizando seu próprio `<form>` com os botões, e o Modal que o envolve usa `hideCloseButton={false}` **sem** footer (os botões ficam dentro do body, no próprio form). Isso preserva a validação nativa (submit por Enter, etc.) e exige mudança mínima. O `ProductForm` já tem Cancelar/Salvar — só preciso garantir que o `onCancel` feche o modal.
 
-## ETAPA 3 — Backend: Insights (no service)
-Receita total (sum), nº vendas, ticket médio, conversão (vendidos/listados), ranking (groupBy productId), scans (count EventVisit), comparativo vs. média dos eventos anteriores do vendedor.
+## ETAPA 4 — `ProductsPage`: form inline → Modal + remover alerts/confirm
+- Remover o `if (showForm) { return <form-view> }` (linhas 213-248).
+- Adicionar estado `isFormOpen` e `editingProduct`; o "Novo produto" e "Editar" abrem `<Modal size="lg">` contendo `<ProductForm>`.
+- O `location.state.showForm` (do dashboard) continua abrindo o modal no mount.
+- Substituir os **8 `alert()`** por `addNotification` (toast) do `uiStore` — mapeando tipo (error/warning/success) e mensagem.
+- Substituir o `window.confirm` de exclusão pelo `<ConfirmDialog>`.
+- QR/PDF: o alert "Gere o QR code antes de baixar o PDF" vira toast `warning`.
 
-## ETAPA 4 — Frontend: tipos + api + store + hook
-- `types/index.ts`: EventStatus, GarageEvent, EventVisit, CreateEventRequest, UpdateEventRequest, EventInsights.
-- `services/api.ts`: getEvents, getEvent, createEvent, updateEvent, deleteEvent, linkProductToEvent, unlinkProductFromEvent, getEventQR, recordEventVisit, getEventInsights, getPublicEvent.
-- `store/eventsStore.ts` + `hooks/useEvents.ts` (copia productsStore/useProducts).
+## ETAPA 5 — `EventFormPage` (rota) → formulário via Modal em `EventsPage`
+- Criar um componente de formulário de evento extraído (reaproveita a UI do `EventFormPage` mas como `<EventForm>` reutilizável dentro de um Modal).
+- `EventsPage.tsx`: "Novo evento" e "Editar" abrem `<Modal size="lg">` com o formulário, em vez de navegar para uma rota.
+- **Decisão sobre as rotas `/seller/events/new` e `/:id/edit`:** mantê-las como redirecionamento para `/seller/events` + abrir o modal via router state (para não quebrar links/deep-links do dashboard e da página de detalhe). Assim o deep-link ainda funciona abrindo o modal.
+- Remover os **3 `alert()`** do `EventDetailPage` por toasts; o `window.confirm` de exclusão vira `<ConfirmDialog>`.
 
-## ETAPA 5 — Frontend: Componente ShareButton (reutilizável)
-`components/common/ShareButton.tsx`: usa `navigator.share` quando disponível (mobile) com título+texto+url; fallback (desktop) com botões WhatsApp/Telegram (URL com mensagem pré-preenchida) e copiar link (com toast). Consome o toast do uiStore. Design system atual (Button/Card).
+## ETAPA 6 — Verificação
+`tsc -b`, `eslint` nos arquivos alterados, `npm run build`. Confirmar: zero `alert(`/`confirm(` restantes, todos Textareas sem resize, formulários abrem em modal.
 
-## ETAPA 6 — Frontend: Telas do Vendedor
-Grupo "Eventos" em `navigation.ts` + rotas em `App.tsx`:
-1. `pages/seller/events/EventsPage.tsx` — lista (cards, status badge, datas, nº produtos), "Novo evento", filtros, skeleton, empty state animado.
-2. `pages/seller/events/EventFormPage.tsx` — criar/editar (nome, descrição, DatePickers MUI, endereço, status).
-3. `pages/seller/events/EventDetailPage.tsx` — abas: Produtos vinculados (vincular/desvincular), QR Code (download/PDF + ShareButton), Insights (StatCards + gráfico ranking + comparativo).
-
-## ETAPA 7 — Frontend: Vitrine pública + compartilhar
-`pages/public/EventPublicPage.tsx` rota `/event/:id`: header (nome/local/datas/status) + ShareButton no topo + grid de produtos vinculados com badges + modal de compra (reaproveita lógica existente) + recordEventVisit no mount.
-
-## ETAPA 8 — Migração (por último)
-`npx prisma migrate dev --name add_garage_events`.
-
-## Verificação
-Backend: build + testes + Swagger. Frontend: tsc -b + eslint + build.
+## Fora de escopo (explicitamente)
+- `ContactPage.tsx`: o toggle form↔success não é "criar/editar entidade", é um formulário de contato público com confirmação inline — deixar como está (não é cadastro de entidade).
+- `ProfilePage`/`SettingsPage`: ProfileForm já é um card dedicado numa página própria (não é toggle inline) — fora do escopo de "abrir modal ao invés de preencher na mesma tela".
+- Notificações push, etc.

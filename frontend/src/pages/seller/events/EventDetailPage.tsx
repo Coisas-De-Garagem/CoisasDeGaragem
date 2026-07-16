@@ -28,16 +28,21 @@ import {
 import { Card } from '@/components/common/Card';
 import { Badge } from '@/components/common/Badge';
 import { Button } from '@/components/common/Button';
+import { Modal } from '@/components/common/Modal';
+import { ConfirmDialog } from '@/components/common/ConfirmDialog';
 import { StatCard } from '@/components/common/StatCard';
 import { Tabs } from '@/components/common/Tabs';
 import { EmptyState } from '@/components/common/EmptyState';
 import { Skeleton } from '@/components/common/Skeleton';
 import { ShareButton } from '@/components/common/ShareButton';
+import { EventForm } from '@/components/seller/EventForm';
 import { useEvents } from '@/hooks/useEvents';
 import { useProducts } from '@/hooks/useProducts';
+import { useUIStore } from '@/store/uiStore';
+import { makeNotifier } from '@/utils/notifications';
 import { api } from '@/services/api';
 import { formatCurrency } from '@/utils/formatters';
-import type { EventInsights, Product } from '@/types';
+import type { EventInsights, Product, CreateEventRequest, UpdateEventRequest } from '@/types';
 import { EVENT_STATUS_CONFIG, formatEventDateRange } from './eventHelpers';
 
 type TabKey = 'products' | 'qr' | 'insights';
@@ -45,11 +50,18 @@ type TabKey = 'products' | 'qr' | 'insights';
 export default function EventDetailPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { fetchEvent, removeEvent, selectedEvent } = useEvents();
+  const { fetchEvent, removeEvent, editEvent, selectedEvent } = useEvents();
   const { products } = useProducts();
+  const { addNotification } = useUIStore();
   const [activeTab, setActiveTab] = useState<TabKey>('products');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const notify = makeNotifier(addNotification);
 
   useEffect(() => {
     if (!id) return;
@@ -106,13 +118,30 @@ export default function EventDetailPage() {
   const shareMessage = `🏷️ ${event.name} — ${event.description || 'Garage sale com vários produtos à venda!'} Confira:`;
 
   const handleDelete = async () => {
-    if (window.confirm('Tem certeza que deseja excluir este evento? Os produtos serão desvinculados.')) {
-      try {
-        await removeEvent(event.id);
-        navigate('/seller/events');
-      } catch (err) {
-        alert(err instanceof Error ? err.message : 'Erro ao excluir evento');
-      }
+    setIsDeleting(true);
+    try {
+      await removeEvent(event.id);
+      notify('success', 'Evento excluído', 'O evento foi removido com sucesso.');
+      navigate('/seller/events');
+    } catch (err) {
+      notify('error', 'Erro ao excluir', err instanceof Error ? err.message : 'Tente novamente.');
+    } finally {
+      setIsDeleting(false);
+      setShowDeleteConfirm(false);
+    }
+  };
+
+  const handleEditSubmit = async (data: CreateEventRequest | UpdateEventRequest) => {
+    setIsSubmitting(true);
+    try {
+      await editEvent(event.id, data);
+      notify('success', 'Evento atualizado', 'As alterações foram salvas.');
+      setIsEditOpen(false);
+    } catch (err) {
+      notify('error', 'Erro ao salvar', err instanceof Error ? err.message : 'Tente novamente.');
+      throw err;
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -151,7 +180,7 @@ export default function EventDetailPage() {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => navigate(`/seller/events/${event.id}/edit`)}
+              onClick={() => setIsEditOpen(true)}
               leftIcon={<FontAwesomeIcon icon={faPencil} />}
             >
               Editar
@@ -159,7 +188,7 @@ export default function EventDetailPage() {
             <Button
               variant="ghost"
               size="sm"
-              onClick={handleDelete}
+              onClick={() => setShowDeleteConfirm(true)}
               leftIcon={<FontAwesomeIcon icon={faTrash} />}
               className="text-error hover:bg-error/10"
             >
@@ -178,6 +207,33 @@ export default function EventDetailPage() {
         <QrTab eventId={event.id} shareUrl={shareUrl} shareMessage={shareMessage} eventName={event.name} />
       )}
       {activeTab === 'insights' && <InsightsTab eventId={event.id} />}
+
+      {/* Modal: editar evento */}
+      <Modal
+        isOpen={isEditOpen}
+        onClose={() => setIsEditOpen(false)}
+        title="Editar evento"
+        size="lg"
+      >
+        <EventForm
+          event={event}
+          onSubmit={handleEditSubmit}
+          onCancel={() => setIsEditOpen(false)}
+          isLoading={isSubmitting}
+        />
+      </Modal>
+
+      {/* Confirmação de exclusão */}
+      <ConfirmDialog
+        isOpen={showDeleteConfirm}
+        onClose={() => setShowDeleteConfirm(false)}
+        onConfirm={handleDelete}
+        title="Excluir evento"
+        description="Tem certeza que deseja excluir este evento? Os produtos serão desvinculados e esta ação não pode ser desfeita."
+        confirmLabel="Sim, excluir"
+        danger
+        isLoading={isDeleting}
+      />
     </div>
   );
 }
@@ -187,9 +243,12 @@ export default function EventDetailPage() {
 // ---------------------------------------------------------------------------
 function ProductsTab({ eventId, allProducts }: { eventId: string; allProducts: Product[] }) {
   const { linkProduct, unlinkProduct } = useEvents();
+  const { addNotification } = useUIStore();
   const [eventProducts, setEventProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+
+  const notify = makeNotifier(addNotification);
 
   const loadEventProducts = async () => {
     setLoading(true);
@@ -226,8 +285,9 @@ function ProductsTab({ eventId, allProducts }: { eventId: string; allProducts: P
     try {
       await linkProduct(eventId, productId);
       await loadEventProducts();
+      notify('success', 'Produto vinculado', 'O produto foi adicionado ao evento.');
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Erro ao vincular produto');
+      notify('error', 'Erro ao vincular', err instanceof Error ? err.message : 'Tente novamente.');
     } finally {
       setActionLoading(null);
     }
@@ -238,8 +298,9 @@ function ProductsTab({ eventId, allProducts }: { eventId: string; allProducts: P
     try {
       await unlinkProduct(eventId, productId);
       setEventProducts((prev) => prev.filter((p) => p.id !== productId));
+      notify('success', 'Produto desvinculado', 'O produto foi removido do evento.');
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Erro ao desvincular produto');
+      notify('error', 'Erro ao desvincular', err instanceof Error ? err.message : 'Tente novamente.');
     } finally {
       setActionLoading(null);
     }

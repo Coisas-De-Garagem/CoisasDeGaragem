@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -8,20 +8,31 @@ import { useEvents } from '@/hooks/useEvents';
 import { Card } from '@/components/common/Card';
 import { Badge } from '@/components/common/Badge';
 import { Button } from '@/components/common/Button';
+import { Modal } from '@/components/common/Modal';
 import { Select } from '@/components/common/Select';
 import { EmptyState } from '@/components/common/EmptyState';
 import { Skeleton } from '@/components/common/Skeleton';
 import { PageHeaderSkeleton } from '@/components/common/PageSkeletons';
-import type { EventStatus } from '@/types';
+import { EventForm } from '@/components/seller/EventForm';
+import { useUIStore } from '@/store/uiStore';
+import { makeNotifier } from '@/utils/notifications';
+import type { EventStatus, GarageEvent, CreateEventRequest, UpdateEventRequest } from '@/types';
 import { EVENT_STATUS_CONFIG, EVENT_STATUS_OPTIONS, formatEventDateRange } from './eventHelpers';
 
 export default function EventsPage() {
-  const { events, fetchEvents } = useEvents();
+  const { events, fetchEvents, createEvent, editEvent, fetchEvent } = useEvents();
+  const { addNotification } = useUIStore();
   const navigate = useNavigate();
+  const location = useLocation();
   const containerRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [statusFilter, setStatusFilter] = useState<EventStatus | 'all'>('all');
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [editingEvent, setEditingEvent] = useState<GarageEvent | undefined>(undefined);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const notify = makeNotifier(addNotification);
 
   useEffect(() => {
     const load = async () => {
@@ -38,6 +49,59 @@ export default function EventsPage() {
     load();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // Abre o modal via router state (deep-links vindos do redirect de EventFormPage).
+  useEffect(() => {
+    const state = location.state as { newEvent?: boolean; editEventId?: string } | null;
+    if (!state) return;
+    if (state.newEvent) {
+      setEditingEvent(undefined);
+      setIsFormOpen(true);
+    } else if (state.editEventId) {
+      const loadAndEdit = async () => {
+        try {
+          const evt = await fetchEvent(state.editEventId!);
+          setEditingEvent(evt);
+          setIsFormOpen(true);
+        } catch {
+          notify('error', 'Erro', 'Não foi possível carregar o evento para edição.');
+        }
+      };
+      loadAndEdit();
+    }
+    // Limpa o state para não reabrir ao navegar de volta.
+    navigate(location.pathname, { replace: true, state: null });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state]);
+
+  const handleCreateClick = () => {
+    setEditingEvent(undefined);
+    setIsFormOpen(true);
+  };
+
+  const handleEditClick = (evt: GarageEvent) => {
+    setEditingEvent(evt);
+    setIsFormOpen(true);
+  };
+
+  const handleFormSubmit = async (data: CreateEventRequest | UpdateEventRequest) => {
+    setIsSubmitting(true);
+    try {
+      if (editingEvent) {
+        await editEvent(editingEvent.id, data);
+        notify('success', 'Evento atualizado', 'As alterações foram salvas.');
+      } else {
+        await createEvent(data as CreateEventRequest);
+        notify('success', 'Evento criado', 'O garage sale foi criado com sucesso.');
+      }
+      setIsFormOpen(false);
+    } catch (err) {
+      notify('error', 'Erro ao salvar', err instanceof Error ? err.message : 'Tente novamente.');
+      throw err;
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   useGSAP(
     () => {
@@ -69,7 +133,7 @@ export default function EventsPage() {
         </div>
         <Button
           variant="primary"
-          onClick={() => navigate('/seller/events/new')}
+          onClick={handleCreateClick}
           leftIcon={<FontAwesomeIcon icon={faPlus} />}
         >
           Novo evento
@@ -177,7 +241,7 @@ export default function EventsPage() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => navigate(`/seller/events/${event.id}/edit`)}
+                    onClick={() => handleEditClick(event)}
                     leftIcon={<FontAwesomeIcon icon={faPencil} />}
                   >
                     Editar
@@ -204,7 +268,7 @@ export default function EventsPage() {
               events.length === 0 ? (
                 <Button
                   variant="primary"
-                  onClick={() => navigate('/seller/events/new')}
+                  onClick={handleCreateClick}
                   leftIcon={<FontAwesomeIcon icon={faPlus} />}
                 >
                   Criar evento
@@ -218,6 +282,21 @@ export default function EventsPage() {
           />
         </Card>
       )}
+
+      {/* Modal: criar/editar evento */}
+      <Modal
+        isOpen={isFormOpen}
+        onClose={() => setIsFormOpen(false)}
+        title={editingEvent ? 'Editar evento' : 'Novo evento'}
+        size="lg"
+      >
+        <EventForm
+          event={editingEvent}
+          onSubmit={handleFormSubmit}
+          onCancel={() => setIsFormOpen(false)}
+          isLoading={isSubmitting}
+        />
+      </Modal>
     </div>
   );
 }
