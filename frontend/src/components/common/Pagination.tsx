@@ -1,5 +1,4 @@
-import React from 'react';
-import { Button } from './Button';
+import { Fragment } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronLeft, faChevronRight } from '@fortawesome/free-solid-svg-icons';
 
@@ -11,6 +10,32 @@ interface PaginationProps {
   totalItems?: number;
 }
 
+type PageToken = number | '...';
+
+function buildPageList(current: number, total: number): PageToken[] {
+  const delta = 1;
+  const range: number[] = [];
+  const withDots: PageToken[] = [];
+  let last = 0;
+
+  for (let i = 1; i <= total; i++) {
+    if (i === 1 || i === total || (i >= current - delta && i <= current + delta)) {
+      range.push(i);
+    }
+  }
+
+  for (const i of range) {
+    if (last) {
+      if (i - last === 2) withDots.push(last + 1);
+      else if (i - last !== 1) withDots.push('...');
+    }
+    withDots.push(i);
+    last = i;
+  }
+
+  return withDots;
+}
+
 export function Pagination({
   currentPage,
   totalPages,
@@ -18,86 +43,68 @@ export function Pagination({
   pageSize,
   totalItems,
 }: PaginationProps) {
+  if (totalPages <= 1) return null;
 
-  const startItem = totalItems ? (currentPage - 1) * pageSize! + 1 : 0;
-  const endItem = totalItems ? Math.min(currentPage * pageSize!, totalItems) : 0;
+  const startItem = totalItems && pageSize ? (currentPage - 1) * pageSize + 1 : 0;
+  const endItem =
+    totalItems && pageSize ? Math.min(currentPage * pageSize, totalItems) : 0;
 
-  const getPageNumbers = () => {
-    const delta = 2;
-    const range = [];
-    const rangeWithDots = [];
-    let last;
+  const pageList = buildPageList(currentPage, totalPages);
 
-    for (let i = 1; i <= totalPages; i++) {
-      if (i === 1 || i === totalPages || (i >= currentPage - delta && i <= currentPage + delta)) {
-        range.push(i);
-      }
-    }
-
-    for (let i of range) {
-      if (last) {
-        if (i - last === 2) {
-          rangeWithDots.push(last + 1);
-        } else if (i - last !== 1) {
-          rangeWithDots.push('...');
-        }
-      }
-      rangeWithDots.push(i);
-      last = i;
-    }
-
-    return rangeWithDots;
-  };
-
-  const pageNumbers = getPageNumbers();
+  const baseBtn =
+    'inline-flex items-center justify-center h-9 min-w-9 px-2 rounded-lg text-sm font-medium transition-colors focus-visible:ring-2 focus-visible:ring-primary disabled:opacity-40 disabled:pointer-events-none';
 
   return (
-    <div className="flex flex-col items-center gap-4">
-      {/* Info */}
-      {totalItems && pageSize && (
-        <p className="text-sm text-gray-600">
-          Mostrando {startItem} a {endItem} de {totalItems} itens
+    <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
+      {totalItems && pageSize ? (
+        <p className="text-sm text-text-muted order-2 sm:order-1">
+          {startItem}–{endItem} de {totalItems}
         </p>
+      ) : (
+        <span className="order-2 sm:order-1" />
       )}
 
-      {/* Pagination Controls */}
-      <div className="flex items-center gap-2">
-        {/* Previous Button */}
-        <Button
-          variant="tertiary"
+      <div className="flex items-center gap-1 order-1 sm:order-2">
+        <button
+          type="button"
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 1}
-          className="px-3 py-2"
+          className={`${baseBtn} text-text-main hover:bg-surface-hover border border-border`}
+          aria-label="Página anterior"
         >
-          <FontAwesomeIcon icon={faChevronLeft} className="w-5 h-5" />
-        </Button>
+          <FontAwesomeIcon icon={faChevronLeft} className="w-4 h-4" />
+        </button>
 
-        {/* Page Numbers */}
-        {pageNumbers.map((page, index) => (
-          <React.Fragment key={index}>
+        {pageList.map((page, index) => (
+          <Fragment key={index}>
             {typeof page === 'number' ? (
-              <Button
-                variant={currentPage === page ? 'primary' : 'tertiary'}
+              <button
+                type="button"
                 onClick={() => onPageChange(page)}
-                className="px-4 py-2 min-w-[40px]"
+                className={`${baseBtn} ${
+                  currentPage === page
+                    ? 'bg-primary text-white border border-primary'
+                    : 'text-text-main hover:bg-surface-hover border border-border'
+                }`}
+                aria-current={currentPage === page ? 'page' : undefined}
               >
                 {page}
-              </Button>
+              </button>
             ) : (
-              <span className="px-2 py-2 text-gray-500">...</span>
+              <span className="px-1 text-text-subtle">…</span>
             )}
-          </React.Fragment>
+          </Fragment>
         ))}
 
-        {/* Next Button */}
-        <Button
-          variant="tertiary"
+        <button
+          type="button"
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage === totalPages}
-          className="px-3 py-2"
+          className={`${baseBtn} text-text-main hover:bg-surface-hover border border-border`}
+          aria-label="Próxima página"
         >
-          <FontAwesomeIcon icon={faChevronRight} className="w-5 h-5" />
-        </Button>
+          <FontAwesomeIcon icon={faChevronRight} className="w-4 h-4" />
+        </button>
       </div>
     </div>
   );

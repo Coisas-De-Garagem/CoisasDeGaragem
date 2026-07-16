@@ -6,6 +6,13 @@ interface SkeletonProps {
   height?: string;
 }
 
+const VARIANT_CLASSES: Record<string, string> = {
+  text: 'h-4 w-24',
+  circular: 'w-12 h-12 rounded-full',
+  card: 'h-24 w-full',
+  list: 'h-4 w-full',
+};
+
 export function Skeleton({
   className,
   variant = 'text',
@@ -13,21 +20,15 @@ export function Skeleton({
   width = 'w-full',
   height = 'h-4',
 }: SkeletonProps) {
-  const baseClasses = 'animate-pulse bg-gray-200 dark:bg-gray-700 rounded';
-
-  const variantClasses: Record<string, string> = {
-    text: 'h-4 w-24',
-    circular: 'w-12 h-12 rounded-full',
-    card: 'h-24 w-full',
-    list: 'h-4 w-full',
-  };
+  const baseClasses =
+    'animate-pulse bg-neutral-200 dark:bg-neutral-800 rounded-md';
 
   return (
     <>
       {Array.from({ length: count }).map((_, index) => (
         <div
           key={index}
-          className={`${baseClasses} ${variantClasses[variant]} ${width} ${height} ${className || ''}`}
+          className={`${baseClasses} ${VARIANT_CLASSES[variant]} ${width} ${height} ${className || ''}`}
           aria-hidden="true"
           role="presentation"
         />

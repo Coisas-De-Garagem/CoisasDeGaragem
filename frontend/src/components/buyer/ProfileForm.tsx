@@ -2,9 +2,8 @@ import { useState } from 'react';
 import { Input } from '@/components/common/Input';
 import { Button } from '@/components/common/Button';
 import { Alert } from '@/components/common/Alert';
+import { Avatar } from '@/components/common/Avatar';
 import type { User } from '@/types';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser } from '@fortawesome/free-solid-svg-icons';
 
 interface ProfileFormProps {
   user: User;
@@ -22,7 +21,6 @@ export function ProfileForm({ user, onSubmit, isLoading }: ProfileFormProps) {
     e.preventDefault();
     setError('');
 
-    // Validate
     if (!name.trim()) {
       setError('Nome é obrigatório');
       return;
@@ -48,31 +46,20 @@ export function ProfileForm({ user, onSubmit, isLoading }: ProfileFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="px-5 py-5 space-y-5">
       {error && (
         <Alert variant="error" dismissible onDismiss={() => setError('')}>
           {error}
         </Alert>
       )}
 
-      {/* Avatar Section */}
-      <div className="flex items-center gap-6 mb-6">
-        <div className="flex-shrink-0">
-          {avatarUrl ? (
-            <img
-              src={avatarUrl}
-              alt={name}
-              className="w-24 h-24 rounded-full object-cover border-4 border-gray-200"
-            />
-          ) : (
-            <div className="w-24 h-24 rounded-full bg-gray-200 border-4 border-gray-300 flex items-center justify-center">
-              <FontAwesomeIcon icon={faUser} className="w-12 h-12 text-gray-400" />
-            </div>
-          )}
-        </div>
+      {/* Avatar */}
+      <div className="flex items-center gap-4">
+        <Avatar name={name || user.name} src={avatarUrl} size="xl" />
         <div className="flex-1">
           <Input
             id="avatarUrl"
+            name="avatarUrl"
             type="url"
             label="URL da foto de perfil"
             value={avatarUrl}
@@ -80,15 +67,16 @@ export function ProfileForm({ user, onSubmit, isLoading }: ProfileFormProps) {
             placeholder="https://exemplo.com/foto.jpg"
             fullWidth
             disabled={isLoading}
-            helperText="Opcional - Deixe vazio para manter a foto atual"
+            helperText="Opcional — deixe vazio para usar as iniciais"
           />
         </div>
       </div>
 
       <Input
         id="name"
+        name="name"
         type="text"
-        label="Nome completo *"
+        label="Nome completo"
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder="Seu nome completo"
@@ -101,6 +89,7 @@ export function ProfileForm({ user, onSubmit, isLoading }: ProfileFormProps) {
 
       <Input
         id="phone"
+        name="phone"
         type="tel"
         label="Telefone"
         value={phone}
@@ -108,16 +97,12 @@ export function ProfileForm({ user, onSubmit, isLoading }: ProfileFormProps) {
         placeholder="(11) 98765-4321"
         fullWidth
         disabled={isLoading}
-        helperText="Opcional - Formato: (11) 98765-4321"
+        helperText="Opcional — formato: (11) 98765-4321"
       />
 
-      <div className="flex gap-4 justify-end">
-        <Button
-          type="submit"
-          variant="primary"
-          isLoading={isLoading}
-        >
-          Salvar Perfil
+      <div className="flex justify-end pt-1">
+        <Button type="submit" variant="primary" isLoading={isLoading}>
+          Salvar perfil
         </Button>
       </div>
     </form>

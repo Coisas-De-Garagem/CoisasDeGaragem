@@ -1,87 +1,108 @@
 import { useEffect } from 'react';
+import type { ReactNode } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTimes } from '@fortawesome/free-solid-svg-icons';
+import { faXmark } from '@fortawesome/free-solid-svg-icons';
 
 interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   title?: string;
-  children: React.ReactNode;
+  description?: string;
+  children: ReactNode;
+  /** Rodapé do modal (geralmente ações). */
+  footer?: ReactNode;
   size?: 'sm' | 'md' | 'lg' | 'xl';
+  /** Esconde o botão de fechar no canto. */
+  hideCloseButton?: boolean;
 }
+
+const SIZE_CLASSES = {
+  sm: 'sm:max-w-md',
+  md: 'sm:max-w-lg',
+  lg: 'sm:max-w-xl',
+  xl: 'sm:max-w-3xl',
+};
 
 export function Modal({
   isOpen,
   onClose,
   title,
+  description,
   children,
+  footer,
   size = 'md',
+  hideCloseButton = false,
 }: ModalProps) {
-  // Handle escape key press
+  // Fecha com Escape.
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
-        onClose();
-      }
+      if (e.key === 'Escape' && isOpen) onClose();
     };
-
     document.addEventListener('keydown', handleEscape);
-    return () => {
-      document.removeEventListener('keydown', handleEscape);
-    };
+    return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, onClose]);
 
-  // Prevent body scroll when modal is open
+  // Trava o scroll do body quando aberto.
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = 'unset';
+      return () => {
+        document.body.style.overflow = '';
+      };
     }
   }, [isOpen]);
 
   if (!isOpen) return null;
 
-  const sizeClasses = {
-    sm: 'max-w-md',
-    md: 'max-w-lg',
-    lg: 'max-w-xl',
-    xl: 'max-w-2xl',
-  };
-
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4 animate-fade-in"
+      onMouseDown={(e) => {
+        // Fecha ao clicar fora (no backdrop).
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
       <div
-        className={`relative bg-white rounded-2xl shadow-2xl w-full ${sizeClasses[size]} max-h-[90vh] overflow-auto transform scale-100 transition-all`}
+        className={`relative w-full ${SIZE_CLASSES[size]} bg-surface text-text-main rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[92vh] flex flex-col animate-slide-up sm:animate-scale-in`}
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? 'modal-title' : undefined}
       >
-        {/* Close button */}
-        <button
-          onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 focus:outline-none"
-          aria-label="Close modal"
-        >
-          <FontAwesomeIcon icon={faTimes} className="w-6 h-6" />
-        </button>
-
-        {/* Header */}
-        {title && (
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2
-              id="modal-title"
-              className="text-xl font-semibold text-gray-900"
-            >
-              {title}
-            </h2>
+        {/* Cabecalho */}
+        {(title || !hideCloseButton) && (
+          <div className="flex items-start justify-between gap-4 px-5 py-4 border-b border-border">
+            <div className="min-w-0">
+              {title && (
+                <h2 id="modal-title" className="text-lg font-semibold text-text-main">
+                  {title}
+                </h2>
+              )}
+              {description && (
+                <p className="text-sm text-text-muted mt-0.5">{description}</p>
+              )}
+            </div>
+            {!hideCloseButton && (
+              <button
+                type="button"
+                onClick={onClose}
+                className="flex-shrink-0 -mr-1 p-1.5 rounded-lg text-text-subtle hover:text-text-main hover:bg-surface-hover transition-colors"
+                aria-label="Fechar"
+              >
+                <FontAwesomeIcon icon={faXmark} className="w-5 h-5" />
+              </button>
+            )}
           </div>
         )}
 
-        {/* Content */}
-        <div className={`px-6 py-4 ${title ? '' : 'pt-4'}`}>
-          {children}
-        </div>
+        {/* Conteudo */}
+        <div className="flex-1 overflow-y-auto px-5 py-4">{children}</div>
+
+        {/* Rodape */}
+        {footer && (
+          <div className="px-5 py-4 border-t border-border bg-surface-sunken/50 flex flex-col-reverse sm:flex-row gap-2 sm:justify-end">
+            {footer}
+          </div>
+        )}
       </div>
     </div>
   );

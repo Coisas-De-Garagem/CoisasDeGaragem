@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import type { InputHTMLAttributes } from 'react';
+import type { InputHTMLAttributes, ReactNode } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash } from '@fortawesome/free-solid-svg-icons';
 
@@ -8,6 +8,10 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   error?: string;
   helperText?: string;
   fullWidth?: boolean;
+  /** Ícone exibido à esquerda dentro do campo. */
+  leftIcon?: ReactNode;
+  /** Texto/sufixo exibido à direita (ex.: unidade "R$"). */
+  rightAddon?: ReactNode;
 }
 
 export function Input({
@@ -15,8 +19,11 @@ export function Input({
   error,
   helperText,
   fullWidth = false,
+  leftIcon,
+  rightAddon,
   className = '',
   type = 'text',
+  id,
   ...props
 }: InputProps) {
   const [showPassword, setShowPassword] = useState(false);
@@ -24,64 +31,73 @@ export function Input({
   const isPassword = type === 'password';
   const currentType = isPassword ? (showPassword ? 'text' : 'password') : type;
 
+  const inputId = id || props.name;
+
   return (
-    <div className={`mb-4 ${widthClass}`}>
+    <div className={`w-full ${widthClass}`}>
       {label && (
         <label
-          htmlFor={props.id}
-          className="block text-sm font-medium text-neutral-700 mb-1"
+          htmlFor={inputId}
+          className="block text-sm font-medium text-text-main mb-1.5"
         >
           {label}
         </label>
       )}
       <div className="relative">
+        {leftIcon && (
+          <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 text-text-subtle pointer-events-none">
+            {leftIcon}
+          </span>
+        )}
         <input
-          id={props.id}
+          id={inputId}
           type={currentType}
           className={`
-            w-full px-4 py-2.5 
-            bg-white border border-neutral-200 
-            rounded-xl text-neutral-900 
-            placeholder-neutral-400 
-            focus:ring-4 focus:ring-primary/10 focus:border-primary 
-            focus:outline-none 
-            disabled:opacity-50 disabled:bg-neutral-50 disabled:cursor-not-allowed 
-            transition-all duration-300
-            ${isPassword ? 'pr-12' : ''}
-            ${error ? 'border-error ring-error/10' : ''}
+            w-full h-11
+            bg-surface text-text-main placeholder:text-text-subtle
+            border border-border-strong rounded-lg
+            focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none
+            disabled:opacity-50 disabled:cursor-not-allowed
+            transition-colors duration-200
+            ${leftIcon ? 'pl-10' : 'pl-3.5'}
+            ${isPassword || rightAddon ? 'pr-10' : 'pr-3.5'}
+            ${error ? 'border-error focus:border-error focus:ring-error/20' : ''}
             ${className}
           `}
           aria-invalid={!!error}
-          aria-describedby={error ? `${props.id}-error` : helperText ? `${props.id}-helper` : undefined}
+          aria-describedby={
+            error ? `${inputId}-error` : helperText ? `${inputId}-helper` : undefined
+          }
           {...props}
         />
         {isPassword && (
           <button
             type="button"
-            className="absolute right-4 top-1/2 -translate-y-1/2 text-neutral-400 hover:text-neutral-600 focus:outline-none focus:text-primary transition-colors"
-            onClick={() => setShowPassword(!showPassword)}
+            className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-text-subtle hover:text-text-main transition-colors"
+            onClick={() => setShowPassword((v) => !v)}
             tabIndex={-1}
             aria-label={showPassword ? 'Esconder senha' : 'Exibir senha'}
           >
             <FontAwesomeIcon icon={showPassword ? faEyeSlash : faEye} />
           </button>
         )}
+        {!isPassword && rightAddon && (
+          <span className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-text-muted text-sm pointer-events-none">
+            {rightAddon}
+          </span>
+        )}
       </div>
       {error && (
         <p
-          id={`${props.id}-error`}
-          className="mt-1.5 text-sm text-error font-medium flex items-center gap-1"
+          id={`${inputId}-error`}
+          className="mt-1.5 text-sm text-error font-medium"
           role="alert"
         >
-          <span className="w-1 h-1 rounded-full bg-error" />
           {error}
         </p>
       )}
       {helperText && !error && (
-        <p
-          id={`${props.id}-helper`}
-          className="mt-1.5 text-sm text-neutral-500"
-        >
+        <p id={`${inputId}-helper`} className="mt-1.5 text-sm text-text-muted">
           {helperText}
         </p>
       )}

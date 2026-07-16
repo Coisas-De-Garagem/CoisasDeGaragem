@@ -1,60 +1,58 @@
-import { BuyerLayout } from '@/components/buyer/BuyerLayout';
+import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBagShopping, faMagnifyingGlass, faBoxOpen } from '@fortawesome/free-solid-svg-icons';
 import { PurchaseCard } from '@/components/buyer/PurchaseCard';
 import { usePurchases } from '@/hooks/usePurchases';
 import { Spinner } from '@/components/common/Spinner';
-
-import { Input } from '@/components/common/Input';
 import { Select } from '@/components/common/Select';
+import { SearchInput } from '@/components/common/SearchInput';
 import { Pagination } from '@/components/common/Pagination';
-import { useState, useEffect } from 'react';
+import { Card } from '@/components/common/Card';
+import { StatCard } from '@/components/common/StatCard';
+import { EmptyState } from '@/components/common/EmptyState';
+import { Alert } from '@/components/common/Alert';
+import { Button } from '@/components/common/Button';
 import type { Purchase } from '@/types';
-import { Link } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faSearch, faBox, faShoppingBag } from '@fortawesome/free-solid-svg-icons';
+
+const currency = (value: number) =>
+  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
 
 export default function PurchasesPage() {
   const { purchases, fetchPurchases } = usePurchases();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
-  // const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<'date' | 'status' | 'price'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const pageSize = 9;
 
-  // Filter purchases based on search term
-  const filteredPurchases = purchases.filter(purchase =>
-    purchase.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    purchase.status.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredPurchases = purchases.filter(
+    (purchase) =>
+      purchase.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      purchase.status.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
-  // Sort filtered purchases
   const sortedPurchases = [...filteredPurchases].sort((a, b) => {
     let comparison = 0;
-
-    if (sortBy === 'date') {
+    if (sortBy === 'date')
       comparison = new Date(a.purchaseDate).getTime() - new Date(b.purchaseDate).getTime();
-    } else if (sortBy === 'status') {
-      comparison = a.status.localeCompare(b.status);
-    } else if (sortBy === 'price') {
-      comparison = a.price - b.price;
-    }
-
+    else if (sortBy === 'status') comparison = a.status.localeCompare(b.status);
+    else if (sortBy === 'price') comparison = a.price - b.price;
     return sortOrder === 'asc' ? comparison : -comparison;
   });
 
-  // Paginate sorted purchases
   const totalPages = Math.ceil(sortedPurchases.length / pageSize);
   const startIndex = (currentPage - 1) * pageSize;
   const paginatedPurchases = sortedPurchases.slice(startIndex, startIndex + pageSize);
 
-  // Reset to page 1 when search term or sort changes
+  // Reseta a paginação quando filtros/ordenação mudam.
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentPage(1);
   }, [searchTerm, sortBy, sortOrder]);
 
-  // Load purchases on mount
   useEffect(() => {
     const loadPurchases = async () => {
       setIsLoading(true);
@@ -71,142 +69,128 @@ export default function PurchasesPage() {
   }, [fetchPurchases]);
 
   const handleViewDetails = (purchase: Purchase) => {
-    // setSelectedPurchase(purchase);
     console.log('View details for order:', purchase.id);
   };
 
   if (isLoading) {
     return (
-      <BuyerLayout>
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <Spinner />
-            <p className="mt-4 text-gray-600">Carregando compras...</p>
-          </div>
-        </div>
-      </BuyerLayout>
+      <div className="flex items-center justify-center py-16 text-primary">
+        <Spinner size="lg" />
+      </div>
     );
   }
 
   if (error) {
     return (
-      <BuyerLayout>
-        <div className="max-w-4xl mx-auto">
-          <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-            <h2 className="text-xl font-semibold text-red-900 mb-2">Erro ao carregar compras</h2>
-            <p className="text-red-700">{error}</p>
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                fetchPurchases();
-              }}
-              className="mt-4 px-4 py-2 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
-            >
-              Tentar novamente
-            </button>
-          </div>
-        </div>
-      </BuyerLayout>
+      <div className="space-y-4">
+        <Alert variant="error" title="Erro ao carregar compras">
+          {error}
+        </Alert>
+        <Button variant="primary" onClick={() => fetchPurchases()}>
+          Tentar novamente
+        </Button>
+      </div>
     );
   }
 
   return (
-    <BuyerLayout>
-      <div className="max-w-6xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <div>
-            <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">
-              Minhas Compras
-            </h1>
-            <p className="text-gray-600">
-              Acompanhe suas compras realizadas nos garage sales
-            </p>
-          </div>
-          <div className="flex flex-col sm:flex-row gap-2">
-            <Input
-              type="search"
-              placeholder="Buscar compras..."
+    <div className="space-y-6">
+      {/* Cabeçalho */}
+      <div className="flex flex-col gap-4">
+        <div>
+          <h1 className="text-2xl lg:text-3xl font-bold text-text-main">Minhas compras</h1>
+          <p className="text-text-muted mt-1">
+            Acompanhe suas compras realizadas nos garage sales
+          </p>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+        <StatCard
+          label="Total de compras"
+          value={sortedPurchases.length}
+          tone="primary"
+          icon={<FontAwesomeIcon icon={faBagShopping} />}
+        />
+        <StatCard
+          label="Valor total"
+          value={currency(sortedPurchases.reduce((sum, p) => sum + p.price, 0))}
+          tone="success"
+        />
+        <StatCard
+          label="Concluídas"
+          value={sortedPurchases.filter((p) => p.status === 'completed').length}
+          tone="info"
+        />
+      </div>
+
+      {/* Filtros */}
+      <Card flush>
+        <div className="p-4 flex flex-col md:flex-row gap-3">
+          <div className="flex-1">
+            <SearchInput
+              placeholder="Buscar por ID ou status..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="min-w-[200px]"
+              onClear={() => setSearchTerm('')}
             />
-            <Select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as 'date' | 'status' | 'price')}
-              className="min-w-[150px]"
-              options={[
-                { value: 'date', label: 'Data' },
-                { value: 'status', label: 'Status' },
-                { value: 'price', label: 'Preço' },
-              ]}
-            />
-            <Select
-              value={sortOrder}
-              onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
-              className="min-w-[120px]"
-              options={[
-                { value: 'asc', label: 'Antigo' },
-                { value: 'desc', label: 'Recente' },
-              ]}
-            />
+          </div>
+          <div className="flex gap-3">
+            <div className="w-full md:w-36">
+              <Select
+                aria-label="Ordenar por"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value as 'date' | 'status' | 'price')}
+                options={[
+                  { value: 'date', label: 'Data' },
+                  { value: 'status', label: 'Status' },
+                  { value: 'price', label: 'Preço' },
+                ]}
+              />
+            </div>
+            <div className="w-full md:w-32">
+              <Select
+                aria-label="Ordem"
+                value={sortOrder}
+                onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
+                options={[
+                  { value: 'asc', label: 'Antigo' },
+                  { value: 'desc', label: 'Recente' },
+                ]}
+              />
+            </div>
           </div>
         </div>
+      </Card>
 
-        {/* Stats */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-lg shadow p-6">
-            <p className="text-sm text-gray-600 mb-1">Total de Compras</p>
-            <p className="text-3xl font-bold text-primary">{sortedPurchases.length}</p>
-          </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <p className="text-sm text-gray-600 mb-1">Valor Total</p>
-            <p className="text-3xl font-bold text-success">
-              {new Intl.NumberFormat('pt-BR', {
-                style: 'currency',
-                currency: 'BRL',
-              }).format(
-                sortedPurchases.reduce((sum, p) => sum + p.price, 0)
-              )}
-            </p>
-          </div>
-          <div className="bg-white rounded-lg shadow p-6">
-            <p className="text-sm text-gray-600 mb-1">Compras Concluídas</p>
-            <p className="text-3xl font-bold text-primary">
-              {sortedPurchases.filter(p => p.status === 'completed').length}
-            </p>
-          </div>
-        </div>
-
-        {/* Purchases List */}
-        {sortedPurchases.length === 0 && purchases.length > 0 ? (
-          <div className="text-center py-12">
-            <FontAwesomeIcon icon={faSearch} className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Nenhuma compra encontrada
-            </h3>
-            <p className="text-gray-600">
-              Tente buscar com outros termos
-            </p>
-          </div>
-        ) : filteredPurchases.length === 0 ? (
-          <div className="text-center py-12">
-            <FontAwesomeIcon icon={faBox} className="w-16 h-16 mx-auto text-gray-400 mb-4" />
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">
-              Nenhuma compra encontrada
-            </h3>
-            <p className="text-gray-600 mb-6">
-              Você ainda não realizou nenhuma compra.
-            </p>
-            <Link
-              to="/buyer/qr-scanner"
-              className="inline-flex items-center px-6 py-3 bg-primary text-white rounded-lg hover:bg-primary-hover transition-colors"
-            >
-              <FontAwesomeIcon icon={faShoppingBag} className="mr-2" /> Escanear QR Code
-            </Link>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Lista */}
+      {sortedPurchases.length === 0 && purchases.length > 0 ? (
+        <Card>
+          <EmptyState
+            icon={<FontAwesomeIcon icon={faMagnifyingGlass} />}
+            title="Nenhuma compra encontrada"
+            description="Tente buscar com outros termos."
+          />
+        </Card>
+      ) : filteredPurchases.length === 0 ? (
+        <Card>
+          <EmptyState
+            icon={<FontAwesomeIcon icon={faBoxOpen} />}
+            title="Você ainda não realizou compras"
+            description="Escanee um QR code de um produto para fazer sua primeira compra."
+            action={
+              <Link to="/buyer/qr-scanner">
+                <Button variant="primary" leftIcon={<FontAwesomeIcon icon={faBagShopping} />}>
+                  Escanear QR code
+                </Button>
+              </Link>
+            }
+          />
+        </Card>
+      ) : (
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {paginatedPurchases.map((purchase) => (
               <PurchaseCard
                 key={purchase.id}
@@ -215,11 +199,8 @@ export default function PurchasesPage() {
               />
             ))}
           </div>
-        )}
 
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="mt-6">
+          {totalPages > 1 && (
             <Pagination
               currentPage={currentPage}
               totalPages={totalPages}
@@ -227,9 +208,9 @@ export default function PurchasesPage() {
               pageSize={pageSize}
               totalItems={filteredPurchases.length}
             />
-          </div>
-        )}
-      </div>
-    </BuyerLayout>
+          )}
+        </>
+      )}
+    </div>
   );
 }

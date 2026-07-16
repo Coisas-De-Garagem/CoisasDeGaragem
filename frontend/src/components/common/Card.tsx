@@ -6,7 +6,10 @@ interface CardProps {
   body?: ReactNode;
   footer?: ReactNode;
   className?: string;
+  /** Aplica efeito de hover e cursor pointer. */
   hoverable?: boolean;
+  /** Remove padding interno do corpo. */
+  flush?: boolean;
   onClick?: () => void;
 }
 
@@ -17,10 +20,13 @@ export function Card({
   footer,
   className = '',
   hoverable = false,
+  flush = false,
   onClick,
 }: CardProps) {
-  const baseClasses = 'bg-white rounded-2xl shadow-sm border border-neutral-100 overflow-hidden';
-  const hoverClasses = hoverable ? 'hover:shadow-lg hover:border-primary-100 transition-all duration-300 cursor-pointer hover:-translate-y-1' : '';
+  const baseClasses = 'bg-surface rounded-lg border border-border overflow-hidden';
+  const hoverClasses = hoverable
+    ? 'hover:border-border-strong hover:bg-surface-hover transition-colors cursor-pointer'
+    : '';
 
   return (
     <div
@@ -30,24 +36,14 @@ export function Card({
       tabIndex={hoverable ? 0 : undefined}
     >
       {header && (
-        <div className="px-6 py-4 border-b border-neutral-200 bg-neutral-50/50">
-          {header}
-        </div>
+        <div className="px-5 py-4 border-b border-border">{header}</div>
       )}
-      {body && (
-        <div className="px-6 py-4">
-          {body}
-        </div>
-      )}
+      {body && <div className={flush ? '' : 'px-5 py-4'}>{body}</div>}
       {footer && (
-        <div className="px-6 py-4 border-t border-neutral-200 bg-neutral-50/50">
-          {footer}
-        </div>
+        <div className="px-5 py-4 border-t border-border bg-surface-2">{footer}</div>
       )}
       {!header && !body && !footer && (
-        <div className="px-6 py-4">
-          {children}
-        </div>
+        <div className={flush ? '' : 'px-5 py-4'}>{children}</div>
       )}
     </div>
   );

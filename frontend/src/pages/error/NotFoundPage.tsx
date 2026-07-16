@@ -1,37 +1,37 @@
 import { useNavigate } from 'react-router-dom';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faMagnifyingGlass, faArrowLeft, faHouse } from '@fortawesome/free-solid-svg-icons';
 import { Button } from '@/components/common/Button';
-import { PageLayout } from '@/components/layout/PageLayout';
 
 export default function NotFoundPage() {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    return (
-        <PageLayout showHeader={false} showFooter={false}>
-            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 px-4 py-8">
-                <div className="text-center max-w-md">
-                    <h1 className="text-9xl font-extrabold text-primary mb-4 opacity-80">404</h1>
-                    <h2 className="text-3xl font-bold text-gray-900 mb-4">Página Não Encontrada</h2>
-                    <p className="text-lg text-gray-600 mb-8">
-                        Ops! A página que você está procurando parece ter desaparecido no espaço-tempo.
-                    </p>
-                    <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                        <Button
-                            variant="primary"
-                            size="lg"
-                            onClick={() => navigate('/')}
-                        >
-                            Voltar ao Início
-                        </Button>
-                        <Button
-                            variant="tertiary"
-                            size="lg"
-                            onClick={() => navigate(-1)}
-                        >
-                            Voltar Anterior
-                        </Button>
-                    </div>
-                </div>
-            </div>
-        </PageLayout>
-    );
+  return (
+    <div className="min-h-[70vh] flex flex-col items-center justify-center px-4 py-12 text-center">
+      <div className="w-14 h-14 rounded-full bg-primary/10 text-primary flex items-center justify-center mb-6 [&_svg]:w-7 [&_svg]:h-7">
+        <FontAwesomeIcon icon={faMagnifyingGlass} />
+      </div>
+      <p className="text-6xl font-bold text-primary mb-2 tracking-tight">404</p>
+      <h1 className="text-xl font-semibold text-text-main mb-2">Página não encontrada</h1>
+      <p className="text-text-muted max-w-sm mb-8">
+        A página que você procura não existe ou foi movida.
+      </p>
+      <div className="flex flex-col sm:flex-row gap-3">
+        <Button
+          variant="primary"
+          onClick={() => navigate('/')}
+          leftIcon={<FontAwesomeIcon icon={faHouse} />}
+        >
+          Voltar ao início
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => navigate(-1)}
+          leftIcon={<FontAwesomeIcon icon={faArrowLeft} />}
+        >
+          Página anterior
+        </Button>
+      </div>
+    </div>
+  );
 }

@@ -8,7 +8,6 @@ import {
   AreaChart,
   Area,
 } from 'recharts';
-import type { AnalyticsData, Purchase } from '@/types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faBox,
@@ -16,8 +15,12 @@ import {
   faChartLine,
   faTags,
   faClipboardList,
-  faUsers
+  faUsers,
 } from '@fortawesome/free-solid-svg-icons';
+import { Card } from '@/components/common/Card';
+import { StatCard } from '@/components/common/StatCard';
+import { Skeleton } from '@/components/common/Skeleton';
+import type { AnalyticsData, Purchase } from '@/types';
 import { formatCurrency } from '@/utils/formatters';
 
 interface SalesChartProps {
@@ -26,178 +29,127 @@ interface SalesChartProps {
   loading?: boolean;
 }
 
+const PRIMARY = '#1f47f5';
+
 export function SalesChart({ data, purchases, loading = false }: SalesChartProps) {
   const chartData = useMemo(() => {
     if (!purchases.length) return [];
-
-    // Group purchases by date
-    const groupedData = purchases.reduce((acc, purchase) => {
+    const grouped = purchases.reduce((acc, purchase) => {
       const date = new Date(purchase.purchaseDate).toLocaleDateString('pt-BR', {
         day: '2-digit',
         month: '2-digit',
       });
-
-      if (!acc[date]) {
-        acc[date] = 0;
-      }
-      acc[date] += purchase.price;
+      acc[date] = (acc[date] || 0) + purchase.price;
       return acc;
     }, {} as Record<string, number>);
 
-    // Convert to array and sort (assuming simple date sort or just taking last 7 days)
-    // For now, let's map over the last 7 days to ensure a continuous line
-    const result = [];
+    const result: { date: string; amount: number }[] = [];
     const today = new Date();
     for (let i = 6; i >= 0; i--) {
       const d = new Date(today);
       d.setDate(today.getDate() - i);
-      const dateStr = d.toLocaleDateString('pt-BR', {
-        day: '2-digit',
-        month: '2-digit',
-      });
-      result.push({
-        date: dateStr,
-        amount: groupedData[dateStr] || 0,
-      });
+      const dateStr = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+      result.push({ date: dateStr, amount: grouped[dateStr] || 0 });
     }
     return result;
   }, [purchases]);
 
+  const metrics = [
+    { label: 'Vendas totais', value: data?.totalSales || 0, icon: <FontAwesomeIcon icon={faBox} />, tone: 'primary' as const },
+    { label: 'Receita total', value: formatCurrency(data?.totalRevenue || 0), icon: <FontAwesomeIcon icon={faMoneyBillWave} />, tone: 'success' as const },
+    { label: 'Valor listado', value: formatCurrency(data?.totalListingsValue || 0), icon: <FontAwesomeIcon icon={faChartLine} />, tone: 'info' as const },
+    { label: 'Produtos vendidos', value: data?.productsSold || 0, icon: <FontAwesomeIcon icon={faTags} />, tone: 'accent' as const },
+    { label: 'Produtos listados', value: data?.productsListed || 0, icon: <FontAwesomeIcon icon={faClipboardList} />, tone: 'gray' as const },
+    { label: 'Compradores únicos', value: data?.uniqueBuyers || 0, icon: <FontAwesomeIcon icon={faUsers} />, tone: 'warning' as const },
+  ];
+
   if (loading) {
     return (
-      <div className="bg-white rounded-xl shadow-lg p-6 border border-blue-100">
-        <div className="animate-pulse space-y-6">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <div key={i} className="h-24 bg-gray-200 rounded-xl" />
-            ))}
-          </div>
-          <div className="h-80 bg-gray-200 rounded-xl" />
+      <div className="space-y-6">
+        <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <Skeleton key={i} variant="card" height="h-24" />
+          ))}
         </div>
+        <Card><Skeleton height="h-80" /></Card>
       </div>
     );
   }
 
-  const metrics = [
-    {
-      label: 'Vendas Totais',
-      value: data?.totalSales || 0,
-      icon: faBox,
-      color: 'bg-blue-50 text-blue-600',
-    },
-    {
-      label: 'Receita Total',
-      value: formatCurrency(data?.totalRevenue || 0),
-      icon: faMoneyBillWave,
-      color: 'bg-emerald-50 text-emerald-600',
-    },
-    {
-      label: 'Valor Total Listado',
-      value: formatCurrency(data?.totalListingsValue || 0),
-      icon: faChartLine,
-      color: 'bg-indigo-50 text-indigo-600',
-    },
-    {
-      label: 'Produtos Vendidos',
-      value: data?.productsSold || 0,
-      icon: faTags,
-      color: 'bg-orange-50 text-orange-600',
-    },
-    {
-      label: 'Produtos Listados',
-      value: data?.productsListed || 0,
-      icon: faClipboardList,
-      color: 'bg-purple-50 text-purple-600',
-    },
-    {
-      label: 'Compradores Únicos',
-      value: data?.uniqueBuyers || 0,
-      icon: faUsers,
-      color: 'bg-pink-50 text-pink-600',
-    },
-  ];
-
   return (
-    <div className="space-y-8">
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {metrics.map((metric, index) => (
-          <div
-            key={index}
-            className="group hover:-translate-y-1 transition-transform duration-300 bg-white rounded-xl shadow-sm hover:shadow-md p-5 border border-gray-100"
-          >
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-500 mb-1">{metric.label}</p>
-                <h3 className="text-2xl font-bold text-gray-900">{metric.value}</h3>
-              </div>
-              <div className={`p-3 rounded-lg ${metric.color} transition-colors group-hover:scale-110 duration-300`}>
-                <FontAwesomeIcon icon={metric.icon} className="w-5 h-5" />
-              </div>
-            </div>
-          </div>
+    <div className="space-y-6">
+      {/* Métricas */}
+      <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
+        {metrics.map((metric) => (
+          <StatCard
+            key={metric.label}
+            label={metric.label}
+            value={metric.value}
+            icon={metric.icon}
+            tone={metric.tone}
+          />
         ))}
       </div>
 
-      {/* Chart Section */}
-      <div className="bg-white rounded-xl shadow-lg p-6 border border-gray-100">
-        <div className="flex items-center justify-between mb-8">
+      {/* Gráfico */}
+      <Card>
+        <div className="px-5 py-4 border-b border-border flex items-center justify-between">
           <div>
-            <h3 className="text-lg font-bold text-gray-900">Desempenho de Vendas</h3>
-            <p className="text-sm text-gray-500">Receita dos últimos 7 dias</p>
+            <h3 className="text-base font-semibold text-text-main">Desempenho de vendas</h3>
+            <p className="text-sm text-text-muted">Receita dos últimos 7 dias</p>
           </div>
-          <div className="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 px-3 py-1 rounded-full">
-            <span className="w-2 h-2 rounded-full bg-[#4169E1]"></span>
-            Receita Diária
-          </div>
+          <span className="inline-flex items-center gap-1.5 text-xs text-text-muted bg-surface-sunken px-2.5 py-1 rounded-full">
+            <span className="w-2 h-2 rounded-full" style={{ backgroundColor: PRIMARY }} />
+            Receita diária
+          </span>
         </div>
-
-        <div className="h-[400px] w-full">
+        <div className="p-4 h-[320px] sm:h-[380px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
               <defs>
                 <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#4169E1" stopOpacity={0.3} />
-                  <stop offset="95%" stopColor="#4169E1" stopOpacity={0} />
+                  <stop offset="5%" stopColor={PRIMARY} stopOpacity={0.3} />
+                  <stop offset="95%" stopColor={PRIMARY} stopOpacity={0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--color-border)" />
               <XAxis
                 dataKey="date"
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: '#6B7280', fontSize: 12 }}
+                tick={{ fill: 'var(--color-text-muted)', fontSize: 12 }}
                 tickMargin={10}
               />
               <YAxis
                 axisLine={false}
                 tickLine={false}
-                tick={{ fill: '#6B7280', fontSize: 12 }}
+                tick={{ fill: 'var(--color-text-muted)', fontSize: 12 }}
                 tickFormatter={(value) => `R$ ${value}`}
               />
               <Tooltip
-                cursor={{ stroke: '#4169E1', strokeWidth: 1, strokeDasharray: '4 4' }}
+                cursor={{ stroke: PRIMARY, strokeWidth: 1, strokeDasharray: '4 4' }}
                 contentStyle={{
-                  backgroundColor: '#fff',
+                  backgroundColor: 'var(--color-surface)',
+                  color: 'var(--color-text-main)',
                   borderRadius: '12px',
-                  border: 'none',
-                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
+                  border: '1px solid var(--color-border)',
+                  boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
                 }}
-                formatter={(value: any) => [formatCurrency(Number(value)), 'Receita']}
+                formatter={(value) => [formatCurrency(Number(value)), 'Receita']}
               />
               <Area
                 type="monotone"
                 dataKey="amount"
-                stroke="#4169E1"
+                stroke={PRIMARY}
                 strokeWidth={3}
                 fillOpacity={1}
                 fill="url(#colorRevenue)"
-                activeDot={{ r: 6, strokeWidth: 0, fill: '#4169E1' }}
+                activeDot={{ r: 6, strokeWidth: 0, fill: PRIMARY }}
               />
             </AreaChart>
           </ResponsiveContainer>
         </div>
-      </div>
+      </Card>
     </div>
   );
 }
