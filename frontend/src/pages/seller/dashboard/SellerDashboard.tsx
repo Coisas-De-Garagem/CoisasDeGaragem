@@ -12,6 +12,7 @@ import {
   faQrcode,
 } from '@fortawesome/free-solid-svg-icons';
 import { Card } from '@/components/common/Card';
+import { Skeleton } from '@/components/common/Skeleton';
 import { SalesChart } from '@/components/seller/SalesChart';
 import { useAuth } from '@/hooks/useAuth';
 import { api } from '@/services/api';
@@ -139,9 +140,11 @@ export default function SellerDashboard() {
 
       {/* Métricas / gráfico */}
       <div className="dashboard-item">
-        {analyticsData && (
-          <SalesChart data={analyticsData} purchases={purchases} loading={loading} />
-        )}
+        <SalesChart
+          data={analyticsData ?? undefined}
+          purchases={purchases}
+          loading={loading}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -175,9 +178,7 @@ export default function SellerDashboard() {
 
           {loading ? (
             <div className="p-4 space-y-2">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="h-12 bg-surface-hover rounded-md animate-pulse" />
-              ))}
+              <Skeleton variant="card" height="h-12" rounded="rounded-md" count={3} />
             </div>
           ) : recentActivity.length === 0 ? (
             <div className="p-8 text-center text-sm text-text-muted">

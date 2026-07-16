@@ -18,7 +18,9 @@ const ProductsPage = lazy(() => import('@/pages/seller/products/ProductsPage'));
 const SalesPage = lazy(() => import('@/pages/seller/sales/SalesPage'));
 const AnalyticsPage = lazy(() => import('@/pages/seller/analytics/AnalyticsPage'));
 const QRCodesPage = lazy(() => import('@/pages/seller/qr-codes/QRCodesPage'));
-const SettingsPage = lazy(() => import('@/pages/seller/settings/SettingsPage'));
+const EventsPage = lazy(() => import('@/pages/seller/events/EventsPage'));
+const EventFormPage = lazy(() => import('@/pages/seller/events/EventFormPage'));
+const EventDetailPage = lazy(() => import('@/pages/seller/events/EventDetailPage'));
 
 // Buyer
 const BuyerDashboard = lazy(() => import('@/pages/buyer/qr-scanner/BuyerDashboard'));
@@ -37,6 +39,7 @@ const HelpPage = lazy(() => import('@/pages/public/HelpPage'));
 const TermsPage = lazy(() => import('@/pages/public/TermsPage'));
 const PrivacyPage = lazy(() => import('@/pages/public/PrivacyPage'));
 const ProductPublicPage = lazy(() => import('@/pages/public/ProductPublicPage'));
+const EventPublicPage = lazy(() => import('@/pages/public/EventPublicPage'));
 
 function SessionManager() {
   useSessionTimeout();
@@ -113,7 +116,10 @@ export default function App() {
             <Route path="sales" element={<Suspended><SalesPage /></Suspended>} />
             <Route path="qr-codes" element={<Suspended><QRCodesPage /></Suspended>} />
             <Route path="analytics" element={<Suspended><AnalyticsPage /></Suspended>} />
-            <Route path="settings" element={<Suspended><SettingsPage /></Suspended>} />
+            <Route path="events" element={<Suspended><EventsPage /></Suspended>} />
+            <Route path="events/new" element={<Suspended><EventFormPage /></Suspended>} />
+            <Route path="events/:id" element={<Suspended><EventDetailPage /></Suspended>} />
+            <Route path="events/:id/edit" element={<Suspended><EventFormPage /></Suspended>} />
             <Route path="profile" element={<Suspended><ProfilePage mode="seller" /></Suspended>} />
           </Route>
 
@@ -140,6 +146,7 @@ export default function App() {
           <Route path="/terms" element={<Suspended><PageLayout><TermsPage /></PageLayout></Suspended>} />
           <Route path="/privacy" element={<Suspended><PageLayout><PrivacyPage /></PageLayout></Suspended>} />
           <Route path="/product/:id" element={<Suspended><PageLayout><ProductPublicPage /></PageLayout></Suspended>} />
+          <Route path="/event/:id" element={<Suspended><PageLayout showHeader><EventPublicPage /></PageLayout></Suspended>} />
 
           {/* Erros */}
           <Route path="/500" element={<Suspended><PageLayout showHeader showFooter={false}><ServerErrorPage /></PageLayout></Suspended>} />

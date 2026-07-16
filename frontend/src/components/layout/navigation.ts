@@ -5,11 +5,11 @@ import {
   faTags,
   faChartPie,
   faQrcode,
-  faGear,
   faUser,
   faMagnifyingGlass,
   faBagShopping,
   faClockRotateLeft,
+  faCalendarDays,
 } from '@fortawesome/free-solid-svg-icons';
 import type { DashboardType } from '@/types';
 
@@ -37,6 +37,7 @@ export const NAVIGATION: Record<DashboardType, NavGroup[]> = {
         { label: 'Dashboard', path: '/seller/dashboard', icon: faChartLine },
         { label: 'Produtos', path: '/seller/products', icon: faBox },
         { label: 'Vendas', path: '/seller/sales', icon: faTags },
+        { label: 'Eventos', path: '/seller/events', icon: faCalendarDays },
       ],
     },
     {
@@ -44,7 +45,6 @@ export const NAVIGATION: Record<DashboardType, NavGroup[]> = {
       items: [
         { label: 'QR Codes', path: '/seller/qr-codes', icon: faQrcode },
         { label: 'Estatísticas', path: '/seller/analytics', icon: faChartPie },
-        { label: 'Configurações', path: '/seller/settings', icon: faGear },
       ],
     },
     {

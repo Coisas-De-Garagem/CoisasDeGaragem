@@ -13,7 +13,7 @@ import { SalesChart } from '@/components/seller/SalesChart';
 import { Button } from '@/components/common/Button';
 import { Card } from '@/components/common/Card';
 import { Alert } from '@/components/common/Alert';
-import { Spinner } from '@/components/common/Spinner';
+import { Skeleton } from '@/components/common/Skeleton';
 import { api } from '@/services/api';
 import type { AnalyticsData, Purchase } from '@/types';
 
@@ -51,9 +51,58 @@ export default function AnalyticsPage() {
 
   if (loading && !analyticsData) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-primary">
-        <Spinner size="lg" />
-        <p className="text-text-muted mt-3 text-sm">Analisando seus dados de vendas...</p>
+      <div className="space-y-6">
+        {/* Cabeçalho */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+          <div>
+            <Skeleton height="h-6" width="w-36" rounded="rounded-full" className="mb-3" />
+            <Skeleton height="h-8" width="w-64" />
+            <Skeleton height="h-4" width="w-80" className="mt-2" />
+          </div>
+          <Skeleton height="h-10" width="w-40" rounded="rounded-md" />
+        </div>
+
+        {/* Gráfico + métricas (skeleton interno do SalesChart) */}
+        <SalesChart purchases={[]} loading />
+
+        {/* Insights + Meta */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <Card>
+            <div className="px-5 py-4 border-b border-border flex items-center gap-2">
+              <Skeleton variant="circular" width="w-9" height="h-9" />
+              <Skeleton height="h-5" width="w-44" />
+            </div>
+            <div className="p-3 space-y-1">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="flex items-start gap-3 p-3">
+                  <Skeleton variant="circular" width="w-9" height="h-9" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton height="h-4" width="w-40" />
+                    <Skeleton height="h-3" width="w-full" />
+                    <Skeleton height="h-3" width="w-4/5" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </Card>
+          <Card>
+            <div className="p-5 space-y-4">
+              <div className="flex items-center gap-2">
+                <Skeleton variant="circular" width="w-9" height="h-9" />
+                <Skeleton height="h-5" width="w-32" />
+              </div>
+              <Skeleton height="h-3" width="w-3/4" />
+              <div className="space-y-2 pt-2">
+                <div className="flex justify-between">
+                  <Skeleton height="h-4" width="w-36" />
+                  <Skeleton height="h-4" width="w-10" />
+                </div>
+                <Skeleton height="h-2" rounded="rounded-full" />
+              </div>
+              <Skeleton height="h-16" rounded="rounded-md" className="mt-4" />
+            </div>
+          </Card>
+        </div>
       </div>
     );
   }

@@ -1,16 +1,28 @@
 import { useEffect, useMemo, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faTags, faDownload, faReceipt } from '@fortawesome/free-solid-svg-icons';
+import {
+  faTags,
+  faDownload,
+  faReceipt,
+  faMoneyBillWave,
+  faClock,
+  faCircleCheck,
+} from '@fortawesome/free-solid-svg-icons';
 import { usePurchases } from '@/hooks/usePurchases';
 import { useAuthStore } from '@/store/authStore';
 import { Card } from '@/components/common/Card';
 import { Badge } from '@/components/common/Badge';
 import { Button } from '@/components/common/Button';
 import { Select } from '@/components/common/Select';
-import { Spinner } from '@/components/common/Spinner';
+import { Skeleton } from '@/components/common/Skeleton';
 import { StatCard } from '@/components/common/StatCard';
 import { SearchInput } from '@/components/common/SearchInput';
 import { EmptyState } from '@/components/common/EmptyState';
+import {
+  PageHeaderSkeleton,
+  StatGridSkeleton,
+  TableSkeleton,
+} from '@/components/common/PageSkeletons';
 
 const currency = (value: number, curr = 'BRL') =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: curr }).format(value);
@@ -85,8 +97,21 @@ export default function SalesPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh] text-primary">
-        <Spinner size="lg" />
+      <div className="space-y-6">
+        <PageHeaderSkeleton />
+        <StatGridSkeleton count={4} />
+        <Card flush>
+          <div className="p-4 flex flex-col md:flex-row gap-3 md:items-center">
+            <div className="flex-1">
+              <Skeleton height="h-10" rounded="rounded-md" />
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Skeleton height="h-10" width="w-44" rounded="rounded-md" />
+              <Skeleton height="h-10" width="w-44" rounded="rounded-md" />
+            </div>
+          </div>
+        </Card>
+        <TableSkeleton />
       </div>
     );
   }
@@ -104,9 +129,9 @@ export default function SalesPage() {
       {/* Métricas */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard label="Vendas totais" value={stats.total} tone="primary" icon={<FontAwesomeIcon icon={faTags} />} />
-        <StatCard label="Receita total" value={currency(stats.revenue)} tone="success" />
-        <StatCard label="Pendentes" value={stats.pending} tone="warning" />
-        <StatCard label="Concluídas" value={stats.completed} tone="info" />
+        <StatCard label="Receita total" value={currency(stats.revenue)} tone="success" icon={<FontAwesomeIcon icon={faMoneyBillWave} />} />
+        <StatCard label="Pendentes" value={stats.pending} tone="warning" icon={<FontAwesomeIcon icon={faClock} />} />
+        <StatCard label="Concluídas" value={stats.completed} tone="info" icon={<FontAwesomeIcon icon={faCircleCheck} />} />
       </div>
 
       {/* Filtros */}

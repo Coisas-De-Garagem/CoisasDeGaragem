@@ -107,7 +107,7 @@ export function Sidebar({ mode, collapsed, onToggle }: SidebarProps) {
         </Link>
       </div>
 
-      {/* Perfil + logout */}
+      {/* Perfil + logout (na mesma linha) */}
       <div className="border-t border-border p-3">
         <div className={`flex items-center gap-3 ${collapsed ? 'justify-center' : ''}`}>
           <Avatar name={user?.name} src={user?.avatarUrl} size="sm" />
@@ -117,20 +117,30 @@ export function Sidebar({ mode, collapsed, onToggle }: SidebarProps) {
               <p className="text-xs text-text-muted truncate">{user?.email}</p>
             </div>
           )}
+          {!collapsed && (
+            <button
+              type="button"
+              onClick={() => setShowLogoutModal(true)}
+              title="Sair da conta"
+              aria-label="Sair da conta"
+              className="flex-shrink-0 flex items-center justify-center w-9 h-9 rounded-lg text-text-subtle hover:text-error hover:bg-error/10 transition-colors"
+            >
+              <FontAwesomeIcon icon={faRightFromBracket} className="w-[18px] h-[18px]" />
+            </button>
+          )}
         </div>
-        {!collapsed && (
+        {collapsed && (
           <button
             type="button"
             onClick={() => setShowLogoutModal(true)}
-            className="mt-2 w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-error hover:bg-error/10 transition-colors"
+            title="Sair da conta"
+            aria-label="Sair da conta"
+            className="mt-2 mx-auto flex items-center justify-center w-9 h-9 rounded-lg text-text-subtle hover:text-error hover:bg-error/10 transition-colors"
           >
-            <FontAwesomeIcon icon={faRightFromBracket} className="w-5 h-5" />
-            Sair da conta
+            <FontAwesomeIcon icon={faRightFromBracket} className="w-[18px] h-[18px]" />
           </button>
         )}
       </div>
-
-
 
       <Modal
         isOpen={showLogoutModal}

@@ -35,7 +35,7 @@ export function TopBar({ mode, title }: TopBarProps) {
         <DarkModeToggle />
         <Link
           to={switchTarget.to}
-          className="hidden sm:inline-flex items-center gap-2 h-9 px-3 rounded-md text-sm font-medium text-text-muted hover:text-text-main hover:bg-surface-hover transition-colors"
+          className="lg:hidden inline-flex items-center gap-2 h-9 px-3 rounded-md text-sm font-medium text-text-muted hover:text-text-main hover:bg-surface-hover transition-colors"
           title={switchTarget.label}
         >
           <FontAwesomeIcon icon={faRightLeft} className="w-4 h-4" />

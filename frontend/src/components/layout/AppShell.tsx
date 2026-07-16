@@ -48,7 +48,7 @@ function deriveTitle(mode: DashboardType, pathname: string): string {
     '/seller/sales': 'Vendas',
     '/seller/qr-codes': 'QR Codes',
     '/seller/analytics': 'Estatísticas',
-    '/seller/settings': 'Configurações',
+    '/seller/events': 'Eventos',
     '/seller/profile': 'Perfil',
     '/buyer/qr-scanner': 'Explorar',
     '/buyer/purchases': 'Minhas Compras',

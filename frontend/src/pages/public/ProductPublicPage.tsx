@@ -12,7 +12,7 @@ import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import { Card } from '@/components/common/Card';
 import { Modal } from '@/components/common/Modal';
-import { Spinner } from '@/components/common/Spinner';
+import { Skeleton } from '@/components/common/Skeleton';
 import { Alert } from '@/components/common/Alert';
 import { EmptyState } from '@/components/common/EmptyState';
 import type { Product } from '@/types';
@@ -96,9 +96,34 @@ export default function ProductPublicPage() {
 
   if (loading) {
     return (
-      <div className="min-h-[60vh] flex flex-col items-center justify-center text-primary">
-        <Spinner size="lg" />
-        <p className="mt-3 text-text-muted text-sm">Carregando produto...</p>
+      <div className="max-w-5xl mx-auto px-4 py-8 sm:py-12">
+        <Card flush className="overflow-hidden">
+          <div className="grid grid-cols-1 md:grid-cols-2">
+            {/* Imagem */}
+            <div className="h-72 sm:h-96 md:h-[28rem] bg-surface-2">
+              <Skeleton height="h-full" rounded="rounded-none" />
+            </div>
+            {/* Detalhes */}
+            <div className="p-6 sm:p-8 flex flex-col gap-4">
+              <Skeleton height="h-3" width="w-24" />
+              <Skeleton height="h-8" width="w-3/4" />
+              <Skeleton height="h-8" width="w-32" />
+              <div className="space-y-2 pt-2">
+                <Skeleton height="h-3" width="w-20" />
+                <Skeleton height="h-3" width="w-full" />
+                <Skeleton height="h-3" width="w-5/6" />
+                <Skeleton height="h-3" width="w-2/3" />
+              </div>
+              <div className="space-y-3 pt-2">
+                <Skeleton height="h-12" rounded="rounded-md" />
+                <Skeleton height="h-12" rounded="rounded-md" />
+              </div>
+              <div className="mt-auto pt-6">
+                <Skeleton height="h-12" rounded="rounded-md" />
+              </div>
+            </div>
+          </div>
+        </Card>
       </div>
     );
   }

@@ -11,10 +11,10 @@ import { Modal } from '@/components/common/Modal';
 import { Card } from '@/components/common/Card';
 import { Select } from '@/components/common/Select';
 import { Alert } from '@/components/common/Alert';
-import { Spinner } from '@/components/common/Spinner';
 import { EmptyState } from '@/components/common/EmptyState';
 import { SearchInput } from '@/components/common/SearchInput';
 import { Pagination } from '@/components/common/Pagination';
+import { CardGridSkeleton } from '@/components/common/PageSkeletons';
 import { QRCodeDisplay } from '@/components/seller/QRCodeDisplay';
 import { useProducts } from '@/hooks/useProducts';
 import { api } from '@/services/api';
@@ -307,14 +307,7 @@ export default function ProductsPage() {
       </Card>
 
       {/* Loading */}
-      {isLoading && (
-        <Card>
-          <div className="flex flex-col items-center justify-center py-16 text-primary">
-            <Spinner size="lg" />
-            <p className="text-text-muted mt-3 text-sm">Carregando seus produtos...</p>
-          </div>
-        </Card>
-      )}
+      {isLoading && <CardGridSkeleton count={9} />}
 
       {/* Erro */}
       {!isLoading && error && (

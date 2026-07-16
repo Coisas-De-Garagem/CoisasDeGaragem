@@ -4,15 +4,16 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBagShopping, faMagnifyingGlass, faBoxOpen } from '@fortawesome/free-solid-svg-icons';
 import { PurchaseCard } from '@/components/buyer/PurchaseCard';
 import { usePurchases } from '@/hooks/usePurchases';
-import { Spinner } from '@/components/common/Spinner';
 import { Select } from '@/components/common/Select';
 import { SearchInput } from '@/components/common/SearchInput';
 import { Pagination } from '@/components/common/Pagination';
 import { Card } from '@/components/common/Card';
+import { Skeleton } from '@/components/common/Skeleton';
 import { StatCard } from '@/components/common/StatCard';
 import { EmptyState } from '@/components/common/EmptyState';
 import { Alert } from '@/components/common/Alert';
 import { Button } from '@/components/common/Button';
+import { PageHeaderSkeleton, CardGridSkeleton } from '@/components/common/PageSkeletons';
 import type { Purchase } from '@/types';
 
 const currency = (value: number) =>
@@ -74,8 +75,36 @@ export default function PurchasesPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-16 text-primary">
-        <Spinner size="lg" />
+      <div className="space-y-6">
+        <PageHeaderSkeleton />
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <div
+              key={i}
+              className="bg-surface rounded-xl border border-border shadow-sm p-4 sm:p-5"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1 space-y-2">
+                  <Skeleton height="h-3" width="w-24" />
+                  <Skeleton height="h-6" width="w-16" />
+                </div>
+                <Skeleton variant="circular" width="w-10" height="h-10" />
+              </div>
+            </div>
+          ))}
+        </div>
+        <Card flush>
+          <div className="p-4 flex flex-col md:flex-row gap-3">
+            <div className="flex-1">
+              <Skeleton height="h-10" rounded="rounded-md" />
+            </div>
+            <div className="flex gap-3">
+              <Skeleton height="h-10" width="w-36" rounded="rounded-md" />
+              <Skeleton height="h-10" width="w-32" rounded="rounded-md" />
+            </div>
+          </div>
+        </Card>
+        <CardGridSkeleton count={6} />
       </div>
     );
   }

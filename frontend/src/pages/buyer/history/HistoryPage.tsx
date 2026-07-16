@@ -8,7 +8,7 @@ import {
   faArrowRight,
 } from '@fortawesome/free-solid-svg-icons';
 import { usePurchases } from '@/hooks/usePurchases';
-import { Spinner } from '@/components/common/Spinner';
+import { Skeleton } from '@/components/common/Skeleton';
 import { Select } from '@/components/common/Select';
 import { Pagination } from '@/components/common/Pagination';
 import { Badge } from '@/components/common/Badge';
@@ -18,6 +18,7 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { Alert } from '@/components/common/Alert';
 import { SearchInput } from '@/components/common/SearchInput';
 import { IconButton } from '@/components/common/IconButton';
+import { TableSkeleton } from '@/components/common/PageSkeletons';
 import { exportPurchasesToCSV } from '@/utils/export';
 
 const currency = (value: number, curr = 'BRL') =>
@@ -96,9 +97,30 @@ export default function HistoryPage() {
 
   if (isLoading && purchases.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-primary">
-        <Spinner size="lg" />
-        <p className="mt-3 text-text-muted text-sm">Carregando seu histórico de transações...</p>
+      <div className="space-y-6">
+        {/* Cabeçalho */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+          <div>
+            <Skeleton height="h-6" width="w-32" rounded="rounded-full" className="mb-3" />
+            <Skeleton height="h-8" width="w-56" />
+            <Skeleton height="h-4" width="w-80" className="mt-2" />
+          </div>
+          <Skeleton height="h-10" width="w-36" rounded="rounded-md" />
+        </div>
+
+        {/* Filtros */}
+        <Card flush>
+          <div className="p-4 grid grid-cols-1 md:grid-cols-4 gap-3">
+            <div className="md:col-span-2">
+              <Skeleton height="h-10" rounded="rounded-md" />
+            </div>
+            <Skeleton height="h-10" rounded="rounded-md" />
+            <Skeleton height="h-10" rounded="rounded-md" />
+          </div>
+        </Card>
+
+        {/* Tabela */}
+        <TableSkeleton rows={6} />
       </div>
     );
   }
