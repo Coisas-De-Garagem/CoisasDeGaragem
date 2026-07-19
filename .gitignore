@@ -319,3 +319,7 @@ publish_profile_temp.xml
 bin/
 install-security-tools.sh
 run-security-checks.sh
+
+# Kilo / local agent config
+.kilocode/
+.kilo/
