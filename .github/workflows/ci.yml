@@ -24,9 +24,10 @@ jobs:
           ./gitleaks detect --verbose --redact
 
       - name: 🔍 SAST (Semgrep)
-        uses: semgrep/semgrep-action@v1
-        with:
-          config: auto
+        run: |
+          python3 -m pip install --upgrade pip
+          pip install semgrep==1.172.0
+          semgrep scan --config auto --error
 
       - name: 📦 SCA (Grype)
         uses: anchore/scan-action@v3
