@@ -19,7 +19,8 @@
     href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Outfit:wght@500;700&display=swap"
     rel="stylesheet">
   <!-- Google Sign-In SDK -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+  <!-- Google Sign-In SDK (SRI intentionally omitted: Google's gsi/client loader is dynamically updated; pinning a hash breaks sign-in) -->
+  <script src="https://accounts.google.com/gsi/client" async defer></script> <!-- nosemgrep: html.security.audit.missing-integrity.missing-integrity -->
 </head>
 
 <body>
@@ -32,7 +33,7 @@
       <div class="vw-plugin-top-wrapper"></div>
     </div>
   </div>
-  <script src="https://vlibras.gov.br/app/vlibras-plugin.js"></script>
+  <script src="https://vlibras.gov.br/app/vlibras-plugin.js" integrity="sha384-G/Q9QoEKXZ+o3tH6DfI994c7PfT0jP6+VhCSX6upoO+6hEaKtPJBekepGjPWyF0U" crossorigin="anonymous"></script>
   <script>
     new window.VLibras.Widget('https://vlibras.gov.br/app');
   </script>

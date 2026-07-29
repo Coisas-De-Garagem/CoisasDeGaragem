@@ -3,6 +3,12 @@ version: '3.8'
 services:
   postgres:
     image: postgres:15-alpine
+    read_only: true
+    tmpfs:
+      - /tmp
+      - /var/run/postgresql
+    security_opt:
+      - no-new-privileges:true
     container_name: garage_sale_postgres
     environment:
       POSTGRES_USER: user

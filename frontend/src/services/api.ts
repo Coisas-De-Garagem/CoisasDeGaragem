@@ -63,7 +63,7 @@ async function fetchApi<T>(
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error(`API Error [${endpoint}]:`, response.status, errorData);
+      console.error('API Error [%s]:', endpoint, response.status, errorData);
       return {
         success: false,
         error: {
