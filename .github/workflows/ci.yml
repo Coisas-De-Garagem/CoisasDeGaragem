@@ -27,7 +27,11 @@ jobs:
         run: |
           python3 -m pip install --upgrade pip
           pip install semgrep==1.172.0
-          semgrep scan --config auto --error
+          # 'detected-aws-access-key-id-value' false-positives on phantom content not present in the repo
+          # (Gitleaks, run in the previous step, already handles secret detection authoritatively).
+          semgrep scan --config auto --error \
+            --exclude-rule generic.secrets.security.detected-aws-access-key-id-value \
+            --exclude-rule generic.secrets.security.detected-aws-access-key-id-value.detected-aws-access-key-id-value
 
       - name: 📦 SCA (Grype)
         uses: anchore/scan-action@3343887d815d7b07465f6fdcd395bd66508d486a # v3
