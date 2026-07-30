@@ -34,7 +34,7 @@ jobs:
             --exclude-rule generic.secrets.security.detected-aws-access-key-id-value.detected-aws-access-key-id-value
 
       - name: 📦 SCA (Grype)
-        uses: anchore/scan-action@3343887d815d7b07465f6fdcd395bd66508d486a # v3
+        uses: anchore/scan-action@v4
         with:
           path: "."
           fail-build: true
