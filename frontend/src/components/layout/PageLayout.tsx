@@ -10,6 +10,10 @@ interface PageLayoutProps {
   className?: string;
 }
 
+/**
+ * Layout para páginas públicas (landing, auth, institucionais, erros).
+ * As páginas autenticadas usam o <AppShell/> em vez deste.
+ */
 export function PageLayout({
   children,
   showHeader = true,
@@ -17,7 +21,7 @@ export function PageLayout({
   className = '',
 }: PageLayoutProps) {
   return (
-    <div className={`min-h-screen flex flex-col bg-background dark:bg-background-dark ${className}`}>
+    <div className={`min-h-screen flex flex-col bg-background ${className}`}>
       {showHeader && <Header />}
       <main className="flex-1">{children}</main>
       {showFooter && <Footer />}

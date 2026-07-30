@@ -33,6 +33,14 @@ enum PaymentMethod {
   OTHER
 }
 
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  ACTIVE
+  ENDED
+  CANCELLED
+}
+
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
@@ -46,9 +54,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  products  Product[]  @relation("SellerProducts")
-  sales     Purchase[] @relation("SellerSales")
-  purchases Purchase[] @relation("BuyerPurchases")
+  products  Product[]     @relation("SellerProducts")
+  sales     Purchase[]    @relation("SellerSales")
+  purchases Purchase[]    @relation("BuyerPurchases")
+  events    GarageEvent[] @relation("SellerEvents")
 }
 
 model Product {
@@ -66,11 +75,15 @@ model Product {
   condition   ProductCondition?
   
   qrCode      String           @unique
-  
+
   isAvailable Boolean          @default(true)
   isReserved  Boolean          @default(false)
   isSold      Boolean          @default(false)
-  
+
+  // Vínculo opcional com um evento (1 produto → 1 evento por vez)
+  eventId     String?
+  event       GarageEvent?     @relation("EventProducts", fields: [eventId], references: [id])
+
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
 
@@ -102,4 +115,42 @@ model Purchase {
 
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+}
+
+/// Garage sale / evento do vendedor. Abstrai um "brechó" que agrupa produtos,
+/// tem QR próprio e gera insights de desempenho.
+model GarageEvent {
+  id          String      @id @default(uuid())
+  sellerId    String
+  seller      User        @relation("SellerEvents", fields: [sellerId], references: [id])
+
+  name        String
+  description String?
+
+  status      EventStatus @default(DRAFT)
+  startDate   DateTime?
+  endDate     DateTime?
+
+  // Endereço estruturado
+  street      String?
+  number      String?
+  district    String?
+  city        String?
+  zipCode     String?
+
+  qrCode      String      @unique
+
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  products    Product[]   @relation("EventProducts")
+  visits      EventVisit[]
+}
+
+/// Registro de cada scan/acesso ao QR do evento (contador de visitantes).
+model EventVisit {
+  id        String      @id @default(uuid())
+  eventId   String
+  event     GarageEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  createdAt DateTime    @default(now())
 }

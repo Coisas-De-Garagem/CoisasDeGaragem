@@ -19,6 +19,11 @@ import type {
   TestimonialFilters,
   Notification,
   NotificationFilters,
+  GarageEvent,
+  EventInsights,
+  CreateEventRequest,
+  UpdateEventRequest,
+  PublicEvent,
 
   ApiResult,
 } from '@/types';
@@ -58,7 +63,7 @@ async function fetchApi<T>(
 
     if (!response.ok) {
       const errorData = await response.json();
-      console.error(`API Error [${endpoint}]:`, response.status, errorData);
+      console.error('API Error [%s]:', endpoint, response.status, errorData);
       return {
         success: false,
         error: {
@@ -428,5 +433,90 @@ export const api = {
 
   markAllNotificationsAsRead: async (): Promise<ApiResult<{ message: string }>> => {
     return mockApi.markAllNotificationsAsRead();
+  },
+
+  // ---- Events / Garage Sales ----
+  getEvents: async (): Promise<ApiResult<GarageEvent[]>> => {
+    const response = await fetchApi<GarageEvent[]>('/events', {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    });
+    return response;
+  },
+
+  getEvent: async (id: string): Promise<ApiResult<GarageEvent>> => {
+    const response = await fetchApi<GarageEvent>(`/events/${id}`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    });
+    return response;
+  },
+
+  /** Vitrine pública do evento (sem auth — para compradores escaneando o QR). */
+  getPublicEvent: async (id: string): Promise<ApiResult<PublicEvent>> => {
+    const response = await fetchApi<PublicEvent>(`/events/${id}/public`, {});
+    return response;
+  },
+
+  createEvent: async (data: CreateEventRequest): Promise<ApiResult<GarageEvent>> => {
+    const response = await fetchApi<GarageEvent>('/events', {
+      method: 'POST',
+      body: JSON.stringify(data),
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    });
+    return response;
+  },
+
+  updateEvent: async (id: string, data: UpdateEventRequest): Promise<ApiResult<GarageEvent>> => {
+    const response = await fetchApi<GarageEvent>(`/events/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    });
+    return response;
+  },
+
+  deleteEvent: async (id: string): Promise<ApiResult<{ message: string }>> => {
+    const response = await fetchApi<{ message: string }>(`/events/${id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    });
+    return response;
+  },
+
+  linkProductToEvent: async (eventId: string, productId: string): Promise<ApiResult<Product>> => {
+    const response = await fetchApi<Product>(`/events/${eventId}/products/${productId}`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    });
+    return response;
+  },
+
+  unlinkProductFromEvent: async (eventId: string, productId: string): Promise<ApiResult<Product>> => {
+    const response = await fetchApi<Product>(`/events/${eventId}/products/${productId}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    });
+    return response;
+  },
+
+  getEventQR: async (eventId: string): Promise<ApiResult<{ url: string; eventUrl: string; code: string }>> => {
+    const response = await fetchApi<{ url: string; eventUrl: string; code: string }>(
+      `/events/${eventId}/qr`,
+      { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } },
+    );
+    return response;
+  },
+
+  recordEventVisit: async (eventId: string): Promise<ApiResult<{ success: boolean }>> => {
+    const response = await fetchApi<{ success: boolean }>(`/events/${eventId}/visit`, {
+      method: 'POST',
+    });
+    return response;
+  },
+
+  getEventInsights: async (eventId: string): Promise<ApiResult<EventInsights>> => {
+    const response = await fetchApi<EventInsights>(`/events/${eventId}/insights`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    });
+    return response;
   },
 };

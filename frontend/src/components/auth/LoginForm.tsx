@@ -24,7 +24,7 @@ export function LoginForm({ onSubmit, isLoading = false }: LoginFormProps) {
   };
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
       <Input
         id="email"
         type="email"

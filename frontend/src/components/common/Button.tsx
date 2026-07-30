@@ -1,12 +1,34 @@
-import type { ButtonHTMLAttributes } from 'react';
+import type { ButtonHTMLAttributes, ReactNode } from 'react';
 import { Spinner } from './Spinner';
 
+type Variant = 'primary' | 'accent' | 'danger' | 'success' | 'outline' | 'ghost';
+type Size = 'sm' | 'md' | 'lg';
+
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'secondary' | 'tertiary' | 'outline' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: Variant;
+  size?: Size;
   isLoading?: boolean;
   fullWidth?: boolean;
+  leftIcon?: ReactNode;
+  rightIcon?: ReactNode;
 }
+
+const VARIANT_CLASSES: Record<Variant, string> = {
+  primary: 'bg-primary text-white hover:bg-primary-hover',
+  accent: 'bg-accent-500 text-white hover:bg-accent-600',
+  danger: 'bg-error text-white hover:bg-red-600',
+  success: 'bg-success text-white hover:bg-green-600',
+  outline:
+    'bg-transparent text-text-main border border-border-strong hover:bg-surface-hover',
+  ghost:
+    'bg-transparent text-text-muted hover:text-text-main hover:bg-surface-hover',
+};
+
+const SIZE_CLASSES: Record<Size, string> = {
+  sm: 'h-9 px-3 text-sm gap-1.5',
+  md: 'h-10 px-4 text-sm gap-2',
+  lg: 'h-11 px-5 text-base gap-2',
+};
 
 export function Button({
   children,
@@ -14,35 +36,38 @@ export function Button({
   size = 'md',
   isLoading = false,
   fullWidth = false,
+  leftIcon,
+  rightIcon,
   className = '',
   disabled,
   ...props
 }: ButtonProps) {
-  const baseClasses = 'px-4 py-2 rounded font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed';
-
-  const variantClasses = {
-    primary: 'bg-primary hover:bg-primary-hover text-white focus:ring-primary',
-    secondary: 'bg-secondary hover:bg-secondary-700 text-white focus:ring-secondary',
-    tertiary: 'bg-white hover:bg-neutral-50 text-neutral-900 focus:ring-neutral-200 border border-neutral-200',
-    outline: 'bg-transparent hover:bg-neutral-50 text-neutral-700 border border-neutral-200 focus:ring-neutral-200',
-    ghost: 'bg-transparent hover:bg-neutral-100 text-neutral-600 focus:ring-neutral-200',
-  };
-
-  const sizeClasses = {
-    sm: 'px-3 py-1.5 text-sm',
-    md: 'px-4 py-2 text-base',
-    lg: 'px-6 py-3 text-lg',
-  };
-
   const widthClass = fullWidth ? 'w-full' : '';
+  const isDisabled = disabled || isLoading;
 
   return (
     <button
-      className={`${baseClasses} ${variantClasses[variant]} ${sizeClasses[size]} ${widthClass} ${className}`}
-      disabled={disabled || isLoading}
+      className={`
+        inline-flex items-center justify-center whitespace-nowrap rounded-md
+        font-medium transition-colors select-none
+        disabled:opacity-50 disabled:pointer-events-none
+        ${VARIANT_CLASSES[variant]}
+        ${SIZE_CLASSES[size]}
+        ${widthClass}
+        ${className}
+      `}
+      disabled={isDisabled}
       {...props}
     >
-      {isLoading ? <Spinner size="sm" /> : children}
+      {isLoading ? (
+        <Spinner size="sm" className="text-current" />
+      ) : (
+        <>
+          {leftIcon}
+          {children}
+          {rightIcon}
+        </>
+      )}
     </button>
   );
 }

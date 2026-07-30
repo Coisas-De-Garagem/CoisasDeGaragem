@@ -2,25 +2,44 @@ import { Injectable, OnApplicationBootstrap, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { PurchaseStatus } from '@prisma/client';
 
+/**
+ * Cancela compras PIX/CARD que ficaram PENDING além do prazo de expiração,
+ * liberando o produto de volta ao catálogo.
+ *
+ * Configuração via variáveis de ambiente:
+ *  - PURCHASE_CLEANUP_INTERVAL_MS: intervalo entre varreduras (default 60s).
+ *  - PURCHASE_EXPIRATION_MS:       tempo para uma compra expirar (default 60s).
+ *
+ * Em desenvolvimento é comum reduzir esses valores para testar manualmente;
+ * em produção, mantenha-os em valores razoáveis (ex.: 60s de intervalo,
+ * 15min de expiração).
+ */
 @Injectable()
 export class PurchaseCleanupService implements OnApplicationBootstrap {
   private readonly logger = new Logger(PurchaseCleanupService.name);
 
+  private readonly intervalMs = Number(process.env.PURCHASE_CLEANUP_INTERVAL_MS) || 60_000;
+  private readonly expirationMs = Number(process.env.PURCHASE_EXPIRATION_MS) || 60_000;
+
   constructor(private prisma: PrismaService) {}
 
   onApplicationBootstrap() {
-    // Run cleanup check every 10 seconds (for testing)
-    setInterval(() => this.cleanupExpiredPurchases(), 10 * 1000);
-    this.logger.log('Serviço de limpeza de reservas de checkout inicializado com sucesso.');
+    // Evita registrar o intervalo durante a suíte de testes (e2e/unit).
+    if (process.env.NODE_ENV === 'test') return;
+
+    setInterval(() => {
+      void this.cleanupExpiredPurchases();
+    }, this.intervalMs);
+
+    this.logger.debug(
+      `Serviço de limpeza de reservas inicializado (intervalo=${this.intervalMs}ms, expiração=${this.expirationMs}ms).`,
+    );
   }
 
   async cleanupExpiredPurchases() {
     try {
-      this.logger.log('Iniciando varredura de reservas expiradas...');
-      // 60 seconds ago (for testing)
-      const expirationLimit = new Date(Date.now() - 60 * 1000);
+      const expirationLimit = new Date(Date.now() - this.expirationMs);
 
-      // Find all PENDING purchases created more than 15 minutes ago with digital payment methods
       const expiredPurchases = await this.prisma.purchase.findMany({
         where: {
           status: PurchaseStatus.PENDING,
@@ -33,7 +52,9 @@ export class PurchaseCleanupService implements OnApplicationBootstrap {
         return;
       }
 
-      this.logger.log(`Encontradas ${expiredPurchases.length} compras digitais expiradas. Iniciando liberação...`);
+      this.logger.log(
+        `Encontradas ${expiredPurchases.length} compras digitais expiradas. Iniciando liberação...`,
+      );
 
       for (const purchase of expiredPurchases) {
         await this.prisma.$transaction(async (prisma) => {
@@ -41,7 +62,7 @@ export class PurchaseCleanupService implements OnApplicationBootstrap {
             where: { id: purchase.id },
           });
 
-          // Verify purchase status is still PENDING within the transaction context
+          // Verifica novamente o status dentro da transação.
           if (p && p.status === PurchaseStatus.PENDING) {
             await prisma.purchase.update({
               where: { id: p.id },
@@ -56,7 +77,9 @@ export class PurchaseCleanupService implements OnApplicationBootstrap {
                 isSold: false,
               },
             });
-            this.logger.log(`Compra ${p.id} cancelada. Produto ${p.productId} liberado de volta ao catálogo.`);
+            this.logger.log(
+              `Compra ${p.id} cancelada. Produto ${p.productId} liberado de volta ao catálogo.`,
+            );
           }
         });
       }

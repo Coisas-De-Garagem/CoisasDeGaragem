@@ -32,7 +32,7 @@ export function RegisterForm({ onSubmit, isLoading = false }: RegisterFormProps)
   };
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-6">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-4">
       <Input
         id="name"
         type="text"

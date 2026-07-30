@@ -1,53 +1,69 @@
 import type { SelectHTMLAttributes } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronDown } from '@fortawesome/free-solid-svg-icons';
+
+interface SelectOption {
+  value: string;
+  label: string;
+}
 
 interface SelectProps extends SelectHTMLAttributes<HTMLSelectElement> {
   label?: string;
   error?: string;
   helperText?: string;
   fullWidth?: boolean;
-  options: { value: string; label: string }[];
+  options: SelectOption[];
+  placeholder?: string;
 }
 
 export function Select({
   label,
   error,
   helperText,
-  fullWidth = false,
-  className = '',
+  fullWidth = true,
   options,
+  placeholder,
+  className = '',
+  id,
   ...props
 }: SelectProps) {
-  const widthClass = fullWidth ? 'w-full' : '';
+  const selectId = id || props.name;
 
   return (
-    <div className={`mb-4 ${widthClass}`}>
+    <div className={`w-full ${fullWidth ? 'w-full' : ''}`}>
       {label && (
         <label
-          htmlFor={props.id}
-          className="block text-sm font-medium text-neutral-700 mb-1"
+          htmlFor={selectId}
+          className="block text-sm font-medium text-text-main mb-1.5"
         >
           {label}
         </label>
       )}
       <div className="relative group">
         <select
-          id={props.id}
+          id={selectId}
           className={`
-            appearance-none w-full px-4 py-2.5 
-            bg-white border border-neutral-200 
-            rounded-xl text-neutral-900 
-            focus:ring-4 focus:ring-primary/10 focus:border-primary 
-            focus:outline-none 
-            disabled:opacity-50 disabled:bg-neutral-50 disabled:cursor-not-allowed 
-            transition-all duration-300
-            pr-10
-            ${error ? 'border-error ring-error/10' : ''}
+            appearance-none w-full h-11
+            bg-surface text-text-main
+            border border-border-strong rounded-lg
+            focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none
+            disabled:opacity-50 disabled:cursor-not-allowed
+            transition-colors duration-200
+            pl-3.5 pr-10
+            ${error ? 'border-error focus:border-error focus:ring-error/20' : ''}
             ${className}
           `}
           aria-invalid={!!error}
-          aria-describedby={error ? `${props.id}-error` : helperText ? `${props.id}-helper` : undefined}
+          aria-describedby={
+            error ? `${selectId}-error` : helperText ? `${selectId}-helper` : undefined
+          }
           {...props}
         >
+          {placeholder && (
+            <option value="" disabled>
+              {placeholder}
+            </option>
+          )}
           {options.map((option) => (
             <option key={option.value} value={option.value}>
               {option.label}
@@ -55,35 +71,18 @@ export function Select({
           ))}
         </select>
 
-        {/* Custom Arrow Icon */}
-        <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none text-neutral-400 group-focus-within:text-primary transition-colors">
-          <svg
-            className="w-5 h-5"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" />
-          </svg>
-        </div>
+        <span className="absolute inset-y-0 right-0 flex items-center pr-3.5 pointer-events-none text-text-subtle group-focus-within:text-primary transition-colors">
+          <FontAwesomeIcon icon={faChevronDown} className="w-4 h-4" />
+        </span>
       </div>
 
       {error && (
-        <p
-          id={`${props.id}-error`}
-          className="mt-1.5 text-sm text-error font-medium flex items-center gap-1"
-          role="alert"
-        >
-          <span className="w-1 h-1 rounded-full bg-error" />
+        <p id={`${selectId}-error`} className="mt-1.5 text-sm text-error font-medium" role="alert">
           {error}
         </p>
       )}
       {helperText && !error && (
-        <p
-          id={`${props.id}-helper`}
-          className="mt-1.5 text-sm text-neutral-500"
-        >
+        <p id={`${selectId}-helper`} className="mt-1.5 text-sm text-text-muted">
           {helperText}
         </p>
       )}

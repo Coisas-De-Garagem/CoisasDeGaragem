@@ -1,8 +1,9 @@
 import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
+import { Spinner } from '@/components/common/Spinner';
 import type { Product } from '@/types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faPrint, faDownload, faQrcode } from '@fortawesome/free-solid-svg-icons';
+import { faPrint, faDownload, faQrcode, faCircleInfo } from '@fortawesome/free-solid-svg-icons';
 import { formatProductCondition, getConditionVariant } from '@/utils/formatters';
 
 interface QRCodeDisplayProps {
@@ -13,132 +14,122 @@ interface QRCodeDisplayProps {
   loading?: boolean;
 }
 
-export function QRCodeDisplay({ product, qrCodeUrl, onPrint, onDownload, loading = false }: QRCodeDisplayProps) {
+const currency = (value: number, curr: string) =>
+  new Intl.NumberFormat('pt-BR', { style: 'currency', currency: curr }).format(value);
+
+export function QRCodeDisplay({
+  product,
+  qrCodeUrl,
+  onPrint,
+  onDownload,
+  loading = false,
+}: QRCodeDisplayProps) {
   return (
     <>
+      {/* View de impressão (etiqueta) */}
       <div className="hidden print:flex flex-col items-center justify-center p-8 border-4 border-black m-4 text-center">
         <h1 className="text-4xl font-bold mb-4 text-black">{product.name}</h1>
-        {qrCodeUrl && (
-          <img src={qrCodeUrl} alt="QR Code" className="w-[400px] h-[400px] mb-4" />
-        )}
-        <p className="text-5xl font-bold text-black mb-2">
-          {new Intl.NumberFormat('pt-BR', {
-            style: 'currency',
-            currency: product.currency,
-          }).format(product.price)}
-        </p>
+        {qrCodeUrl && <img src={qrCodeUrl} alt="QR Code" className="w-[400px] h-[400px] mb-4" />}
+        <p className="text-5xl font-bold text-black mb-2">{currency(product.price, product.currency)}</p>
         <p className="text-xl text-black">{product.category}</p>
-        <p className="text-sm mt-8 text-gray-500">coisasdegaragem.com</p>
+        <p className="text-sm mt-8 text-neutral-500">coisasdegaragem.com</p>
       </div>
 
-      <div className="print:hidden">
-        <div className="space-y-6">
-          {/* Header */}
-          <div className="text-center mb-6">
-            <h3 className="text-xl font-bold text-gray-900 mb-2">
-              QR Code do Produto
-            </h3>
-            <p className="text-gray-600">{product.name}</p>
-          </div>
+      {/* View de tela */}
+      <div className="print:hidden space-y-5">
+        <div className="text-center">
+          <h3 className="text-lg font-semibold text-text-main">QR Code do produto</h3>
+          <p className="text-sm text-text-muted mt-0.5">{product.name}</p>
+        </div>
 
-          {/* QR Code Display */}
-          <div className="flex justify-center mb-6">
-            {loading ? (
-              <div className="w-64 h-64 bg-gray-100 rounded-lg flex items-center justify-center">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-              </div>
-            ) : qrCodeUrl ? (
-              <div className="bg-white p-4 rounded-xl border border-gray-100 shadow-sm">
-                <img
-                  src={qrCodeUrl}
-                  alt={`QR Code para ${product.name}`}
-                  className="w-64 h-64"
-                />
-              </div>
+        {/* QR */}
+        <div className="flex justify-center">
+          {loading ? (
+            <div className="w-56 h-56 bg-surface-sunken rounded-xl flex items-center justify-center text-primary">
+              <Spinner size="lg" />
+            </div>
+          ) : qrCodeUrl ? (
+            <div className="bg-white p-3 rounded-xl border border-border shadow-sm">
+              <img src={qrCodeUrl} alt={`QR Code para ${product.name}`} className="w-56 h-56" />
+            </div>
+          ) : (
+            <div className="w-56 h-56 bg-surface-sunken rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-border-strong">
+              <FontAwesomeIcon icon={faQrcode} className="w-10 h-10 text-text-subtle mb-2" />
+              <p className="text-sm text-text-muted font-medium">QR code não gerado</p>
+            </div>
+          )}
+        </div>
+
+        {/* Detalhes */}
+        <div className="bg-surface-sunken/60 rounded-lg p-4 space-y-2.5">
+          <DetailRow label="Preço">
+            <span className="text-lg font-bold text-text-main">
+              {currency(product.price, product.currency)}
+            </span>
+          </DetailRow>
+          <DetailRow label="Categoria">
+            <span className="font-medium text-text-main">{product.category || 'Não definida'}</span>
+          </DetailRow>
+          <DetailRow label="Condição">
+            <Badge variant={getConditionVariant(product.condition)}>
+              {formatProductCondition(product.condition)}
+            </Badge>
+          </DetailRow>
+          <DetailRow label="Status">
+            {product.isSold ? (
+              <Badge variant="error">Vendido</Badge>
+            ) : !product.isAvailable ? (
+              <Badge variant="warning">Indisponível</Badge>
             ) : (
-              <div className="w-64 h-64 bg-gray-50 rounded-xl flex flex-col items-center justify-center border-2 border-dashed border-gray-200">
-                <FontAwesomeIcon icon={faQrcode} className="text-4xl text-gray-300 mb-3" />
-                <p className="text-sm text-gray-400 font-medium">QR Code não gerado</p>
-              </div>
+              <Badge variant="success" dot>Disponível</Badge>
             )}
-          </div>
+          </DetailRow>
+        </div>
 
-          {/* Product Details */}
-          <div className="bg-gray-50 rounded-xl p-5 space-y-3 border border-gray-100">
-            <div className="flex justify-between items-start">
-              <span className="text-sm text-gray-600 font-medium">Preço:</span>
-              <span className="text-xl font-bold text-blue-600">
-                {new Intl.NumberFormat('pt-BR', {
-                  style: 'currency',
-                  currency: product.currency,
-                }).format(product.price)}
-              </span>
-            </div>
+        {/* Aviso */}
+        <div className="flex items-start gap-2 text-xs text-text-muted bg-info/5 p-3 rounded-lg border border-info/20">
+          <FontAwesomeIcon icon={faCircleInfo} className="w-4 h-4 text-info flex-shrink-0 mt-0.5" />
+          <p>
+            Use este QR code para identificar seus produtos na garagem. Compradores podem escanear
+            para ver detalhes e realizar a compra.
+          </p>
+        </div>
 
-            <div className="flex justify-between items-start">
-              <span className="text-sm text-gray-600 font-medium">Categoria:</span>
-              <span className="font-semibold text-gray-900">
-                {product.category || 'Não definida'}
-              </span>
-            </div>
-
-            <div className="flex justify-between items-start">
-              <span className="text-sm text-gray-600 font-medium">Condição:</span>
-              <Badge variant={getConditionVariant(product.condition)}>
-                {formatProductCondition(product.condition)}
-              </Badge>
-            </div>
-
-            <div className="flex justify-between items-start">
-              <span className="text-sm text-gray-600 font-medium">Status:</span>
-              {product.isSold ? (
-                <Badge variant="error">Vendido</Badge>
-              ) : !product.isAvailable ? (
-                <Badge variant="warning">Indisponível</Badge>
-              ) : (
-                <Badge variant="success">Disponível</Badge>
-              )}
-            </div>
-          </div>
-
-          <div className="text-xs text-gray-500 space-y-2 px-2 bg-blue-50/50 p-3 rounded-lg border border-blue-100/50">
-            <p className="flex items-start gap-2">
-              <span className="text-blue-500">•</span>
-              <span>Use este QR Code para identificar seus produtos na garagem.</span>
-            </p>
-            <p className="flex items-start gap-2">
-              <span className="text-blue-500">•</span>
-              <span>Os compradores podem escanear para ver detalhes, fotos e realizar a compra.</span>
-            </p>
-          </div>
-
-          {/* Actions */}
-          <div className="flex gap-3 pt-2">
-            {onPrint && (
-              <Button
-                variant="primary"
-                onClick={onPrint}
-                disabled={!qrCodeUrl || loading}
-                className="flex-1 bg-blue-600 hover:bg-blue-700"
-              >
-                <FontAwesomeIcon icon={faPrint} className="mr-2" />
-                Imprimir
-              </Button>
-            )}
-            {onDownload && (
-              <Button
-                variant="secondary"
-                onClick={onDownload}
-                disabled={!qrCodeUrl || loading}
-                className="flex-1 bg-white hover:bg-gray-50 text-gray-700 border-gray-200"
-              >
-                <FontAwesomeIcon icon={faDownload} className="mr-2" />
-                Baixar PDF
-              </Button>
-            )}
-          </div>
+        {/* Ações */}
+        <div className="flex gap-3">
+          {onPrint && (
+            <Button
+              variant="primary"
+              onClick={onPrint}
+              disabled={!qrCodeUrl || loading}
+              className="flex-1"
+              leftIcon={<FontAwesomeIcon icon={faPrint} />}
+            >
+              Imprimir
+            </Button>
+          )}
+          {onDownload && (
+            <Button
+              variant="outline"
+              onClick={onDownload}
+              disabled={!qrCodeUrl || loading}
+              className="flex-1"
+              leftIcon={<FontAwesomeIcon icon={faDownload} />}
+            >
+              Baixar PDF
+            </Button>
+          )}
         </div>
       </div>
     </>
+  );
+}
+
+function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-sm text-text-muted">{label}</span>
+      {children}
+    </div>
   );
 }

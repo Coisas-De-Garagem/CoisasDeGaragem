@@ -42,6 +42,7 @@ export interface Product {
   isAvailable: boolean;
   isReserved: boolean;
   isSold: boolean;
+  eventId?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -250,6 +251,83 @@ export interface Pagination {
 export interface PaginatedResponse<T> {
   items: T[];
   pagination: Pagination;
+}
+
+// Event / Garage Sale Types
+export type EventStatus = 'DRAFT' | 'PUBLISHED' | 'ACTIVE' | 'ENDED' | 'CANCELLED';
+
+export interface GarageEvent {
+  id: string;
+  sellerId: string;
+  name: string;
+  description?: string;
+  status: EventStatus;
+  startDate?: string;
+  endDate?: string;
+  street?: string;
+  number?: string;
+  district?: string;
+  city?: string;
+  zipCode?: string;
+  qrCode: string;
+  productsCount?: number;
+  visitsCount?: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface EventVisit {
+  id: string;
+  eventId: string;
+  createdAt: string;
+}
+
+export interface CreateEventRequest {
+  name: string;
+  description?: string;
+  status?: EventStatus;
+  startDate?: string;
+  endDate?: string;
+  street?: string;
+  number?: string;
+  district?: string;
+  city?: string;
+  zipCode?: string;
+}
+
+export type UpdateEventRequest = Partial<CreateEventRequest>;
+
+export interface ProductRankingItem {
+  productId: string;
+  name: string;
+  qty: number;
+  revenue: number;
+}
+
+export interface EventInsights {
+  metrics: {
+    totalRevenue: number;
+    salesCount: number;
+    ticketAverage: number;
+    productsListed: number;
+    productsSold: number;
+    conversionRate: number;
+    scansCount: number;
+  };
+  productRanking: ProductRankingItem[];
+  comparison: {
+    previousEventsCount: number;
+    previousAverageRevenue: number;
+    previousAverageSales: number;
+    revenueDelta: number | null;
+    salesDelta: number | null;
+  };
+}
+
+/** Evento público com produtos vinculados + dados do vendedor (vitrine). */
+export interface PublicEvent extends GarageEvent {
+  products: Product[];
+  seller?: { name?: string; phone?: string };
 }
 
 // API Response Types

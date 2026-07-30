@@ -1,25 +1,25 @@
-import { SellerLayout } from '@/components/seller/SellerLayout';
-import { Card } from '@/components/common/Card';
-
-import { useAuth } from '@/hooks/useAuth';
-import { useEffect, useState, useRef } from 'react';
-import { api } from '@/services/api';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import gsap from 'gsap';
 import { useGSAP } from '@gsap/react';
-import { SalesChart } from '@/components/seller/SalesChart';
-import type { AnalyticsData, Purchase, Product } from '@/types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faPlus,
-  faShoppingBag,
+  faBagShopping,
   faChartLine,
   faMoneyBillWave,
   faBoxOpen,
   faQrcode,
-  faHand
 } from '@fortawesome/free-solid-svg-icons';
+import { Card } from '@/components/common/Card';
+import { Skeleton } from '@/components/common/Skeleton';
+import { SalesChart } from '@/components/seller/SalesChart';
+import { useAuth } from '@/hooks/useAuth';
+import { api } from '@/services/api';
+import type { AnalyticsData, Purchase, Product } from '@/types';
 import { formatCurrency } from '@/utils/formatters';
+
+type Activity = (Purchase & { type: 'sale' }) | (Product & { type: 'product' });
 
 export default function SellerDashboard() {
   const { user } = useAuth();
@@ -29,16 +29,12 @@ export default function SellerDashboard() {
   const [loading, setLoading] = useState(true);
   const [analyticsData, setAnalyticsData] = useState<AnalyticsData | null>(null);
   const [purchases, setPurchases] = useState<Purchase[]>([]);
-  const [recentActivity, setRecentActivity] = useState<Array<
-    (Purchase & { type: 'sale' }) | (Product & { type: 'product' })
-  >>([]);
+  const [recentActivity, setRecentActivity] = useState<Activity[]>([]);
 
-  // Fetch Data
   useEffect(() => {
     const fetchData = async () => {
       try {
         setLoading(true);
-        // Helper to get last 30 days
         const endDate = new Date();
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - 30);
@@ -49,29 +45,23 @@ export default function SellerDashboard() {
             startDate: startDate.toISOString(),
             endDate: endDate.toISOString(),
           }),
-          api.getPurchases({ limit: 10 }), // Fetch more to build chart
-          api.getMyProducts({ limit: 5, sortBy: 'createdAt', sortOrder: 'desc' })
+          api.getPurchases({ limit: 10 }),
+          api.getMyProducts({ limit: 5, sortBy: 'createdAt', sortOrder: 'desc' }),
         ]);
 
-        if (analyticsRes.success) {
-          setAnalyticsData(analyticsRes.data);
-        }
+        if (analyticsRes.success) setAnalyticsData(analyticsRes.data);
+        if (purchasesRes.success) setPurchases(purchasesRes.data.purchases);
 
-        if (purchasesRes.success) {
-          setPurchases(purchasesRes.data.purchases);
-        }
+        const recentPurchases =
+          purchasesRes.success && purchasesRes.data?.purchases
+            ? purchasesRes.data.purchases.map((p) => ({ ...p, type: 'sale' as const }))
+            : [];
+        const recentProducts =
+          productsRes.success && productsRes.data?.products
+            ? productsRes.data.products.map((p) => ({ ...p, type: 'product' as const }))
+            : [];
 
-        // Merge for recent activity
-        // Merge for recent activity
-        const recentPurchases = (purchasesRes.success && purchasesRes.data?.purchases)
-          ? purchasesRes.data.purchases.map(p => ({ ...p, type: 'sale' as const }))
-          : [];
-
-        const recentProducts = (productsRes.success && productsRes.data?.products)
-          ? productsRes.data.products.map(p => ({ ...p, type: 'product' as const }))
-          : [];
-
-        const mergedActivity = [...recentPurchases, ...recentProducts]
+        const merged = [...recentPurchases, ...recentProducts]
           .sort((a, b) => {
             const dateA = new Date(a.type === 'sale' ? a.purchaseDate : a.createdAt).getTime();
             const dateB = new Date(b.type === 'sale' ? b.purchaseDate : b.createdAt).getTime();
@@ -79,171 +69,156 @@ export default function SellerDashboard() {
           })
           .slice(0, 5);
 
-        setRecentActivity(mergedActivity);
-
+        setRecentActivity(merged);
       } catch (error) {
         console.error('Failed to fetch dashboard data:', error);
       } finally {
         setLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
-  // Animations
-  useGSAP(() => {
-    if (!loading && containerRef.current) {
-      gsap.from('.dashboard-item', {
-        y: 30,
-        opacity: 0,
-        duration: 0.6,
-        stagger: 0.1,
-        ease: 'power3.out',
-      });
-    }
-  }, { dependencies: [loading], scope: containerRef });
+  useGSAP(
+    () => {
+      if (!loading && containerRef.current) {
+        gsap.from('.dashboard-item', {
+          y: 16,
+          opacity: 0,
+          duration: 0.4,
+          stagger: 0.06,
+          ease: 'power3.out',
+        });
+      }
+    },
+    { dependencies: [loading], scope: containerRef },
+  );
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
     const diffInHours = Math.abs(now.getTime() - date.getTime()) / 36e5;
-
     if (diffInHours < 24) {
       if (diffInHours < 1) return 'Há menos de 1 hora';
       return `Há ${Math.floor(diffInHours)} horas`;
     }
-    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleDateString('pt-BR', {
+      day: '2-digit',
+      month: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
   };
 
+  const quickActions = [
+    {
+      label: 'Novo produto',
+      icon: faPlus,
+      onClick: () => navigate('/seller/products', { state: { showForm: true } }),
+    },
+    {
+      label: 'Ver vendas',
+      icon: faBagShopping,
+      onClick: () => navigate('/seller/sales'),
+    },
+    {
+      label: 'Estatísticas',
+      icon: faChartLine,
+      onClick: () => navigate('/seller/analytics'),
+    },
+  ];
+
   return (
-    <SellerLayout>
-      <div ref={containerRef} className="space-y-8">
-        {/* Welcome Section */}
-        <div className="dashboard-item bg-gradient-to-r from-primary-600 to-primary-800 rounded-2xl shadow-xl p-8 text-white relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-white opacity-5 rounded-full transform translate-x-1/3 -translate-y-1/3 blur-3xl"></div>
-          <div className="absolute bottom-0 left-0 w-48 h-48 bg-white opacity-5 rounded-full transform -translate-x-1/3 translate-y-1/3 blur-2xl"></div>
-
-          <div className="relative z-10">
-            <h1 className="text-3xl lg:text-4xl font-bold mb-3 tracking-tight flex items-center gap-3">
-              Olá, {user?.name || 'Vendedor'}! <FontAwesomeIcon icon={faHand} className="animate-wave" />
-            </h1>
-            <p className="text-blue-100/90 text-lg max-w-2xl">
-              Aqui está o panorama da sua garagem hoje. Suas vendas estão indo bem!
-            </p>
-          </div>
-        </div>
-
-        {/* Charts & Metrics */}
-        <div className="dashboard-item">
-          {analyticsData && (
-            <SalesChart
-              data={analyticsData}
-              purchases={purchases}
-              loading={loading}
-            />
-          )}
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Quick Actions */}
-          <div className="dashboard-item lg:col-span-2">
-            <Card className="p-6 h-full border border-gray-100 shadow-lg rounded-2xl">
-              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <FontAwesomeIcon icon={faBoxOpen} className="text-primary" />
-                Ações Rápidas
-              </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <button
-                  onClick={() => navigate('/seller/products', { state: { showForm: true } })}
-                  className="h-auto py-6 flex flex-col items-center justify-center gap-3 bg-primary-50 text-primary hover:bg-primary-600 hover:text-white transition-all duration-300 border-none rounded-xl shadow-sm hover:shadow-md group"
-                >
-                  <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-primary shadow-sm group-hover:scale-110 transition-transform">
-                    <FontAwesomeIcon icon={faPlus} className="text-lg" />
-                  </div>
-                  <span className="font-semibold">Novo Produto</span>
-                </button>
-
-                <button
-                  onClick={() => navigate('/seller/sales')}
-                  className="h-auto py-6 flex flex-col items-center justify-center gap-3 bg-success/15 text-success hover:bg-success hover:text-white transition-all duration-300 border-none rounded-xl shadow-sm hover:shadow-md group"
-                >
-                  <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-success shadow-sm group-hover:scale-110 transition-transform">
-                    <FontAwesomeIcon icon={faShoppingBag} className="text-lg" />
-                  </div>
-                  <span className="font-semibold">Ver Vendas</span>
-                </button>
-
-                <button
-                  onClick={() => navigate('/seller/analytics')}
-                  className="h-auto py-6 flex flex-col items-center justify-center gap-3 bg-secondary-50 text-secondary hover:bg-secondary hover:text-white transition-all duration-300 border-none rounded-xl shadow-sm hover:shadow-md group"
-                >
-                  <div className="w-12 h-12 rounded-full bg-white flex items-center justify-center text-secondary shadow-sm group-hover:scale-110 transition-transform">
-                    <FontAwesomeIcon icon={faChartLine} className="text-lg" />
-                  </div>
-                  <span className="font-semibold">Ver Estatísticas</span>
-                </button>
-              </div>
-            </Card>
-          </div>
-
-          {/* Recent Activity */}
-          <div className="dashboard-item">
-            <Card className="p-6 h-full border border-gray-100 shadow-lg rounded-2xl">
-              <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-                <FontAwesomeIcon icon={faChartLine} className="text-primary" />
-                Atividade Recente
-              </h2>
-
-              {loading ? (
-                <div className="space-y-4">
-                  {[1, 2, 3].map((i) => (
-                    <div key={i} className="h-16 bg-gray-100 rounded-xl animate-pulse" />
-                  ))}
-                </div>
-              ) : recentActivity.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <p>Nenhuma atividade recente.</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {recentActivity.map((activity) => (
-                    <div
-                      key={activity.type === 'sale' ? `sale-${activity.id}` : `prod-${activity.id}`}
-                      className="flex items-center gap-4 p-4 bg-gray-50 rounded-xl hover:bg-blue-50 transition-colors border border-transparent hover:border-blue-100"
-                    >
-                      <div className={`
-                        w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0
-                        ${activity.type === 'sale' ? 'bg-emerald-100 text-emerald-600' : 'bg-blue-100 text-blue-600'}
-                      `}>
-                        <FontAwesomeIcon icon={activity.type === 'sale' ? faMoneyBillWave : faBoxOpen} />
-                      </div>
-
-                      <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-900 truncate">
-                          {activity.type === 'sale'
-                            ? `Venda de ${formatCurrency(Number(activity.price))}`
-                            : `Produto: ${activity.name}`
-                          }
-                        </p>
-                        <p className="text-xs text-gray-500">
-                          {formatDate(activity.type === 'sale' ? activity.purchaseDate : activity.createdAt)}
-                        </p>
-                      </div>
-
-                      {activity.type === 'sale' && activity.qrCodeScanned && (
-                        <div className="text-gray-400" title="QR Code Scanned">
-                          <FontAwesomeIcon icon={faQrcode} />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              )}
-            </Card>
-          </div>
-        </div>
+    <div ref={containerRef} className="space-y-6">
+      {/* Cabeçalho */}
+      <div className="dashboard-item">
+        <h1 className="text-2xl font-semibold text-text-main">
+          Olá, {user?.name?.split(' ')[0] || 'Vendedor'}
+        </h1>
+        <p className="text-text-muted mt-1">Aqui está o panorama da sua garagem hoje.</p>
       </div>
-    </SellerLayout>
+
+      {/* Métricas / gráfico */}
+      <div className="dashboard-item">
+        <SalesChart
+          data={analyticsData ?? undefined}
+          purchases={purchases}
+          loading={loading}
+        />
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Ações rápidas */}
+        <Card className="dashboard-item lg:col-span-2">
+          <div className="px-5 py-4 border-b border-border">
+            <h2 className="text-base font-medium text-text-main">Ações rápidas</h2>
+          </div>
+          <div className="p-4 grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {quickActions.map((action) => (
+              <button
+                key={action.label}
+                type="button"
+                onClick={action.onClick}
+                className="flex items-center gap-3 p-4 rounded-lg border border-border bg-background hover:bg-surface-hover transition-colors text-left"
+              >
+                <span className="flex items-center justify-center w-9 h-9 rounded-md bg-primary/10 text-primary [&_svg]:w-4 [&_svg]:h-4">
+                  <FontAwesomeIcon icon={action.icon} />
+                </span>
+                <span className="text-sm font-medium text-text-main">{action.label}</span>
+              </button>
+            ))}
+          </div>
+        </Card>
+
+        {/* Atividade recente */}
+        <Card className="dashboard-item">
+          <div className="px-5 py-4 border-b border-border">
+            <h2 className="text-base font-medium text-text-main">Atividade recente</h2>
+          </div>
+
+          {loading ? (
+            <div className="p-4 space-y-2">
+              <Skeleton variant="card" height="h-12" rounded="rounded-md" count={3} />
+            </div>
+          ) : recentActivity.length === 0 ? (
+            <div className="p-8 text-center text-sm text-text-muted">
+              Nenhuma atividade recente.
+            </div>
+          ) : (
+            <div className="p-2">
+              {recentActivity.map((activity) => (
+                <div
+                  key={activity.type === 'sale' ? `sale-${activity.id}` : `prod-${activity.id}`}
+                  className="flex items-center gap-3 p-2.5 rounded-md hover:bg-surface-hover transition-colors"
+                >
+                  <span
+                    className={`flex-shrink-0 w-8 h-8 rounded-md flex items-center justify-center [&_svg]:w-4 [&_svg]:h-4 ${
+                      activity.type === 'sale'
+                        ? 'bg-success/15 text-success'
+                        : 'bg-primary/10 text-primary'
+                    }`}
+                  >
+                    <FontAwesomeIcon icon={activity.type === 'sale' ? faMoneyBillWave : faBoxOpen} />
+                  </span>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm text-text-main truncate">
+                      {activity.type === 'sale'
+                        ? `Venda de ${formatCurrency(Number(activity.price))}`
+                        : `Produto: ${activity.name}`}
+                    </p>
+                    <p className="text-xs text-text-subtle">
+                      {formatDate(activity.type === 'sale' ? activity.purchaseDate : activity.createdAt)}
+                    </p>
+                  </div>
+                  {activity.type === 'sale' && activity.qrCodeScanned && (
+                    <FontAwesomeIcon icon={faQrcode} className="w-3.5 h-3.5 text-text-subtle" />
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+      </div>
+    </div>
   );
 }

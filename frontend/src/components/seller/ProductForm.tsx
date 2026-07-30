@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Input } from '@/components/common/Input';
+import { Textarea } from '@/components/common/Textarea';
 import { Button } from '@/components/common/Button';
 import { Select } from '@/components/common/Select';
 import { Alert } from '@/components/common/Alert';
@@ -14,7 +15,7 @@ interface ProductFormProps {
 
 const conditionOptions = [
   { value: 'NEW', label: 'Novo' },
-  { value: 'LIKE_NEW', label: 'Como Novo' },
+  { value: 'LIKE_NEW', label: 'Como novo' },
   { value: 'GOOD', label: 'Bom' },
   { value: 'FAIR', label: 'Razoável' },
   { value: 'POOR', label: 'Ruim' },
@@ -44,27 +45,11 @@ export function ProductForm({ product, onSubmit, onCancel, isLoading }: ProductF
     e.preventDefault();
     setError('');
 
-    // Validate
-    if (!name.trim()) {
-      setError('Nome do produto é obrigatório');
-      return;
-    }
-    if (name.length < 3) {
-      setError('Nome deve ter no mínimo 3 caracteres');
-      return;
-    }
-    if (!description.trim()) {
-      setError('Descrição é obrigatória');
-      return;
-    }
-    if (description.length < 10) {
-      setError('Descrição deve ter no mínimo 10 caracteres');
-      return;
-    }
-    if (!price || parseFloat(price) <= 0) {
-      setError('Preço deve ser maior que zero');
-      return;
-    }
+    if (!name.trim()) return setError('Nome do produto é obrigatório');
+    if (name.length < 3) return setError('Nome deve ter no mínimo 3 caracteres');
+    if (!description.trim()) return setError('Descrição é obrigatória');
+    if (description.length < 10) return setError('Descrição deve ter no mínimo 10 caracteres');
+    if (!price || parseFloat(price) <= 0) return setError('Preço deve ser maior que zero');
 
     try {
       const data: CreateProductRequest | UpdateProductRequest = {
@@ -74,11 +59,10 @@ export function ProductForm({ product, onSubmit, onCancel, isLoading }: ProductF
         currency: 'BRL',
         imageUrl: imageUrl.trim() || undefined,
         category: category || undefined,
-        condition: condition,
+        condition,
       };
 
       if (product) {
-        // It's an update - add isAvailable
         (data as UpdateProductRequest).isAvailable = product.isAvailable;
       }
 
@@ -89,7 +73,7 @@ export function ProductForm({ product, onSubmit, onCancel, isLoading }: ProductF
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {error && (
         <Alert variant="error" dismissible onDismiss={() => setError('')}>
           {error}
@@ -98,8 +82,9 @@ export function ProductForm({ product, onSubmit, onCancel, isLoading }: ProductF
 
       <Input
         id="name"
+        name="name"
         type="text"
-        label="Nome do produto *"
+        label="Nome do produto"
         value={name}
         onChange={(e) => setName(e.target.value)}
         placeholder="Ex: Bicicleta infantil"
@@ -110,68 +95,66 @@ export function ProductForm({ product, onSubmit, onCancel, isLoading }: ProductF
         helperText={`${name.length}/200 caracteres`}
       />
 
-      <div className="mb-4">
-        <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">
-          Descrição *
-        </label>
-        <textarea
-          id="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Descreva o produto, suas características, estado, etc."
-          required
-          disabled={isLoading}
-          rows={4}
-          maxLength={2000}
-          className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-primary focus:border-transparent text-gray-900 placeholder-gray-400 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-          aria-describedby="description-helper"
-        />
-        <p id="description-helper" className="mt-1 text-sm text-gray-500">
-          {description.length}/2000 caracteres
-        </p>
-      </div>
+      <Textarea
+        id="description"
+        name="description"
+        label="Descrição"
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        placeholder="Descreva o produto, suas características, estado, etc."
+        required
+        disabled={isLoading}
+        rows={4}
+        maxLength={2000}
+        helperText={`${description.length}/2000 caracteres`}
+      />
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Input
           id="price"
+          name="price"
           type="number"
-          label="Preço (BRL) *"
+          label="Preço"
           value={price}
           onChange={(e) => setPrice(e.target.value)}
-          placeholder="0.00"
+          placeholder="0,00"
           required
           fullWidth
           disabled={isLoading}
           min="0"
           step="0.01"
+          rightAddon="R$"
           helperText="Valor em reais"
         />
 
         <Select
           id="category"
+          name="category"
           label="Categoria"
           value={category}
           onChange={(e) => setCategory(e.target.value)}
           options={categoryOptions}
           fullWidth
           disabled={isLoading}
+          placeholder="Selecione"
           helperText="Opcional"
         />
       </div>
 
       <Select
         id="condition"
-        label="Condição *"
+        name="condition"
+        label="Condição"
         value={condition}
         onChange={(e) => setCondition(e.target.value as ProductCondition)}
         options={conditionOptions}
         fullWidth
         disabled={isLoading}
-        required
       />
 
       <Input
         id="imageUrl"
+        name="imageUrl"
         type="url"
         label="URL da imagem"
         value={imageUrl}
@@ -179,44 +162,36 @@ export function ProductForm({ product, onSubmit, onCancel, isLoading }: ProductF
         placeholder="https://exemplo.com/imagem.jpg"
         fullWidth
         disabled={isLoading}
-        helperText="Opcional - URL da imagem do produto"
+        helperText="Opcional — URL da imagem do produto"
       />
 
       {imageUrl && (
-        <div className="mt-2">
-          <label className="block text-sm font-medium text-gray-700 mb-1">
-            Pré-visualização
-          </label>
-          <div className="relative h-48 w-full sm:w-48 rounded-lg border border-gray-300 overflow-hidden bg-gray-100 flex items-center justify-center">
+        <div>
+          <p className="text-sm font-medium text-text-main mb-1.5">Pré-visualização</p>
+          <div className="relative h-40 w-full sm:w-48 rounded-lg border border-border overflow-hidden bg-surface-sunken flex items-center justify-center">
             <img
               src={imageUrl}
               alt="Pré-visualização do produto"
               className="h-full w-full object-cover"
               onError={(e) => {
-                (e.target as HTMLImageElement).src = 'https://via.placeholder.com/200?text=Erro+na+Imagem';
+                const target = e.target as HTMLImageElement;
+                target.style.display = 'none';
+                target.parentElement!.innerHTML =
+                  '<div class="flex flex-col items-center text-text-subtle"><svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5z"/></svg></div>';
               }}
             />
           </div>
         </div>
       )}
 
-      <div className="flex gap-4 justify-end">
+      <div className="flex gap-3 justify-end pt-1">
         {onCancel && (
-          <Button
-            type="button"
-            variant="tertiary"
-            onClick={onCancel}
-            disabled={isLoading}
-          >
+          <Button type="button" variant="ghost" onClick={onCancel} disabled={isLoading}>
             Cancelar
           </Button>
         )}
-        <Button
-          type="submit"
-          variant="primary"
-          isLoading={isLoading}
-        >
-          {product ? 'Atualizar Produto' : 'Criar Produto'}
+        <Button type="submit" variant="primary" isLoading={isLoading}>
+          {product ? 'Atualizar produto' : 'Criar produto'}
         </Button>
       </div>
     </form>
