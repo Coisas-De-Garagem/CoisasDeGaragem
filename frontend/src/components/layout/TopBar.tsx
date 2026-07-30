@@ -20,7 +20,7 @@ export function TopBar({ mode, title }: TopBarProps) {
   const switchTarget = MODE_SWITCH[mode];
 
   return (
-    <header className="sticky top-0 z-20 h-14 flex items-center gap-3 px-4 sm:px-6 bg-surface border-b border-border">
+    <header className="sticky top-0 z-20 flex items-center gap-3 px-4 sm:px-6 bg-surface border-b border-border pt-[env(safe-area-inset-top)] max-md:pt-[max(env(safe-area-inset-top),1.5rem)] min-h-[calc(3.5rem+env(safe-area-inset-top))] max-md:min-h-[calc(3.5rem+max(env(safe-area-inset-top),1.5rem))]">
       <h1 className="lg:hidden text-base font-medium text-text-main truncate flex-1">
         {title ?? (mode === 'seller' ? 'Vendedor' : 'Comprador')}
       </h1>

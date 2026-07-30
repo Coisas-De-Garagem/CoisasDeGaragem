@@ -27,7 +27,7 @@ export function Header() {
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-surface border-b border-border">
+    <header className="sticky top-0 z-40 bg-surface border-b border-border pt-[env(safe-area-inset-top)] max-md:pt-[max(env(safe-area-inset-top),1.5rem)]">
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="flex items-center justify-between h-14 gap-4">
           {/* Logo */}
