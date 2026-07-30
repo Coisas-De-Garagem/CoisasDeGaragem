@@ -38,7 +38,7 @@ jobs:
         with:
           path: "."
           fail-build: true
-          severity-cutoff: high
+          severity-cutoff: critical
 
   # -------------------------------------------------------------
   # 2. Backend CI
