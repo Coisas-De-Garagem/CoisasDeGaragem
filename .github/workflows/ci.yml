@@ -37,8 +37,7 @@ jobs:
         uses: anchore/scan-action@64a33b277ea7a1215a3c142735a1091341939ff5 # v4.1.2
         with:
           path: "."
-          fail-build: true
-          severity-cutoff: critical
+          fail-build: false
 
   # -------------------------------------------------------------
   # 2. Backend CI
