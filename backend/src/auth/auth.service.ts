@@ -28,6 +28,12 @@ export class AuthService {
     return null;
   }
 
+  async updateProfile(userId: string, updateData: { name?: string; phone?: string; avatarUrl?: string }) {
+    const user = await this.usersService.update(userId, updateData);
+    const { password, ...result } = user;
+    return result;
+  }
+
   async login(loginDto: LoginDto) {
     const user = await this.validateUser(loginDto.email, loginDto.password);
     if (!user) {

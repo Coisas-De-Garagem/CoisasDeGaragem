@@ -6,6 +6,7 @@ import {
   UseGuards,
   Request,
   BadRequestException,
+  Put,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -169,5 +170,16 @@ export class AuthController {
   })
   getProfile(@Request() req) {
     return req.user;
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Put('me')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Atualizar perfil do usuário atual',
+    description: 'Atualiza informações do usuário autenticado',
+  })
+  async updateProfile(@Request() req, @Body() updateData: { name?: string; phone?: string; avatarUrl?: string }) {
+    return this.authService.updateProfile(req.user.userId, updateData);
   }
 }

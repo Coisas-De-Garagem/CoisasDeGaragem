@@ -82,10 +82,10 @@ export function useAuth(options?: { redirect?: boolean }) {
     async (updates: { name?: string; phone?: string; avatarUrl?: string }) => {
       if (!user) return;
 
-      const result = await api.getMe();
+      const result = await api.updateProfile(updates);
 
       if (result.success) {
-        updateUser(updates);
+        updateUser(result.data);
       } else {
         throw new Error(result.error.message);
       }

@@ -184,6 +184,20 @@ export const api = {
     });
   },
 
+  updateProfile: async (data: { name?: string; phone?: string; avatarUrl?: string }): Promise<ApiResult<User>> => {
+    if (ENABLE_MOCK_DATA) {
+      // For mock, just return success with updated data overlaid on a mock user
+      return { success: true, data: { id: '1', email: 'mock@example.com', role: 'user', isActive: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), ...data } as unknown as User };
+    }
+    return fetchApi<User>('/auth/me', {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: JSON.stringify(data),
+    });
+  },
+
   // Products
   getProducts: async (filters?: ProductFilters): Promise<ApiResult<{ products: Product[]; pagination: any }>> => {
     if (ENABLE_MOCK_DATA) {

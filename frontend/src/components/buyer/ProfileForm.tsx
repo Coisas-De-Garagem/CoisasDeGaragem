@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { Input } from '@/components/common/Input';
 import { Button } from '@/components/common/Button';
-import { Alert } from '@/components/common/Alert';
+import { useUIStore } from '@/store/uiStore';
+import { makeNotifier } from '@/utils/notifications';
 import { Avatar } from '@/components/common/Avatar';
 import type { User } from '@/types';
 
@@ -15,22 +16,22 @@ export function ProfileForm({ user, onSubmit, isLoading }: ProfileFormProps) {
   const [name, setName] = useState(user.name || '');
   const [phone, setPhone] = useState(user.phone || '');
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl || '');
-  const [error, setError] = useState('');
+  const { addNotification } = useUIStore();
+  const notify = makeNotifier(addNotification);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
 
     if (!name.trim()) {
-      setError('Nome é obrigatório');
+      notify('warning', 'Atenção', 'Nome é obrigatório');
       return;
     }
     if (name.length < 2) {
-      setError('Nome deve ter no mínimo 2 caracteres');
+      notify('warning', 'Atenção', 'Nome deve ter no mínimo 2 caracteres');
       return;
     }
     if (name.length > 100) {
-      setError('Nome deve ter no máximo 100 caracteres');
+      notify('warning', 'Atenção', 'Nome deve ter no máximo 100 caracteres');
       return;
     }
 
@@ -41,17 +42,12 @@ export function ProfileForm({ user, onSubmit, isLoading }: ProfileFormProps) {
         avatarUrl: avatarUrl.trim() || undefined,
       });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao salvar perfil');
+      notify('error', 'Erro', err instanceof Error ? err.message : 'Erro ao salvar perfil');
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="px-5 py-5 space-y-5">
-      {error && (
-        <Alert variant="error" dismissible onDismiss={() => setError('')}>
-          {error}
-        </Alert>
-      )}
 
       {/* Avatar */}
       <div className="flex items-center gap-4">
