@@ -11,10 +11,10 @@ interface PurchaseCardProps {
 }
 
 const statusConfig: Record<string, { label: string; variant: 'warning' | 'success' | 'error' }> = {
-  pending: { label: 'Pendente', variant: 'warning' },
-  completed: { label: 'Concluído', variant: 'success' },
-  cancelled: { label: 'Cancelado', variant: 'error' },
-  refunded: { label: 'Reembolsado', variant: 'error' },
+  PENDING: { label: 'Pendente', variant: 'warning' },
+  COMPLETED: { label: 'Concluído', variant: 'success' },
+  CANCELLED: { label: 'Cancelado', variant: 'error' },
+  REFUNDED: { label: 'Reembolsado', variant: 'error' },
 };
 
 const paymentLabel: Record<string, string> = {
@@ -25,7 +25,7 @@ const paymentLabel: Record<string, string> = {
 };
 
 export function PurchaseCard({ purchase, onViewDetails }: PurchaseCardProps) {
-  const config = statusConfig[purchase.status as string] || statusConfig.pending;
+  const config = statusConfig[purchase.status?.toUpperCase() as string] || statusConfig.PENDING;
   const formattedDate = new Date(purchase.purchaseDate).toLocaleDateString('pt-BR', {
     year: 'numeric',
     month: 'long',

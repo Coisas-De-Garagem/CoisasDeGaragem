@@ -119,7 +119,7 @@ export default function LocationsPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredLocations.map((loc) => (
-            <Card key={loc.id} hoverable className="flex flex-col">
+            <Card key={loc.id} hoverable flush className="flex flex-col h-full">
               <div className="p-5 flex-1 space-y-4">
                 <div className="flex justify-between items-start gap-2">
                   <h3 className="text-lg font-bold text-text-main line-clamp-1">{loc.name}</h3>

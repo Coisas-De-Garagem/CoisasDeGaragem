@@ -23,7 +23,7 @@ interface LocationFormProps {
 }
 
 export function LocationForm({ location, onSuccess, onCancel }: LocationFormProps) {
-  const { createLocation, editLocation } = useLocations();
+  const { createLocation, editLocation } = useLocations({ autoFetch: false });
   const { addNotification } = useUIStore();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const notify = makeNotifier(addNotification);

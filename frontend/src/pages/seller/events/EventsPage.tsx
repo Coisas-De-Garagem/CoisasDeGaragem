@@ -12,7 +12,6 @@ import { Modal } from '@/components/common/Modal';
 import { Select } from '@/components/common/Select';
 import { EmptyState } from '@/components/common/EmptyState';
 import { Skeleton } from '@/components/common/Skeleton';
-import { PageHeaderSkeleton } from '@/components/common/PageSkeletons';
 import { EventForm } from '@/components/seller/EventForm';
 import { useUIStore } from '@/store/uiStore';
 import { makeNotifier } from '@/utils/notifications';
@@ -105,7 +104,7 @@ export default function EventsPage() {
 
   useGSAP(
     () => {
-      if (!loading && containerRef.current) {
+      if (!loading && containerRef.current && events.length > 0) {
         gsap.from('.event-card-item', {
           y: 16,
           opacity: 0,
@@ -115,7 +114,7 @@ export default function EventsPage() {
         });
       }
     },
-    { dependencies: [loading], scope: containerRef },
+    { dependencies: [loading, events.length], scope: containerRef },
   );
 
   const filteredEvents =
@@ -155,22 +154,21 @@ export default function EventsPage() {
 
       {/* Loading */}
       {loading && (
-        <div className="space-y-6">
-          <PageHeaderSkeleton />
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {Array.from({ length: 6 }).map((_, i) => (
-              <Card key={i} className="p-5 space-y-3">
-                <Skeleton height="h-5" width="w-2/3" />
-                <Skeleton height="h-3" width="w-1/2" />
-                <Skeleton height="h-3" width="w-3/4" />
-                <div className="flex gap-2 pt-2">
-                  <Skeleton height="h-9" width="w-24" rounded="rounded-md" />
-                  <Skeleton height="h-9" width="w-24" rounded="rounded-md" />
+              <Card key={i}>
+                <div className="space-y-3">
+                  <Skeleton height="h-5" width="w-2/3" />
+                  <Skeleton height="h-3" width="w-1/2" />
+                  <Skeleton height="h-3" width="w-3/4" />
+                  <div className="flex gap-2 pt-2">
+                    <Skeleton height="h-9" width="w-24" rounded="rounded-md" />
+                    <Skeleton height="h-9" width="w-24" rounded="rounded-md" />
+                  </div>
                 </div>
               </Card>
             ))}
           </div>
-        </div>
       )}
 
       {/* Erro */}

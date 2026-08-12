@@ -3,7 +3,8 @@ import { Input } from '@/components/common/Input';
 import { Textarea } from '@/components/common/Textarea';
 import { Button } from '@/components/common/Button';
 import { Select } from '@/components/common/Select';
-import { Alert } from '@/components/common/Alert';
+import { useUIStore } from '@/store/uiStore';
+import { makeNotifier } from '@/utils/notifications';
 import { LocationSelect } from '@/components/seller/LocationSelect';
 import type { Product, CreateProductRequest, UpdateProductRequest, ProductCondition } from '@/types';
 
@@ -41,18 +42,19 @@ export function ProductForm({ product, onSubmit, onCancel, isLoading }: ProductF
   const [condition, setCondition] = useState<ProductCondition>(product?.condition || 'GOOD');
   const [imageUrl, setImageUrl] = useState(product?.imageUrl || '');
   const [locationId, setLocationId] = useState(product?.locationId || '');
-  const [error, setError] = useState('');
+  
+  const { addNotification } = useUIStore();
+  const notify = makeNotifier(addNotification);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
 
-    if (!name.trim()) return setError('Nome do produto é obrigatório');
-    if (name.length < 3) return setError('Nome deve ter no mínimo 3 caracteres');
-    if (!description.trim()) return setError('Descrição é obrigatória');
-    if (description.length < 10) return setError('Descrição deve ter no mínimo 10 caracteres');
-    if (!price || parseFloat(price) <= 0) return setError('Preço deve ser maior que zero');
-    if (!locationId) return setError('Por favor, selecione um local para o produto');
+    if (!name.trim()) return notify('warning', 'Atenção', 'Nome do produto é obrigatório');
+    if (name.length < 3) return notify('warning', 'Atenção', 'Nome deve ter no mínimo 3 caracteres');
+    if (!description.trim()) return notify('warning', 'Atenção', 'Descrição é obrigatória');
+    if (description.length < 10) return notify('warning', 'Atenção', 'Descrição deve ter no mínimo 10 caracteres');
+    if (!price || parseFloat(price) <= 0) return notify('warning', 'Atenção', 'Preço deve ser maior que zero');
+    if (!locationId) return notify('warning', 'Atenção', 'Por favor, selecione um local para o produto');
 
     try {
       const data: CreateProductRequest | UpdateProductRequest = {
@@ -72,17 +74,12 @@ export function ProductForm({ product, onSubmit, onCancel, isLoading }: ProductF
 
       await onSubmit(data);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao salvar produto');
+      notify('error', 'Erro', err instanceof Error ? err.message : 'Erro ao salvar produto');
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-5">
-      {error && (
-        <Alert variant="error" dismissible onDismiss={() => setError('')}>
-          {error}
-        </Alert>
-      )}
 
       <Input
         id="name"

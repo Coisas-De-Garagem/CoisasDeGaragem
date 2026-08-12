@@ -3,9 +3,8 @@ import { api } from '@/services/api';
 import { useLocationsStore } from '@/store/locationsStore';
 import type { CreateLocationRequest, UpdateLocationRequest } from '@/types';
 
-export function useLocations() {
-  const { locations, isLoading, error, setLocations, addLocation, updateLocation, setLoading, setError } = useLocationsStore();
-  const [isFetched, setIsFetched] = useState(false);
+export function useLocations(options: { autoFetch?: boolean } = { autoFetch: true }) {
+  const { locations, isLoading, error, hasFetched, setLocations, addLocation, updateLocation, setLoading, setError, setHasFetched } = useLocationsStore();
 
   const fetchLocations = useCallback(async () => {
     setLoading(true);
@@ -18,17 +17,17 @@ export function useLocations() {
       }
     } catch (err) {
       setError('Erro ao carregar locais');
+      setHasFetched(true);
     } finally {
       setLoading(false);
-      setIsFetched(true);
     }
-  }, [setLoading, setLocations, setError]);
+  }, [setLoading, setLocations, setError, setHasFetched]);
 
   useEffect(() => {
-    if (!isFetched) {
+    if (options.autoFetch && !hasFetched && !isLoading) {
       fetchLocations();
     }
-  }, [fetchLocations, isFetched]);
+  }, [fetchLocations, hasFetched, isLoading, options.autoFetch]);
 
   const createLocation = async (data: CreateLocationRequest) => {
     const response = await api.createLocation(data);
