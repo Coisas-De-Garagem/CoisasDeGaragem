@@ -36,7 +36,7 @@ export class AuthController {
     description: 'Login realizado com sucesso',
     schema: {
       example: {
-        access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        access_token: '<jwt-access-token>',
         user: {
           id: 'user-id',
           email: 'usuario@exemplo.com',
@@ -122,7 +122,7 @@ export class AuthController {
     description: 'Login realizado com sucesso',
     schema: {
       example: {
-        token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        token: '<jwt-token>',
         expiresIn: 3600,
         user: {
           id: 'user-id',
