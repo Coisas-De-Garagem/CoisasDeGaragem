@@ -9,7 +9,7 @@ import { ProductForm } from '@/components/seller/ProductForm';
 import { Button } from '@/components/common/Button';
 import { Modal } from '@/components/common/Modal';
 import { Card } from '@/components/common/Card';
-import { Select } from '@/components/common/Select';
+import { DropdownSelect } from '@/components/common/DropdownSelect';
 import { EmptyState } from '@/components/common/EmptyState';
 import { SearchInput } from '@/components/common/SearchInput';
 import { Pagination } from '@/components/common/Pagination';
@@ -40,6 +40,7 @@ export default function ProductsPage() {
   const [productToDelete, setProductToDelete] = useState<Product | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [category, setCategory] = useState<string>('all');
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<'name' | 'price' | 'date'>('name');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
@@ -47,12 +48,16 @@ export default function ProductsPage() {
 
   const notify = makeNotifier(addNotification);
 
-  const filteredProducts = (products || []).filter(
-    (product) =>
+  const filteredProducts = (products || []).filter((product) => {
+    const matchesSearch =
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.category?.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+      product.category?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+    const matchesCategory = category === 'all' || product.category === category;
+    
+    return matchesSearch && matchesCategory;
+  });
 
   const sortedProducts = [...filteredProducts].sort((a, b) => {
     let comparison = 0;
@@ -71,7 +76,7 @@ export default function ProductsPage() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentPage(1);
-  }, [searchTerm, sortBy, sortOrder]);
+  }, [searchTerm, sortBy, sortOrder, category]);
 
   // Carrega produtos ao montar.
   useEffect(() => {
@@ -246,7 +251,7 @@ export default function ProductsPage() {
       </div>
 
       {/* Filtros */}
-      <Card flush>
+      <Card flush overflowVisible className="relative z-40">
         <div className="p-4 flex flex-col lg:flex-row gap-3">
           <div className="flex-1">
             <SearchInput
@@ -256,24 +261,38 @@ export default function ProductsPage() {
               onClear={() => setSearchTerm('')}
             />
           </div>
-          <div className="flex gap-3">
-            <div className="w-40">
-              <Select
-                aria-label="Ordenar por"
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as 'name' | 'price' | 'date')}
+          <div className="flex gap-3 flex-wrap sm:flex-nowrap">
+            <div className="w-full sm:w-56 z-30">
+              <DropdownSelect
+                value={category}
+                onChange={(v) => setCategory(v)}
                 options={[
-                  { value: 'name', label: 'Nome' },
-                  { value: 'price', label: 'Preço' },
-                  { value: 'date', label: 'Data' },
+                  { value: 'all', label: 'Todas Categorias' },
+                  { value: 'Brinquedos', label: 'Brinquedos' },
+                  { value: 'Eletrônicos', label: 'Eletrônicos' },
+                  { value: 'Móveis', label: 'Móveis' },
+                  { value: 'Roupas', label: 'Roupas' },
+                  { value: 'Livros', label: 'Livros' },
+                  { value: 'Esportes', label: 'Esportes' },
+                  { value: 'Outros', label: 'Outros' },
                 ]}
               />
             </div>
-            <div className="w-44">
-              <Select
-                aria-label="Ordem"
+            <div className="w-full sm:w-48 z-20">
+              <DropdownSelect
+                value={sortBy}
+                onChange={(v) => setSortBy(v as 'name' | 'price' | 'date')}
+                options={[
+                  { value: 'name', label: 'Ordernar: Nome' },
+                  { value: 'price', label: 'Ordernar: Preço' },
+                  { value: 'date', label: 'Ordernar: Data' },
+                ]}
+              />
+            </div>
+            <div className="w-full sm:w-56 z-10">
+              <DropdownSelect
                 value={sortOrder}
-                onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
+                onChange={(v) => setSortOrder(v as 'asc' | 'desc')}
                 options={[
                   { value: 'asc', label: 'Crescente (A–Z)' },
                   { value: 'desc', label: 'Decrescente (Z–A)' },

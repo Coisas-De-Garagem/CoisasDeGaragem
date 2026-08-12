@@ -62,4 +62,12 @@ export class CreateProductDto {
   @IsOptional()
   @IsEnum(ProductCondition)
   condition?: ProductCondition;
+
+  @ApiPropertyOptional({
+    example: 'uuid-do-local',
+    description: 'ID do local (Location) onde o produto está à venda',
+  })
+  @IsOptional()
+  @IsString()
+  locationId?: string;
 }

@@ -1,9 +1,9 @@
 import { Outlet, useLocation } from 'react-router-dom';
-import { useState } from 'react';
 import { Sidebar } from './Sidebar';
 import { BottomNav } from './BottomNav';
 import { TopBar } from './TopBar';
 import { ToastContainer } from '@/components/common/ToastContainer';
+import { PendingReviewsNotifier } from '@/components/reviews/PendingReviewsNotifier';
 import type { DashboardType } from '@/types';
 
 interface AppShellProps {
@@ -18,25 +18,25 @@ interface AppShellProps {
  */
 export function AppShell({ mode }: AppShellProps) {
   const location = useLocation();
-  const [collapsed, setCollapsed] = useState(false);
 
   // Título dinâmico para o mobile, derivado da rota atual.
   const title = deriveTitle(mode, location.pathname);
 
   return (
     <div className="min-h-screen bg-background">
-      <Sidebar mode={mode} collapsed={collapsed} onToggle={() => setCollapsed(!collapsed)} />
+      <Sidebar mode={mode} />
 
       {/* Conteúdo com offset da sidebar no desktop */}
-      <div className={`transition-[padding] duration-300 ${collapsed ? 'lg:pl-20' : 'lg:pl-64'}`}>
+      <div className="transition-[padding] duration-300 md:pl-20">
         <TopBar mode={mode} title={title} />
-        <main className="px-4 sm:px-6 py-6 pb-24 lg:pb-10 max-w-7xl mx-auto">
+        <main className="px-4 sm:px-6 py-6 pb-24 md:pb-10 max-w-7xl mx-auto">
           <Outlet />
         </main>
       </div>
 
       <BottomNav mode={mode} />
       <ToastContainer />
+      <PendingReviewsNotifier />
     </div>
   );
 }

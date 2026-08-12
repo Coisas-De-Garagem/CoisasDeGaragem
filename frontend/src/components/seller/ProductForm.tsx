@@ -4,6 +4,7 @@ import { Textarea } from '@/components/common/Textarea';
 import { Button } from '@/components/common/Button';
 import { Select } from '@/components/common/Select';
 import { Alert } from '@/components/common/Alert';
+import { LocationSelect } from '@/components/seller/LocationSelect';
 import type { Product, CreateProductRequest, UpdateProductRequest, ProductCondition } from '@/types';
 
 interface ProductFormProps {
@@ -39,6 +40,7 @@ export function ProductForm({ product, onSubmit, onCancel, isLoading }: ProductF
   const [category, setCategory] = useState(product?.category || '');
   const [condition, setCondition] = useState<ProductCondition>(product?.condition || 'GOOD');
   const [imageUrl, setImageUrl] = useState(product?.imageUrl || '');
+  const [locationId, setLocationId] = useState(product?.locationId || '');
   const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,6 +52,7 @@ export function ProductForm({ product, onSubmit, onCancel, isLoading }: ProductF
     if (!description.trim()) return setError('Descrição é obrigatória');
     if (description.length < 10) return setError('Descrição deve ter no mínimo 10 caracteres');
     if (!price || parseFloat(price) <= 0) return setError('Preço deve ser maior que zero');
+    if (!locationId) return setError('Por favor, selecione um local para o produto');
 
     try {
       const data: CreateProductRequest | UpdateProductRequest = {
@@ -60,6 +63,7 @@ export function ProductForm({ product, onSubmit, onCancel, isLoading }: ProductF
         imageUrl: imageUrl.trim() || undefined,
         category: category || undefined,
         condition,
+        locationId,
       };
 
       if (product) {
@@ -151,6 +155,17 @@ export function ProductForm({ product, onSubmit, onCancel, isLoading }: ProductF
         fullWidth
         disabled={isLoading}
       />
+
+      <div className="space-y-1">
+        <label className="block text-sm font-medium text-text-main mb-1">
+          Local do Garage Sale *
+        </label>
+        <LocationSelect
+          value={locationId}
+          onChange={setLocationId}
+        />
+        <p className="text-xs text-text-muted mt-1">Onde este produto estará disponível</p>
+      </div>
 
       <Input
         id="imageUrl"

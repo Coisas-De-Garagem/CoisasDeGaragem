@@ -21,6 +21,9 @@ import type {
   NotificationFilters,
   GarageEvent,
   EventInsights,
+  CreateLocationRequest,
+  UpdateLocationRequest,
+  Location,
   CreateEventRequest,
   UpdateEventRequest,
   PublicEvent,
@@ -415,8 +418,25 @@ export const api = {
   getTestimonials: async (
     filters?: TestimonialFilters,
   ): Promise<ApiResult<Testimonial[]>> => {
-    // Always use mock for testimonials
-    return mockApi.getTestimonials(filters);
+    if (ENABLE_MOCK_DATA) {
+      return mockApi.getTestimonials(filters);
+    }
+    return fetchApi<Testimonial[]>('/reviews/public', {
+      method: 'GET',
+    });
+  },
+
+  createTestimonial: async (data: { rating: number; content: string }): Promise<ApiResult<any>> => {
+    if (ENABLE_MOCK_DATA) {
+      return { success: true, data: { id: 'mock-testimonial' } };
+    }
+    return fetchApi<any>('/reviews/testimonials', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: JSON.stringify(data),
+    });
   },
 
   // Notifications
@@ -433,6 +453,32 @@ export const api = {
 
   markAllNotificationsAsRead: async (): Promise<ApiResult<{ message: string }>> => {
     return mockApi.markAllNotificationsAsRead();
+  },
+
+  // Reviews
+  getPendingReviews: async (): Promise<ApiResult<Purchase[]>> => {
+    if (ENABLE_MOCK_DATA) {
+      return { success: true, data: [] };
+    }
+    return fetchApi<Purchase[]>('/reviews/pending', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+  },
+
+  createReview: async (data: { purchaseId: string; rating: number; comment?: string }): Promise<ApiResult<any>> => {
+    if (ENABLE_MOCK_DATA) {
+      return { success: true, data: { id: 'mock-review' } };
+    }
+    return fetchApi<any>('/reviews', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: JSON.stringify(data),
+    });
   },
 
   // ---- Events / Garage Sales ----
@@ -518,5 +564,47 @@ export const api = {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     });
     return response;
+  },
+
+  // Locations API
+  getLocations: async (): Promise<ApiResult<Location[]>> => {
+    if (ENABLE_MOCK_DATA) {
+      return { success: true, data: [] }; // Mock if needed
+    }
+    return fetchApi<Location[]>('/locations', {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    });
+  },
+
+  createLocation: async (data: CreateLocationRequest): Promise<ApiResult<Location>> => {
+    if (ENABLE_MOCK_DATA) {
+      return { success: true, data: { id: 'mock-id', ...data, sellerId: 'seller', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() } as Location };
+    }
+    return fetchApi<Location>('/locations', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      body: JSON.stringify(data),
+    });
+  },
+
+  updateLocation: async (id: string, data: UpdateLocationRequest): Promise<ApiResult<Location>> => {
+    if (ENABLE_MOCK_DATA) {
+      return { success: true, data: { id, name: data.name || '', address: data.address || '', isActive: data.isActive ?? true, sellerId: 'seller', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() } };
+    }
+    return fetchApi<Location>(`/locations/${id}`, {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      body: JSON.stringify(data),
+    });
+  },
+
+  toggleLocationStatus: async (id: string): Promise<ApiResult<Location>> => {
+    if (ENABLE_MOCK_DATA) {
+      return { success: true, data: { id, name: 'Mock', address: 'Mock', isActive: false, sellerId: 'seller', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() } };
+    }
+    return fetchApi<Location>(`/locations/${id}/toggle`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    });
   },
 };

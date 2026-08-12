@@ -24,6 +24,20 @@ export interface AuthSession {
   deviceInfo?: object;
 }
 
+// Location Types
+export interface Location {
+  id: string;
+  name: string;
+  address: string;
+  isActive: boolean;
+  sellerId: string;
+  createdAt: string;
+  updatedAt: string;
+  _count?: {
+    products: number;
+  };
+}
+
 // Product Types
 export type ProductCondition = 'NEW' | 'LIKE_NEW' | 'GOOD' | 'FAIR' | 'POOR';
 
@@ -43,6 +57,9 @@ export interface Product {
   isReserved: boolean;
   isSold: boolean;
   eventId?: string;
+  locationId?: string;
+  location?: Location;
+  seller?: User;
   createdAt: string;
   updatedAt: string;
 }
@@ -57,6 +74,7 @@ export interface Purchase {
   product?: Product;
   buyerId: string;
   sellerId: string;
+  seller?: User;
   price: number;
   currency: string;
   purchaseDate: string;
@@ -183,6 +201,7 @@ export interface CreateProductRequest {
   imageUrl?: string;
   category?: string;
   condition?: ProductCondition;
+  locationId?: string;
 }
 
 export interface UpdateProductRequest {
@@ -193,6 +212,7 @@ export interface UpdateProductRequest {
   category?: string;
   condition?: ProductCondition;
   isAvailable?: boolean;
+  locationId?: string;
 }
 
 export interface CreatePurchaseRequest {
@@ -207,6 +227,9 @@ export interface ScanQRCodeRequest {
 }
 
 export interface ProductFilters {
+  search?: string;
+  minPrice?: number;
+  maxPrice?: number;
   sellerId?: string;
   category?: string;
   condition?: ProductCondition;
@@ -281,6 +304,28 @@ export interface EventVisit {
   eventId: string;
   createdAt: string;
 }
+
+// Location Types
+export interface Location {
+  id: string;
+  name: string;
+  address: string;
+  isActive: boolean;
+  sellerId: string;
+  createdAt: string;
+  updatedAt: string;
+  _count?: {
+    products: number;
+  };
+}
+
+export interface CreateLocationRequest {
+  name: string;
+  address: string;
+  isActive?: boolean;
+}
+
+export type UpdateLocationRequest = Partial<CreateLocationRequest>;
 
 export interface CreateEventRequest {
   name: string;

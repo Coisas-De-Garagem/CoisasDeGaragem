@@ -5,6 +5,7 @@ import {
   faQrcode,
   faTag,
   faShieldHalved,
+  faArrowLeft,
 } from '@fortawesome/free-solid-svg-icons';
 import { Logo } from '@/components/layout/Logo';
 import { BackgroundScene } from '@/components/layout/BackgroundScene';
@@ -89,12 +90,15 @@ export function AuthLayout({ title, subtitle, children, footer }: AuthLayoutProp
       </aside>
 
       {/* Formulário */}
-      <main className="flex-1 flex flex-col relative z-10">
-        <div className="flex items-center justify-end p-4">
+      <main className="flex-1 flex flex-col relative z-10 w-full max-w-[100vw]">
+        <div className="flex items-center justify-between p-4">
+          <Link to="/" className="text-sm font-medium text-text-subtle hover:text-text-main transition-colors flex items-center gap-1.5">
+            <FontAwesomeIcon icon={faArrowLeft} /> Voltar
+          </Link>
           <DarkModeToggle />
         </div>
 
-        <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-8">
+        <div className="flex-1 flex items-center justify-center px-4 sm:px-6 pb-8 w-full">
           <div className="w-full max-w-sm bg-surface/85 backdrop-blur-sm border border-border rounded-xl p-6 sm:p-8">
             <div className="mb-6">
               <h1 className="text-2xl font-semibold text-text-main">{title}</h1>

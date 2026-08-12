@@ -10,6 +10,8 @@ interface CardProps {
   hoverable?: boolean;
   /** Remove padding interno do corpo. */
   flush?: boolean;
+  /** Permite overflow visible */
+  overflowVisible?: boolean;
   onClick?: () => void;
 }
 
@@ -21,9 +23,10 @@ export function Card({
   className = '',
   hoverable = false,
   flush = false,
+  overflowVisible = false,
   onClick,
 }: CardProps) {
-  const baseClasses = 'bg-surface rounded-lg border border-border overflow-hidden';
+  const baseClasses = `bg-surface rounded-lg border border-border ${overflowVisible ? '' : 'overflow-hidden'}`;
   const hoverClasses = hoverable
     ? 'hover:border-border-strong hover:bg-surface-hover transition-colors cursor-pointer'
     : '';

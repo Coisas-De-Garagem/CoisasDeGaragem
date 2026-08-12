@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBagShopping, faMagnifyingGlass, faBoxOpen } from '@fortawesome/free-solid-svg-icons';
+import { faBagShopping, faMagnifyingGlass, faBoxOpen, faMoneyBillWave } from '@fortawesome/free-solid-svg-icons';
 import { PurchaseCard } from '@/components/buyer/PurchaseCard';
 import { usePurchases } from '@/hooks/usePurchases';
-import { Select } from '@/components/common/Select';
+import { DropdownSelect } from '@/components/common/DropdownSelect';
 import { SearchInput } from '@/components/common/SearchInput';
 import { Pagination } from '@/components/common/Pagination';
 import { Card } from '@/components/common/Card';
@@ -27,13 +27,19 @@ export default function PurchasesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<'date' | 'status' | 'price'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [category, setCategory] = useState<string>('all');
   const pageSize = 9;
 
-  const filteredPurchases = purchases.filter(
-    (purchase) =>
+  const filteredPurchases = purchases.filter((purchase) => {
+    const matchesSearch =
       purchase.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      purchase.status.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+      purchase.status.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      purchase.product?.name.toLowerCase().includes(searchTerm.toLowerCase());
+      
+    const matchesCategory = category === 'all' || purchase.product?.category === category;
+    
+    return matchesSearch && matchesCategory;
+  });
 
   const sortedPurchases = [...filteredPurchases].sort((a, b) => {
     let comparison = 0;
@@ -52,7 +58,7 @@ export default function PurchasesPage() {
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     setCurrentPage(1);
-  }, [searchTerm, sortBy, sortOrder]);
+  }, [searchTerm, sortBy, sortOrder, category]);
 
   useEffect(() => {
     const loadPurchases = async () => {
@@ -146,46 +152,62 @@ export default function PurchasesPage() {
           label="Valor total"
           value={currency(sortedPurchases.reduce((sum, p) => sum + p.price, 0))}
           tone="success"
+          icon={<FontAwesomeIcon icon={faMoneyBillWave} />}
         />
         <StatCard
           label="Concluídas"
           value={sortedPurchases.filter((p) => p.status === 'completed').length}
           tone="info"
+          icon={<FontAwesomeIcon icon={faBoxOpen} />}
         />
       </div>
 
       {/* Filtros */}
-      <Card flush>
+      <Card flush overflowVisible className="relative z-40">
         <div className="p-4 flex flex-col md:flex-row gap-3">
           <div className="flex-1">
             <SearchInput
-              placeholder="Buscar por ID ou status..."
+              placeholder="Buscar por nome do produto, ID ou status..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onClear={() => setSearchTerm('')}
             />
           </div>
-          <div className="flex gap-3">
-            <div className="w-full md:w-36">
-              <Select
-                aria-label="Ordenar por"
-                value={sortBy}
-                onChange={(e) => setSortBy(e.target.value as 'date' | 'status' | 'price')}
+          <div className="flex flex-wrap md:flex-nowrap gap-3">
+            <div className="w-full md:w-56 z-30">
+              <DropdownSelect
+                value={category}
+                onChange={(v) => setCategory(v)}
                 options={[
-                  { value: 'date', label: 'Data' },
-                  { value: 'status', label: 'Status' },
-                  { value: 'price', label: 'Preço' },
+                  { value: 'all', label: 'Todas Categorias' },
+                  { value: 'Brinquedos', label: 'Brinquedos' },
+                  { value: 'Eletrônicos', label: 'Eletrônicos' },
+                  { value: 'Móveis', label: 'Móveis' },
+                  { value: 'Roupas', label: 'Roupas' },
+                  { value: 'Livros', label: 'Livros' },
+                  { value: 'Esportes', label: 'Esportes' },
+                  { value: 'Outros', label: 'Outros' },
                 ]}
               />
             </div>
-            <div className="w-full md:w-32">
-              <Select
-                aria-label="Ordem"
-                value={sortOrder}
-                onChange={(e) => setSortOrder(e.target.value as 'asc' | 'desc')}
+            <div className="w-full md:w-48 z-20">
+              <DropdownSelect
+                value={sortBy}
+                onChange={(v) => setSortBy(v as 'date' | 'status' | 'price')}
                 options={[
-                  { value: 'asc', label: 'Antigo' },
+                  { value: 'date', label: 'Ordernar: Data' },
+                  { value: 'status', label: 'Ordernar: Status' },
+                  { value: 'price', label: 'Ordernar: Preço' },
+                ]}
+              />
+            </div>
+            <div className="w-full md:w-36 z-10">
+              <DropdownSelect
+                value={sortOrder}
+                onChange={(v) => setSortOrder(v as 'asc' | 'desc')}
+                options={[
                   { value: 'desc', label: 'Recente' },
+                  { value: 'asc', label: 'Antigo' },
                 ]}
               />
             </div>

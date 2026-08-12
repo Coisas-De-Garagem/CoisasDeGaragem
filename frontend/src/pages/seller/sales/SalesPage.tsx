@@ -13,7 +13,7 @@ import { useAuthStore } from '@/store/authStore';
 import { Card } from '@/components/common/Card';
 import { Badge } from '@/components/common/Badge';
 import { Button } from '@/components/common/Button';
-import { Select } from '@/components/common/Select';
+import { DropdownSelect } from '@/components/common/DropdownSelect';
 import { Skeleton } from '@/components/common/Skeleton';
 import { StatCard } from '@/components/common/StatCard';
 import { SearchInput } from '@/components/common/SearchInput';
@@ -66,7 +66,13 @@ export default function SalesPage() {
     if (!user) return [];
     return purchases.filter((purchase) => {
       if (purchase.sellerId !== user.id) return false;
-      if (searchTerm && !purchase.id.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+      if (
+        searchTerm &&
+        !purchase.id.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        !purchase.product?.name.toLowerCase().includes(searchTerm.toLowerCase())
+      ) {
+        return false;
+      }
       if (statusFilter !== 'all' && purchase.status !== statusFilter) return false;
 
       if (dateRange !== 'all') {
@@ -135,22 +141,21 @@ export default function SalesPage() {
       </div>
 
       {/* Filtros */}
-      <Card flush>
+      <Card flush overflowVisible className="relative z-40">
         <div className="p-4 flex flex-col md:flex-row gap-3 md:items-center">
           <div className="flex-1">
             <SearchInput
-              placeholder="Buscar por ID da venda..."
+              placeholder="Buscar por nome do produto ou ID da venda..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onClear={() => setSearchTerm('')}
             />
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
-            <div className="w-full sm:w-44">
-              <Select
-                aria-label="Filtrar por status"
+            <div className="w-full sm:w-48 z-20">
+              <DropdownSelect
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
+                onChange={(v) => setStatusFilter(v)}
                 options={[
                   { value: 'all', label: 'Todos os status' },
                   { value: 'completed', label: 'Concluído' },
@@ -159,11 +164,10 @@ export default function SalesPage() {
                 ]}
               />
             </div>
-            <div className="w-full sm:w-44">
-              <Select
-                aria-label="Filtrar por período"
+            <div className="w-full sm:w-48 z-10">
+              <DropdownSelect
                 value={dateRange}
-                onChange={(e) => setDateRange(e.target.value)}
+                onChange={(v) => setDateRange(v)}
                 options={[
                   { value: 'all', label: 'Todo o período' },
                   { value: 'today', label: 'Hoje' },

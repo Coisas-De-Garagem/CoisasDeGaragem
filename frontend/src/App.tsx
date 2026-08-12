@@ -21,6 +21,7 @@ const QRCodesPage = lazy(() => import('@/pages/seller/qr-codes/QRCodesPage'));
 const EventsPage = lazy(() => import('@/pages/seller/events/EventsPage'));
 const EventFormPage = lazy(() => import('@/pages/seller/events/EventFormPage'));
 const EventDetailPage = lazy(() => import('@/pages/seller/events/EventDetailPage'));
+const LocationsPage = lazy(() => import('@/pages/seller/locations/LocationsPage'));
 
 // Buyer
 const BuyerDashboard = lazy(() => import('@/pages/buyer/qr-scanner/BuyerDashboard'));
@@ -116,6 +117,7 @@ export default function App() {
             <Route path="sales" element={<Suspended><SalesPage /></Suspended>} />
             <Route path="qr-codes" element={<Suspended><QRCodesPage /></Suspended>} />
             <Route path="analytics" element={<Suspended><AnalyticsPage /></Suspended>} />
+            <Route path="locations" element={<Suspended><LocationsPage /></Suspended>} />
             <Route path="events" element={<Suspended><EventsPage /></Suspended>} />
             <Route path="events/new" element={<Suspended><EventFormPage /></Suspended>} />
             <Route path="events/:id" element={<Suspended><EventDetailPage /></Suspended>} />

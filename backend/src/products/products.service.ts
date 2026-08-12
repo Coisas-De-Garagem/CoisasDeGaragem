@@ -22,17 +22,41 @@ export class ProductsService {
     });
   }
 
-  async findAll() {
+  async findAll(filters?: {
+    search?: string;
+    category?: string;
+    minPrice?: number;
+    maxPrice?: number;
+  }) {
+    const where: any = { isAvailable: true };
+
+    if (filters?.search) {
+      where.OR = [
+        { name: { contains: filters.search, mode: 'insensitive' } },
+        { description: { contains: filters.search, mode: 'insensitive' } },
+      ];
+    }
+
+    if (filters?.category) {
+      where.category = filters.category;
+    }
+
+    if (filters?.minPrice !== undefined || filters?.maxPrice !== undefined) {
+      where.price = {};
+      if (filters.minPrice !== undefined) where.price.gte = filters.minPrice;
+      if (filters.maxPrice !== undefined) where.price.lte = filters.maxPrice;
+    }
+
     return this.prisma.product.findMany({
-      where: { isAvailable: true },
-      include: { seller: { select: { name: true, email: true } } },
+      where,
+      include: { seller: { select: { name: true, email: true } }, location: true },
     });
   }
 
   async findOne(id: string) {
     const product = await this.prisma.product.findUnique({
       where: { id },
-      include: { seller: true },
+      include: { seller: true, location: true },
     });
     if (!product) {
       throw new NotFoundException('Product not found');
@@ -62,6 +86,7 @@ export class ProductsService {
   async getSellerProducts(sellerId: string) {
     return this.prisma.product.findMany({
       where: { sellerId },
+      include: { location: true },
     });
   }
 

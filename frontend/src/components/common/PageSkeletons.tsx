@@ -72,14 +72,16 @@ export function CardGridSkeleton({ count = 9 }: { count?: number }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
       {Array.from({ length: count }).map((_, i) => (
-        <Card key={i} className="p-4 space-y-3">
-          <Skeleton height="h-40" rounded="rounded-lg" />
-          <Skeleton height="h-5" width="w-3/4" />
-          <Skeleton height="h-4" width="w-full" />
-          <Skeleton height="h-4" width="w-2/3" />
-          <div className="flex gap-2 pt-2">
-            <Skeleton height="h-9" width="w-24" rounded="rounded-md" />
-            <Skeleton height="h-9" width="w-24" rounded="rounded-md" />
+        <Card key={i}>
+          <div className="space-y-3">
+            <Skeleton height="h-40" rounded="rounded-lg" />
+            <Skeleton height="h-5" width="w-3/4" />
+            <Skeleton height="h-4" width="w-full" />
+            <Skeleton height="h-4" width="w-2/3" />
+            <div className="flex gap-2 pt-2">
+              <Skeleton height="h-9" width="w-24" rounded="rounded-md" />
+              <Skeleton height="h-9" width="w-24" rounded="rounded-md" />
+            </div>
           </div>
         </Card>
       ))}

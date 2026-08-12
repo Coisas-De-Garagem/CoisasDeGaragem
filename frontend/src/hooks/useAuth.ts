@@ -4,10 +4,10 @@ import { useAuthStore } from '@/store/authStore';
 import { api } from '@/services/api';
 import type { UserRole } from '@/types';
 
-export function useAuth() {
+export function useAuth(options?: { redirect?: boolean }) {
   const { user, token, isAuthenticated, login, logout, updateUser } = useAuthStore();
   const navigate = useNavigate();
-
+  const shouldRedirect = options?.redirect ?? true;
 
   const handleLogin = useCallback(
     async (email: string, password: string) => {
@@ -18,13 +18,15 @@ export function useAuth() {
         login(userData, userToken);
         localStorage.setItem('token', userToken);
 
-        // Redirect all users to buyer/qr-scanner (main hub)
-        navigate('/buyer/qr-scanner', { replace: true });
+        if (shouldRedirect) {
+          // Redirect all users to buyer/qr-scanner (main hub)
+          navigate('/buyer/qr-scanner', { replace: true });
+        }
       } else {
         throw new Error(result.error.message);
       }
     },
-    [login, navigate],
+    [login, navigate, shouldRedirect],
   );
 
   const handleRegister = useCallback(
@@ -36,13 +38,15 @@ export function useAuth() {
         login(userData, userToken);
         localStorage.setItem('token', userToken);
 
-        // Redirect all users to buyer/qr-scanner (main hub)
-        navigate('/buyer/qr-scanner', { replace: true });
+        if (shouldRedirect) {
+          // Redirect all users to buyer/qr-scanner (main hub)
+          navigate('/buyer/qr-scanner', { replace: true });
+        }
       } else {
         throw new Error(result.error.message);
       }
     },
-    [login, navigate],
+    [login, navigate, shouldRedirect],
   );
 
   const handleGoogleLogin = useCallback(
@@ -54,21 +58,25 @@ export function useAuth() {
         login(userData, userToken);
         localStorage.setItem('token', userToken);
 
-        // Redirect all users to buyer/qr-scanner (main hub)
-        navigate('/buyer/qr-scanner', { replace: true });
+        if (shouldRedirect) {
+          // Redirect all users to buyer/qr-scanner (main hub)
+          navigate('/buyer/qr-scanner', { replace: true });
+        }
       } else {
         throw new Error(result.error.message);
       }
     },
-    [login, navigate],
+    [login, navigate, shouldRedirect],
   );
 
   const handleLogout = useCallback(() => {
     api.logout();
     logout();
     localStorage.removeItem('token');
-    navigate('/', { replace: true });
-  }, [logout, navigate]);
+    if (shouldRedirect) {
+      navigate('/', { replace: true });
+    }
+  }, [logout, navigate, shouldRedirect]);
 
   const handleUpdateProfile = useCallback(
     async (updates: { name?: string; phone?: string; avatarUrl?: string }) => {
