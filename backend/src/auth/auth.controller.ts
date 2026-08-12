@@ -4,7 +4,6 @@ import {
   Body,
   Get,
   UseGuards,
-  Request,
   BadRequestException,
   Put,
 } from '@nestjs/common';
@@ -12,6 +11,8 @@ import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { CurrentUser } from './current-user.decorator';
+import { AuthenticatedUser } from './auth-user.interface';
 import {
   ApiTags,
   ApiOperation,
@@ -86,7 +87,10 @@ export class AuthController {
     schema: {
       example: {
         statusCode: 400,
-        message: ['email must be an email', 'password must be longer than or equal to 6 characters'],
+        message: [
+          'email must be an email',
+          'password must be longer than or equal to 6 characters',
+        ],
         error: 'Bad Request',
       },
     },
@@ -110,7 +114,8 @@ export class AuthController {
   @Post('google')
   @ApiOperation({
     summary: 'Autenticação com Google',
-    description: 'Autentica o usuário a partir de um ID Token do Google. Se o usuário não existir, ele é registrado automaticamente.',
+    description:
+      'Autentica o usuário a partir de um ID Token do Google. Se o usuário não existir, ele é registrado automaticamente.',
   })
   @ApiResponse({
     status: 200,
@@ -168,8 +173,8 @@ export class AuthController {
       },
     },
   })
-  getProfile(@Request() req) {
-    return req.user;
+  getProfile(@CurrentUser() user: AuthenticatedUser) {
+    return user;
   }
 
   @UseGuards(AuthGuard('jwt'))
@@ -179,7 +184,10 @@ export class AuthController {
     summary: 'Atualizar perfil do usuário atual',
     description: 'Atualiza informações do usuário autenticado',
   })
-  async updateProfile(@Request() req, @Body() updateData: { name?: string; phone?: string; avatarUrl?: string }) {
-    return this.authService.updateProfile(req.user.userId, updateData);
+  async updateProfile(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() updateData: { name?: string; phone?: string; avatarUrl?: string },
+  ) {
+    return this.authService.updateProfile(user.userId, updateData);
   }
 }

@@ -20,7 +20,8 @@ export class CreateProductDto {
   name: string;
 
   @ApiProperty({
-    example: 'Bicicleta em ótimo estado, usada poucas vezes. Ideal para trilhas e passeios.',
+    example:
+      'Bicicleta em ótimo estado, usada poucas vezes. Ideal para trilhas e passeios.',
     description: 'Descrição detalhada do produto',
   })
   @IsNotEmpty()
@@ -28,7 +29,7 @@ export class CreateProductDto {
   description: string;
 
   @ApiProperty({
-    example: 1500.00,
+    example: 1500.0,
     description: 'Preço do produto em reais',
     minimum: 0,
   })

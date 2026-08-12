@@ -97,6 +97,13 @@ export interface QRCode {
   scanCount: number;
 }
 
+/** Resposta da geração de QR Code de um produto (endpoint /qr-codes/:productId). */
+export interface ProductQRCode {
+  url: string;
+  code: string;
+  productUrl?: string;
+}
+
 // Dashboard Page Types
 export type DashboardType = 'seller' | 'buyer';
 
@@ -212,6 +219,8 @@ export interface UpdateProductRequest {
   category?: string;
   condition?: ProductCondition;
   isAvailable?: boolean;
+  isReserved?: boolean;
+  isSold?: boolean;
   locationId?: string;
 }
 
@@ -391,6 +400,18 @@ export interface ApiError {
 }
 
 export type ApiResult<T> = ApiResponse<T> | ApiError;
+
+/** Resultado da simulação de pagamento no gateway (modo dev). */
+export interface PaymentSimulationResult {
+  success?: boolean;
+  localSync?: boolean;
+  data?: unknown;
+}
+
+/** Registro criado identificado apenas pelo id (testimonials, reviews). */
+export interface CreationResult {
+  id: string;
+}
 
 // Utility Types
 export type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] };

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect } from 'react';
 import { api } from '@/services/api';
 import { useLocationsStore } from '@/store/locationsStore';
 import type { CreateLocationRequest, UpdateLocationRequest } from '@/types';
@@ -15,7 +15,7 @@ export function useLocations(options: { autoFetch?: boolean } = { autoFetch: tru
       } else {
         setError(response.error.message);
       }
-    } catch (err) {
+    } catch {
       setError('Erro ao carregar locais');
       setHasFetched(true);
     } finally {

@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -11,13 +15,16 @@ export class LocationsService {
       orderBy: { createdAt: 'desc' },
       include: {
         _count: {
-          select: { products: true }
-        }
-      }
+          select: { products: true },
+        },
+      },
     });
   }
 
-  async create(sellerId: string, data: { name: string; address: string; isActive?: boolean }) {
+  async create(
+    sellerId: string,
+    data: { name: string; address: string; isActive?: boolean },
+  ) {
     return this.prisma.location.create({
       data: {
         name: data.name,
@@ -28,13 +35,18 @@ export class LocationsService {
     });
   }
 
-  async update(sellerId: string, locationId: string, data: { name?: string; address?: string; isActive?: boolean }) {
+  async update(
+    sellerId: string,
+    locationId: string,
+    data: { name?: string; address?: string; isActive?: boolean },
+  ) {
     const location = await this.prisma.location.findUnique({
       where: { id: locationId },
     });
 
     if (!location) throw new NotFoundException('Local não encontrado');
-    if (location.sellerId !== sellerId) throw new ForbiddenException('Acesso negado');
+    if (location.sellerId !== sellerId)
+      throw new ForbiddenException('Acesso negado');
 
     return this.prisma.location.update({
       where: { id: locationId },
@@ -48,7 +60,8 @@ export class LocationsService {
     });
 
     if (!location) throw new NotFoundException('Local não encontrado');
-    if (location.sellerId !== sellerId) throw new ForbiddenException('Acesso negado');
+    if (location.sellerId !== sellerId)
+      throw new ForbiddenException('Acesso negado');
 
     return this.prisma.location.update({
       where: { id: locationId },

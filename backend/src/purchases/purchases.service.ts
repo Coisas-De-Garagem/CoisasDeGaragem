@@ -3,9 +3,9 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
+import { Prisma, PurchaseStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
-import { PurchaseStatus } from '@prisma/client';
 import { AbacatePayService } from '../payments/abacatepay.service';
 
 @Injectable()
@@ -63,7 +63,10 @@ export class PurchasesService {
       const expiresInSeconds = 60; // Checkout expires in 60 seconds (for testing)
 
       // Handle Abacate Pay integration for digital payment methods (PIX, CARD)
-      if (createPurchaseDto.paymentMethod === 'PIX' || createPurchaseDto.paymentMethod === 'CARD') {
+      if (
+        createPurchaseDto.paymentMethod === 'PIX' ||
+        createPurchaseDto.paymentMethod === 'CARD'
+      ) {
         const buyer = await prisma.user.findUnique({
           where: { id: buyerId },
         });
@@ -91,17 +94,18 @@ export class PurchasesService {
 
         if (createPurchaseDto.paymentMethod === 'PIX') {
           // Use transparent checkout for PIX to get QR code and Pix copy/paste key
-          const transparentPix = await this.abacatePayService.createTransparentPix({
-            purchaseId: purchase.id,
-            amountInCents: priceInCents,
-            description: `Compra do produto ${product.name}`,
-            buyer: {
-              email: buyer.email,
-              name: buyer.name,
-              phone: buyer.phone || undefined,
-            },
-            expiresInSeconds,
-          });
+          const transparentPix =
+            await this.abacatePayService.createTransparentPix({
+              purchaseId: purchase.id,
+              amountInCents: priceInCents,
+              description: `Compra do produto ${product.name}`,
+              buyer: {
+                email: buyer.email,
+                name: buyer.name,
+                phone: buyer.phone || undefined,
+              },
+              expiresInSeconds,
+            });
           qrCode = transparentPix.brCodeBase64;
           pixKey = transparentPix.brCode;
           chargeId = transparentPix.chargeId;
@@ -137,9 +141,9 @@ export class PurchasesService {
     status?: string,
   ) {
     const skip = (page - 1) * limit;
-    const where: any = { buyerId };
+    const where: Prisma.PurchaseWhereInput = { buyerId };
     if (status) {
-      where.status = status;
+      where.status = status as PurchaseStatus;
     }
 
     const [purchases, total] = await Promise.all([
@@ -174,9 +178,9 @@ export class PurchasesService {
     status?: string,
   ) {
     const skip = (page - 1) * limit;
-    const where: any = { sellerId };
+    const where: Prisma.PurchaseWhereInput = { sellerId };
     if (status) {
-      where.status = status;
+      where.status = status as PurchaseStatus;
     }
 
     const [purchases, total] = await Promise.all([

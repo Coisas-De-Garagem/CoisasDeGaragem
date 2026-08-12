@@ -5,6 +5,7 @@ import {
   ConflictException,
   BadRequestException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
@@ -15,13 +16,14 @@ export class EventsService {
   constructor(private prisma: PrismaService) {}
 
   async create(createEventDto: CreateEventDto, sellerId: string) {
-    const data: any = {
+    const data: Prisma.GarageEventCreateInput = {
       ...createEventDto,
-      sellerId,
+      seller: { connect: { id: sellerId } },
       qrCode: randomUUID(),
     };
     // Converte datas string (ISO) para Date, se presentes.
-    if (createEventDto.startDate) data.startDate = new Date(createEventDto.startDate);
+    if (createEventDto.startDate)
+      data.startDate = new Date(createEventDto.startDate);
     if (createEventDto.endDate) data.endDate = new Date(createEventDto.endDate);
 
     return this.prisma.garageEvent.create({ data });
@@ -59,7 +61,11 @@ export class EventsService {
       throw new ForbiddenException('Você não tem acesso a este evento');
     }
     const { _count, ...rest } = event;
-    return { ...rest, productsCount: _count.products, visitsCount: _count.visits };
+    return {
+      ...rest,
+      productsCount: _count.products,
+      visitsCount: _count.visits,
+    };
   }
 
   /** Dados públicos do evento + produtos vinculados (para a vitrine do comprador). */
@@ -88,8 +94,9 @@ export class EventsService {
       throw new ForbiddenException('Você não pode editar este evento');
     }
 
-    const data: any = { ...updateEventDto };
-    if (updateEventDto.startDate) data.startDate = new Date(updateEventDto.startDate);
+    const data: Prisma.GarageEventUpdateInput = { ...updateEventDto };
+    if (updateEventDto.startDate)
+      data.startDate = new Date(updateEventDto.startDate);
     if (updateEventDto.endDate) data.endDate = new Date(updateEventDto.endDate);
 
     return this.prisma.garageEvent.update({ where: { id }, data });
@@ -136,24 +143,32 @@ export class EventsService {
   // -----------------------------------------------------------------------
 
   async linkProduct(eventId: string, productId: string, sellerId: string) {
-    const event = await this.prisma.garageEvent.findUnique({ where: { id: eventId } });
+    const event = await this.prisma.garageEvent.findUnique({
+      where: { id: eventId },
+    });
     if (!event) throw new NotFoundException('Evento não encontrado');
     if (event.sellerId !== sellerId) {
       throw new ForbiddenException('Você não tem acesso a este evento');
     }
 
-    const product = await this.prisma.product.findUnique({ where: { id: productId } });
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+    });
     if (!product) throw new NotFoundException('Produto não encontrado');
     if (product.sellerId !== sellerId) {
       throw new ForbiddenException('Este produto não pertence a você');
     }
     // Regra: só produtos disponíveis podem ser vinculados.
     if (!product.isAvailable || product.isReserved || product.isSold) {
-      throw new BadRequestException('Apenas produtos disponíveis podem ser vinculados a um evento');
+      throw new BadRequestException(
+        'Apenas produtos disponíveis podem ser vinculados a um evento',
+      );
     }
     // Regra: 1 produto = 1 evento por vez.
     if (product.eventId) {
-      throw new ConflictException('Este produto já está vinculado a outro evento');
+      throw new ConflictException(
+        'Este produto já está vinculado a outro evento',
+      );
     }
 
     return this.prisma.product.update({
@@ -163,16 +178,22 @@ export class EventsService {
   }
 
   async unlinkProduct(eventId: string, productId: string, sellerId: string) {
-    const event = await this.prisma.garageEvent.findUnique({ where: { id: eventId } });
+    const event = await this.prisma.garageEvent.findUnique({
+      where: { id: eventId },
+    });
     if (!event) throw new NotFoundException('Evento não encontrado');
     if (event.sellerId !== sellerId) {
       throw new ForbiddenException('Você não tem acesso a este evento');
     }
 
-    const product = await this.prisma.product.findUnique({ where: { id: productId } });
+    const product = await this.prisma.product.findUnique({
+      where: { id: productId },
+    });
     if (!product) throw new NotFoundException('Produto não encontrado');
     if (product.eventId !== eventId) {
-      throw new BadRequestException('Este produto não está vinculado a este evento');
+      throw new BadRequestException(
+        'Este produto não está vinculado a este evento',
+      );
     }
 
     return this.prisma.product.update({
@@ -195,7 +216,9 @@ export class EventsService {
   }
 
   async getEventQr(eventId: string, sellerId: string) {
-    const event = await this.prisma.garageEvent.findUnique({ where: { id: eventId } });
+    const event = await this.prisma.garageEvent.findUnique({
+      where: { id: eventId },
+    });
     if (!event) throw new NotFoundException('Evento não encontrado');
     if (event.sellerId !== sellerId) {
       throw new ForbiddenException('Você não tem acesso a este evento');
@@ -207,7 +230,9 @@ export class EventsService {
   }
 
   async recordVisit(eventId: string) {
-    const event = await this.prisma.garageEvent.findUnique({ where: { id: eventId } });
+    const event = await this.prisma.garageEvent.findUnique({
+      where: { id: eventId },
+    });
     if (!event) throw new NotFoundException('Evento não encontrado');
     await this.prisma.eventVisit.create({ data: { eventId } });
     return { success: true };
@@ -241,10 +266,14 @@ export class EventsService {
     const totalRevenue = completed.reduce((sum, p) => sum + Number(p.price), 0);
     const ticketAverage = salesCount > 0 ? totalRevenue / salesCount : 0;
     const productsSold = new Set(completed.map((p) => p.productId)).size;
-    const conversionRate = listedCount > 0 ? (productsSold / listedCount) * 100 : 0;
+    const conversionRate =
+      listedCount > 0 ? (productsSold / listedCount) * 100 : 0;
 
     // Ranking de produtos (por quantidade vendida).
-    const rankingMap = new Map<string, { productId: string; name: string; qty: number; revenue: number }>();
+    const rankingMap = new Map<
+      string,
+      { productId: string; name: string; qty: number; revenue: number }
+    >();
     for (const p of completed) {
       const key = p.productId;
       const entry = rankingMap.get(key) || {
@@ -257,7 +286,9 @@ export class EventsService {
       entry.revenue += Number(p.price);
       rankingMap.set(key, entry);
     }
-    const productRanking = Array.from(rankingMap.values()).sort((a, b) => b.qty - a.qty);
+    const productRanking = Array.from(rankingMap.values()).sort(
+      (a, b) => b.qty - a.qty,
+    );
 
     // Scans / visitas.
     const scansCount = await this.prisma.eventVisit.count({
@@ -282,7 +313,10 @@ export class EventsService {
           status: 'COMPLETED',
         },
       });
-      const prevRevenue = prevPurchases.reduce((sum, p) => sum + Number(p.price), 0);
+      const prevRevenue = prevPurchases.reduce(
+        (sum, p) => sum + Number(p.price),
+        0,
+      );
       previousAverageRevenue = prevRevenue / previousEvents.length;
       previousAverageSales = prevPurchases.length / previousEvents.length;
     }
@@ -304,7 +338,9 @@ export class EventsService {
         previousAverageSales,
         revenueDelta:
           previousAverageRevenue > 0
-            ? ((totalRevenue - previousAverageRevenue) / previousAverageRevenue) * 100
+            ? ((totalRevenue - previousAverageRevenue) /
+                previousAverageRevenue) *
+              100
             : null,
         salesDelta:
           previousAverageSales > 0

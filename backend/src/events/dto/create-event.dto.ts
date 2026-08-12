@@ -31,7 +31,8 @@ export class CreateEventDto {
   @ApiPropertyOptional({
     enum: EventStatus,
     example: EventStatus.DRAFT,
-    description: 'Status do evento (DRAFT, PUBLISHED, ACTIVE, ENDED, CANCELLED)',
+    description:
+      'Status do evento (DRAFT, PUBLISHED, ACTIVE, ENDED, CANCELLED)',
   })
   @IsOptional()
   @IsEnum(EventStatus)
@@ -54,7 +55,10 @@ export class CreateEventDto {
   endDate?: string;
 
   // ---- Endereço estruturado ----
-  @ApiPropertyOptional({ example: 'Rua das Flores', description: 'Rua do endereço' })
+  @ApiPropertyOptional({
+    example: 'Rua das Flores',
+    description: 'Rua do endereço',
+  })
   @IsOptional()
   @IsString()
   @MaxLength(150)

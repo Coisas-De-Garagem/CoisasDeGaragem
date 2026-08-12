@@ -53,14 +53,14 @@ export function ShareButton({
 }: ShareButtonProps) {
   const [showPopover, setShowPopover] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [canNativeShare, setCanNativeShare] = useState(false);
+  // Capacidade do navegador de compartilhamento nativo — valor estável, derivado
+  // uma única vez no primeiro render (sem precisar de useEffect).
+  const [canNativeShare] = useState(
+    () => typeof navigator !== 'undefined' && !!navigator.share,
+  );
   const popoverRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
   const { addNotification } = useUIStore();
-
-  useEffect(() => {
-    setCanNativeShare(typeof navigator !== 'undefined' && !!navigator.share);
-  }, []);
 
   // Fecha o popover ao clicar fora.
   useEffect(() => {

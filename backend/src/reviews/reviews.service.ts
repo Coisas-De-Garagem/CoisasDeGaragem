@@ -1,4 +1,8 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateReviewDto } from './dto/create-review.dto';
 
@@ -8,7 +12,7 @@ export class ReviewsService {
 
   async create(createReviewDto: CreateReviewDto, buyerId: string) {
     const purchase = await this.prisma.purchase.findUnique({
-      where: { id: createReviewDto.purchaseId }
+      where: { id: createReviewDto.purchaseId },
     });
 
     if (!purchase) {
@@ -18,13 +22,13 @@ export class ReviewsService {
     if (purchase.buyerId !== buyerId) {
       throw new BadRequestException('You can only review your own purchases');
     }
-    
+
     if (purchase.status !== 'COMPLETED') {
       throw new BadRequestException('You can only review completed purchases');
     }
 
     const existingReview = await this.prisma.review.findUnique({
-      where: { purchaseId: purchase.id }
+      where: { purchaseId: purchase.id },
     });
 
     if (existingReview) {
@@ -38,7 +42,7 @@ export class ReviewsService {
         purchaseId: purchase.id,
         buyerId: buyerId,
         sellerId: purchase.sellerId,
-      }
+      },
     });
   }
 
@@ -52,8 +56,8 @@ export class ReviewsService {
       },
       include: {
         product: true,
-        seller: { select: { id: true, name: true, avatarUrl: true } }
-      }
+        seller: { select: { id: true, name: true, avatarUrl: true } },
+      },
     });
 
     return purchases;
@@ -62,16 +66,16 @@ export class ReviewsService {
   async getPublicTestimonials(limit: number = 9) {
     const testimonials = await this.prisma.testimonial.findMany({
       where: {
-        isVisible: true
+        isVisible: true,
       },
       take: limit,
       orderBy: { createdAt: 'desc' },
       include: {
-        user: { select: { name: true, avatarUrl: true } }
-      }
+        user: { select: { name: true, avatarUrl: true } },
+      },
     });
 
-    return testimonials.map(t => ({
+    return testimonials.map((t) => ({
       id: t.id,
       userId: t.userId,
       userName: t.user.name,
@@ -80,11 +84,14 @@ export class ReviewsService {
       rating: t.rating,
       isFeatured: t.isFeatured,
       isVisible: t.isVisible,
-      createdAt: t.createdAt
+      createdAt: t.createdAt,
     }));
   }
 
-  async createTestimonial(userId: string, data: { rating: number; content: string }) {
+  async createTestimonial(
+    userId: string,
+    data: { rating: number; content: string },
+  ) {
     if (!data.content || data.content.trim() === '') {
       throw new BadRequestException('Content cannot be empty');
     }
@@ -94,7 +101,7 @@ export class ReviewsService {
         userId,
         rating: data.rating,
         content: data.content,
-      }
+      },
     });
   }
 }

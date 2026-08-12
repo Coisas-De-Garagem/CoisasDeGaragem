@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
@@ -19,7 +19,7 @@ export default function LoginPage() {
   const { login, loginWithGoogle } = useAuth();
   const [loading, setLoading] = useState(false);
   const { addNotification } = useUIStore();
-  const notify = makeNotifier(addNotification);
+  const notify = useMemo(() => makeNotifier(addNotification), [addNotification]);
 
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   const showMockButton = !googleClientId;
@@ -50,7 +50,7 @@ export default function LoginPage() {
         });
       }
     }
-  }, [googleClientId, loginWithGoogle]);
+  }, [googleClientId, loginWithGoogle, notify]);
 
   const handleMockGoogleLogin = async () => {
     setLoading(true);

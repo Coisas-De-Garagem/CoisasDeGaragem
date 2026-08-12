@@ -6,6 +6,7 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { UserRole } from '@prisma/client';
 import { CurrentUser } from '../auth/current-user.decorator';
+import { AuthenticatedUser } from '../auth/auth-user.interface';
 import { ApiTags, ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 
 @ApiTags('reviews')
@@ -26,7 +27,7 @@ export class ReviewsController {
   @ApiOperation({ summary: 'Create a new testimonial (platform review)' })
   createTestimonial(
     @Body() data: { rating: number; content: string },
-    @CurrentUser() user: any
+    @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.reviewsService.createTestimonial(user.userId, data);
   }
@@ -36,7 +37,10 @@ export class ReviewsController {
   @Roles(UserRole.USER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new review for a purchase' })
-  create(@Body() createReviewDto: CreateReviewDto, @CurrentUser() user: any) {
+  create(
+    @Body() createReviewDto: CreateReviewDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
     return this.reviewsService.create(createReviewDto, user.userId);
   }
 
@@ -45,7 +49,7 @@ export class ReviewsController {
   @Roles(UserRole.USER)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Get pending reviews for the current user' })
-  getPendingReviews(@CurrentUser() user: any) {
+  getPendingReviews(@CurrentUser() user: AuthenticatedUser) {
     return this.reviewsService.getPendingReviews(user.userId);
   }
 }

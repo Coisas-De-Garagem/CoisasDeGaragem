@@ -1,8 +1,5 @@
-import {
-  Injectable,
-  NotFoundException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -28,7 +25,7 @@ export class ProductsService {
     minPrice?: number;
     maxPrice?: number;
   }) {
-    const where: any = { isAvailable: true };
+    const where: Prisma.ProductWhereInput = { isAvailable: true };
 
     if (filters?.search) {
       where.OR = [
@@ -49,7 +46,10 @@ export class ProductsService {
 
     return this.prisma.product.findMany({
       where,
-      include: { seller: { select: { name: true, email: true } }, location: true },
+      include: {
+        seller: { select: { name: true, email: true } },
+        location: true,
+      },
     });
   }
 
@@ -76,7 +76,7 @@ export class ProductsService {
     });
   }
 
-  async remove(id: string, userId: string) {
+  async remove(id: string, _userId: string) {
     // Check ownership
     return this.prisma.product.delete({
       where: { id },

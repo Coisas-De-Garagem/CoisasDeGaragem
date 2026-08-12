@@ -212,7 +212,7 @@ export default function BuyerDashboard() {
                 showActions={false}
                 onClick={(prod) => {
                   setScannedProduct(prod);
-                  setSellerInfo(prod.seller as any || null);
+                  setSellerInfo(prod.seller || null);
                 }}
               />
             ))}

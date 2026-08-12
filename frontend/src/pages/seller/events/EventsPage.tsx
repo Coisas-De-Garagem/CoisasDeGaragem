@@ -54,6 +54,8 @@ export default function EventsPage() {
     const state = location.state as { newEvent?: boolean; editEventId?: string } | null;
     if (!state) return;
     if (state.newEvent) {
+      // Efeito de sincronização com o state do router (deep-link).
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setEditingEvent(undefined);
       setIsFormOpen(true);
     } else if (state.editEventId) {

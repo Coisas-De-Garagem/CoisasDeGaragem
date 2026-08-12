@@ -15,6 +15,7 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { UserRole } from '@prisma/client';
 import { CurrentUser } from '../auth/current-user.decorator';
+import { AuthenticatedUser } from '../auth/auth-user.interface';
 import {
   ApiTags,
   ApiOperation,
@@ -35,7 +36,8 @@ export class PurchasesController {
   @Get()
   @ApiOperation({
     summary: 'Listar compras do comprador',
-    description: 'Retorna uma lista paginada de compras feitas pelo usuário autenticado',
+    description:
+      'Retorna uma lista paginada de compras feitas pelo usuário autenticado',
   })
   @ApiQuery({
     name: 'page',
@@ -69,7 +71,7 @@ export class PurchasesController {
             productId: 'product-id',
             buyerId: 'buyer-id',
             sellerId: 'seller-id',
-            price: 1500.00,
+            price: 1500.0,
             currency: 'BRL',
             status: 'PENDING',
             paymentMethod: 'PIX',
@@ -91,7 +93,7 @@ export class PurchasesController {
     description: 'Não autorizado',
   })
   findAll(
-    @CurrentUser() user: any,
+    @CurrentUser() user: AuthenticatedUser,
     @Query('page') page?: string,
     @Query('limit') limit?: string,
     @Query('status') status?: string,
@@ -111,7 +113,8 @@ export class PurchasesController {
   @Roles(UserRole.USER)
   @ApiOperation({
     summary: 'Criar nova compra',
-    description: 'Cria uma nova compra de um produto. O usuário autenticado será o comprador.',
+    description:
+      'Cria uma nova compra de um produto. O usuário autenticado será o comprador.',
   })
   @ApiResponse({
     status: 201,
@@ -122,7 +125,7 @@ export class PurchasesController {
         productId: 'product-id',
         buyerId: 'buyer-id',
         sellerId: 'seller-id',
-        price: 1500.00,
+        price: 1500.0,
         currency: 'BRL',
         status: 'PENDING',
         paymentMethod: 'PIX',
@@ -149,7 +152,7 @@ export class PurchasesController {
   @ApiBody({ type: CreatePurchaseDto })
   create(
     @Body() createPurchaseDto: CreatePurchaseDto,
-    @CurrentUser() user: any,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.purchasesService.create(createPurchaseDto, user.userId);
   }
@@ -168,7 +171,7 @@ export class PurchasesController {
     status: 401,
     description: 'Não autorizado',
   })
-  getHistory(@CurrentUser() user: any) {
+  getHistory(@CurrentUser() user: AuthenticatedUser) {
     return this.purchasesService.findAllByBuyer(user.userId);
   }
 
@@ -186,7 +189,7 @@ export class PurchasesController {
     status: 401,
     description: 'Não autorizado',
   })
-  getSales(@CurrentUser() user: any) {
+  getSales(@CurrentUser() user: AuthenticatedUser) {
     return this.purchasesService.findAllBySeller(user.userId);
   }
 
@@ -217,7 +220,7 @@ export class PurchasesController {
     status: 404,
     description: 'Compra não encontrada',
   })
-  findOne(@Param('id') id: string, @CurrentUser() user: any) {
+  findOne(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.purchasesService.findOne(id, user.userId);
   }
 }

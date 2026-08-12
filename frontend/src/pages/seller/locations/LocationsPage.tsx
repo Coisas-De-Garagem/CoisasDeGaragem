@@ -39,7 +39,7 @@ export default function LocationsPage() {
     try {
       await toggleStatus(id);
       notify('success', 'Sucesso', `Local ${currentStatus ? 'desativado' : 'ativado'} com sucesso`);
-    } catch (err) {
+    } catch {
       notify('error', 'Erro', 'Erro ao alterar status do local');
     } finally {
       setIsToggling(null);
@@ -93,7 +93,7 @@ export default function LocationsPage() {
           <div className="w-full md:w-48 z-20">
             <DropdownSelect
               value={statusFilter}
-              onChange={(v) => setStatusFilter(v as any)}
+              onChange={(v) => setStatusFilter(v as 'all' | 'active' | 'inactive')}
               options={[
                 { value: 'all', label: 'Todos os Status' },
                 { value: 'active', label: 'Ativos' },
