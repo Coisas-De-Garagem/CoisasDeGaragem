@@ -102,9 +102,9 @@ export class PurchasesController {
     const limitNumber = limit ? parseInt(limit, 10) : 20;
 
     return this.purchasesService.findAllByBuyer(
-      user.userId,
-      pageNumber,
-      limitNumber,
+      user?.userId,
+      isNaN(pageNumber) ? 1 : pageNumber,
+      isNaN(limitNumber) ? 20 : limitNumber,
       status,
     );
   }
@@ -172,7 +172,7 @@ export class PurchasesController {
     description: 'Não autorizado',
   })
   getHistory(@CurrentUser() user: AuthenticatedUser) {
-    return this.purchasesService.findAllByBuyer(user.userId);
+    return this.purchasesService.findAllByBuyer(user?.userId);
   }
 
   @Get('sales')
@@ -190,7 +190,7 @@ export class PurchasesController {
     description: 'Não autorizado',
   })
   getSales(@CurrentUser() user: AuthenticatedUser) {
-    return this.purchasesService.findAllBySeller(user.userId);
+    return this.purchasesService.findAllBySeller(user?.userId);
   }
 
   @Get(':id')

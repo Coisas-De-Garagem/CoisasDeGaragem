@@ -11,8 +11,9 @@ import { Card } from '@/components/common/Card';
 import { Skeleton } from '@/components/common/Skeleton';
 import { StatCard } from '@/components/common/StatCard';
 import { EmptyState } from '@/components/common/EmptyState';
-import { Alert } from '@/components/common/Alert';
 import { Button } from '@/components/common/Button';
+import { useUIStore } from '@/store/uiStore';
+import { makeNotifier } from '@/utils/notifications';
 import { PageHeaderSkeleton, CardGridSkeleton } from '@/components/common/PageSkeletons';
 import type { Purchase } from '@/types';
 
@@ -21,6 +22,7 @@ const currency = (value: number) =>
 
 export default function PurchasesPage() {
   const { purchases, fetchPurchases } = usePurchases();
+  const { addNotification } = useUIStore();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
@@ -29,6 +31,8 @@ export default function PurchasesPage() {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [category, setCategory] = useState<string>('all');
   const pageSize = 9;
+
+  const notify = makeNotifier(addNotification);
 
   const filteredPurchases = purchases.filter((purchase) => {
     const matchesSearch =
@@ -60,20 +64,24 @@ export default function PurchasesPage() {
     setCurrentPage(1);
   }, [searchTerm, sortBy, sortOrder, category]);
 
+  const loadPurchases = async () => {
+    setIsLoading(true);
+    setError('');
+    try {
+      await fetchPurchases();
+    } catch (err) {
+      const errorMsg = err instanceof Error ? err.message : 'Erro ao carregar compras';
+      setError(errorMsg);
+      notify('error', 'Erro ao carregar compras', errorMsg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const loadPurchases = async () => {
-      setIsLoading(true);
-      setError('');
-      try {
-        await fetchPurchases();
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Erro ao carregar compras');
-      } finally {
-        setIsLoading(false);
-      }
-    };
     loadPurchases();
-  }, [fetchPurchases]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleViewDetails = (purchase: Purchase) => {
     console.log('View details for order:', purchase.id);
@@ -111,19 +119,6 @@ export default function PurchasesPage() {
           </div>
         </Card>
         <CardGridSkeleton count={6} />
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="space-y-4">
-        <Alert variant="error" title="Erro ao carregar compras">
-          {error}
-        </Alert>
-        <Button variant="primary" onClick={() => fetchPurchases()}>
-          Tentar novamente
-        </Button>
       </div>
     );
   }
@@ -216,7 +211,20 @@ export default function PurchasesPage() {
       </Card>
 
       {/* Lista */}
-      {sortedPurchases.length === 0 && purchases.length > 0 ? (
+      {error && purchases.length === 0 ? (
+        <Card>
+          <EmptyState
+            icon={<FontAwesomeIcon icon={faBoxOpen} />}
+            title="Não foi possível carregar as compras"
+            description={error}
+            action={
+              <Button variant="primary" onClick={() => loadPurchases()}>
+                Tentar novamente
+              </Button>
+            }
+          />
+        </Card>
+      ) : sortedPurchases.length === 0 && purchases.length > 0 ? (
         <Card>
           <EmptyState
             icon={<FontAwesomeIcon icon={faMagnifyingGlass} />}
