@@ -38,7 +38,7 @@ JWT_SECRET=sua-chave-secreta-jwt
 JWT_EXPIRES_IN=7d
 PORT=3000
 NODE_ENV=production
-CORS_ORIGINS=https://coisas-de-garagem.vercel.app,https://*.vercel.app
+CORS_ORIGIN=https://www.coisasdegaragem.com.br,https://coisasdegaragem.com.br,https://coisas-de-garagem.vercel.app
 ```
 
 ### Deploy Automático
@@ -123,8 +123,9 @@ Acesse: https://coisas-de-garagem.vercel.app
 - Verificar se DATABASE_URL está correto
 
 ### CORS errors
-- Verificar variável CORS_ORIGINS no Render
-- Confirmar URL do frontend no Vercel
+- Verificar variável CORS_ORIGIN (singular) na plataforma de hospedagem (Render/Azure)
+- Confirmar a URL exata do frontend (incluindo o domínio de produção, ex.: https://www.coisasdegaragem.com.br)
+- No Azure App Service, verificar também a blade "CORS" do Web App (camada da plataforma), que é independente do código
 
 ### Erro de conexão com banco
 - Verificar se DATABASE_URL está correto

@@ -1,6 +1,7 @@
 import { Injectable, OnApplicationBootstrap, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { PurchaseStatus } from '@prisma/client';
+import { getErrorMessage } from '../common/error.util';
 
 /**
  * Cancela compras PIX/CARD que ficaram PENDING além do prazo de expiração,
@@ -18,8 +19,10 @@ import { PurchaseStatus } from '@prisma/client';
 export class PurchaseCleanupService implements OnApplicationBootstrap {
   private readonly logger = new Logger(PurchaseCleanupService.name);
 
-  private readonly intervalMs = Number(process.env.PURCHASE_CLEANUP_INTERVAL_MS) || 60_000;
-  private readonly expirationMs = Number(process.env.PURCHASE_EXPIRATION_MS) || 60_000;
+  private readonly intervalMs =
+    Number(process.env.PURCHASE_CLEANUP_INTERVAL_MS) || 60_000;
+  private readonly expirationMs =
+    Number(process.env.PURCHASE_EXPIRATION_MS) || 60_000;
 
   constructor(private prisma: PrismaService) {}
 
@@ -84,7 +87,9 @@ export class PurchaseCleanupService implements OnApplicationBootstrap {
         });
       }
     } catch (error) {
-      this.logger.error(`Erro ao executar varredura de limpeza de reservas: ${error.message}`);
+      this.logger.error(
+        `Erro ao executar varredura de limpeza de reservas: ${getErrorMessage(error)}`,
+      );
     }
   }
 }

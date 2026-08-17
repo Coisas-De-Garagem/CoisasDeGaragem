@@ -3,9 +3,9 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
+import { Prisma, PurchaseStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
-import { PurchaseStatus } from '@prisma/client';
 import { AbacatePayService } from '../payments/abacatepay.service';
 
 @Injectable()
@@ -63,7 +63,10 @@ export class PurchasesService {
       const expiresInSeconds = 60; // Checkout expires in 60 seconds (for testing)
 
       // Handle Abacate Pay integration for digital payment methods (PIX, CARD)
-      if (createPurchaseDto.paymentMethod === 'PIX' || createPurchaseDto.paymentMethod === 'CARD') {
+      if (
+        createPurchaseDto.paymentMethod === 'PIX' ||
+        createPurchaseDto.paymentMethod === 'CARD'
+      ) {
         const buyer = await prisma.user.findUnique({
           where: { id: buyerId },
         });
@@ -91,17 +94,18 @@ export class PurchasesService {
 
         if (createPurchaseDto.paymentMethod === 'PIX') {
           // Use transparent checkout for PIX to get QR code and Pix copy/paste key
-          const transparentPix = await this.abacatePayService.createTransparentPix({
-            purchaseId: purchase.id,
-            amountInCents: priceInCents,
-            description: `Compra do produto ${product.name}`,
-            buyer: {
-              email: buyer.email,
-              name: buyer.name,
-              phone: buyer.phone || undefined,
-            },
-            expiresInSeconds,
-          });
+          const transparentPix =
+            await this.abacatePayService.createTransparentPix({
+              purchaseId: purchase.id,
+              amountInCents: priceInCents,
+              description: `Compra do produto ${product.name}`,
+              buyer: {
+                email: buyer.email,
+                name: buyer.name,
+                phone: buyer.phone || undefined,
+              },
+              expiresInSeconds,
+            });
           qrCode = transparentPix.brCodeBase64;
           pixKey = transparentPix.brCode;
           chargeId = transparentPix.chargeId;
@@ -131,15 +135,39 @@ export class PurchasesService {
   }
 
   async findAllByBuyer(
-    buyerId: string,
+    buyerId?: string,
     page: number = 1,
     limit: number = 20,
     status?: string,
   ) {
-    const skip = (page - 1) * limit;
-    const where: any = { buyerId };
+    if (!buyerId) {
+      return {
+        purchases: [],
+        pagination: {
+          page: 1,
+          limit: 20,
+          total: 0,
+          totalPages: 0,
+        },
+      };
+    }
+
+    const safePage = Math.max(1, isNaN(Number(page)) ? 1 : Number(page));
+    const safeLimit = Math.max(1, Math.min(100, isNaN(Number(limit)) ? 20 : Number(limit)));
+    const skip = (safePage - 1) * safeLimit;
+    const where: Prisma.PurchaseWhereInput = { buyerId };
+
     if (status) {
-      where.status = status;
+      const upperStatus = status.toUpperCase();
+      if (Object.values(PurchaseStatus).includes(upperStatus as PurchaseStatus)) {
+        where.status = upperStatus as PurchaseStatus;
+      }
+    }
+
+    try {
+      await this.cleanExpiredPurchases();
+    } catch {
+      // Non-blocking cleanup
     }
 
     const [purchases, total] = await Promise.all([
@@ -147,11 +175,11 @@ export class PurchasesService {
         where,
         include: {
           product: true,
-          seller: { select: { name: true, email: true } },
+          seller: { select: { id: true, name: true, email: true } },
         },
         orderBy: { createdAt: 'desc' },
         skip,
-        take: limit,
+        take: safeLimit,
       }),
       this.prisma.purchase.count({ where }),
     ]);
@@ -159,24 +187,48 @@ export class PurchasesService {
     return {
       purchases,
       pagination: {
-        page,
-        limit,
+        page: safePage,
+        limit: safeLimit,
         total,
-        totalPages: Math.ceil(total / limit),
+        totalPages: Math.ceil(total / safeLimit),
       },
     };
   }
 
   async findAllBySeller(
-    sellerId: string,
+    sellerId?: string,
     page: number = 1,
     limit: number = 20,
     status?: string,
   ) {
-    const skip = (page - 1) * limit;
-    const where: any = { sellerId };
+    if (!sellerId) {
+      return {
+        purchases: [],
+        pagination: {
+          page: 1,
+          limit: 20,
+          total: 0,
+          totalPages: 0,
+        },
+      };
+    }
+
+    const safePage = Math.max(1, isNaN(Number(page)) ? 1 : Number(page));
+    const safeLimit = Math.max(1, Math.min(100, isNaN(Number(limit)) ? 20 : Number(limit)));
+    const skip = (safePage - 1) * safeLimit;
+    const where: Prisma.PurchaseWhereInput = { sellerId };
+
     if (status) {
-      where.status = status;
+      const upperStatus = status.toUpperCase();
+      if (Object.values(PurchaseStatus).includes(upperStatus as PurchaseStatus)) {
+        where.status = upperStatus as PurchaseStatus;
+      }
+    }
+
+    try {
+      await this.cleanExpiredPurchases();
+    } catch {
+      // Non-blocking cleanup
     }
 
     const [purchases, total] = await Promise.all([
@@ -184,11 +236,11 @@ export class PurchasesService {
         where,
         include: {
           product: true,
-          buyer: { select: { name: true, email: true } },
+          buyer: { select: { id: true, name: true, email: true } },
         },
         orderBy: { createdAt: 'desc' },
         skip,
-        take: limit,
+        take: safeLimit,
       }),
       this.prisma.purchase.count({ where }),
     ]);
@@ -196,10 +248,10 @@ export class PurchasesService {
     return {
       purchases,
       pagination: {
-        page,
-        limit,
+        page: safePage,
+        limit: safeLimit,
         total,
-        totalPages: Math.ceil(total / limit),
+        totalPages: Math.ceil(total / safeLimit),
       },
     };
   }

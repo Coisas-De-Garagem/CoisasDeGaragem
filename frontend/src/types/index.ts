@@ -24,6 +24,20 @@ export interface AuthSession {
   deviceInfo?: object;
 }
 
+// Location Types
+export interface Location {
+  id: string;
+  name: string;
+  address: string;
+  isActive: boolean;
+  sellerId: string;
+  createdAt: string;
+  updatedAt: string;
+  _count?: {
+    products: number;
+  };
+}
+
 // Product Types
 export type ProductCondition = 'NEW' | 'LIKE_NEW' | 'GOOD' | 'FAIR' | 'POOR';
 
@@ -43,6 +57,9 @@ export interface Product {
   isReserved: boolean;
   isSold: boolean;
   eventId?: string;
+  locationId?: string;
+  location?: Location;
+  seller?: User;
   createdAt: string;
   updatedAt: string;
 }
@@ -57,6 +74,7 @@ export interface Purchase {
   product?: Product;
   buyerId: string;
   sellerId: string;
+  seller?: User;
   price: number;
   currency: string;
   purchaseDate: string;
@@ -77,6 +95,13 @@ export interface QRCode {
   generatedAt: string;
   expiresAt?: string;
   scanCount: number;
+}
+
+/** Resposta da geração de QR Code de um produto (endpoint /qr-codes/:productId). */
+export interface ProductQRCode {
+  url: string;
+  code: string;
+  productUrl?: string;
 }
 
 // Dashboard Page Types
@@ -183,6 +208,7 @@ export interface CreateProductRequest {
   imageUrl?: string;
   category?: string;
   condition?: ProductCondition;
+  locationId?: string;
 }
 
 export interface UpdateProductRequest {
@@ -193,6 +219,9 @@ export interface UpdateProductRequest {
   category?: string;
   condition?: ProductCondition;
   isAvailable?: boolean;
+  isReserved?: boolean;
+  isSold?: boolean;
+  locationId?: string;
 }
 
 export interface CreatePurchaseRequest {
@@ -207,6 +236,9 @@ export interface ScanQRCodeRequest {
 }
 
 export interface ProductFilters {
+  search?: string;
+  minPrice?: number;
+  maxPrice?: number;
   sellerId?: string;
   category?: string;
   condition?: ProductCondition;
@@ -282,6 +314,28 @@ export interface EventVisit {
   createdAt: string;
 }
 
+// Location Types
+export interface Location {
+  id: string;
+  name: string;
+  address: string;
+  isActive: boolean;
+  sellerId: string;
+  createdAt: string;
+  updatedAt: string;
+  _count?: {
+    products: number;
+  };
+}
+
+export interface CreateLocationRequest {
+  name: string;
+  address: string;
+  isActive?: boolean;
+}
+
+export type UpdateLocationRequest = Partial<CreateLocationRequest>;
+
 export interface CreateEventRequest {
   name: string;
   description?: string;
@@ -346,6 +400,18 @@ export interface ApiError {
 }
 
 export type ApiResult<T> = ApiResponse<T> | ApiError;
+
+/** Resultado da simulação de pagamento no gateway (modo dev). */
+export interface PaymentSimulationResult {
+  success?: boolean;
+  localSync?: boolean;
+  data?: unknown;
+}
+
+/** Registro criado identificado apenas pelo id (testimonials, reviews). */
+export interface CreationResult {
+  id: string;
+}
 
 // Utility Types
 export type WithRequired<T, K extends keyof T> = T & { [P in K]-?: T[P] };

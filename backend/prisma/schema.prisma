@@ -58,6 +58,12 @@ model User {
   sales     Purchase[]    @relation("SellerSales")
   purchases Purchase[]    @relation("BuyerPurchases")
   events    GarageEvent[] @relation("SellerEvents")
+  locations Location[]    @relation("SellerLocations")
+  
+  reviewsGiven    Review[] @relation("BuyerReviews")
+  reviewsReceived Review[] @relation("SellerReviews")
+  
+  testimonials    Testimonial[] @relation("UserTestimonials")
 }
 
 model Product {
@@ -83,6 +89,9 @@ model Product {
   // Vínculo opcional com um evento (1 produto → 1 evento por vez)
   eventId     String?
   event       GarageEvent?     @relation("EventProducts", fields: [eventId], references: [id])
+
+  locationId  String?
+  location    Location?        @relation("ProductLocation", fields: [locationId], references: [id])
 
   createdAt   DateTime         @default(now())
   updatedAt   DateTime         @updatedAt
@@ -115,6 +124,8 @@ model Purchase {
 
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
+
+  review        Review?
 }
 
 /// Garage sale / evento do vendedor. Abstrai um "brechó" que agrupa produtos,
@@ -153,4 +164,52 @@ model EventVisit {
   eventId   String
   event     GarageEvent @relation(fields: [eventId], references: [id], onDelete: Cascade)
   createdAt DateTime    @default(now())
+}
+
+model Review {
+  id          String   @id @default(uuid())
+  rating      Int
+  comment     String?
+  
+  buyerId     String
+  buyer       User     @relation("BuyerReviews", fields: [buyerId], references: [id])
+
+  sellerId    String
+  seller      User     @relation("SellerReviews", fields: [sellerId], references: [id])
+
+  purchaseId  String   @unique
+  purchase    Purchase @relation(fields: [purchaseId], references: [id])
+
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Testimonial {
+  id          String   @id @default(uuid())
+  rating      Int
+  content     String
+  
+  userId      String
+  user        User     @relation("UserTestimonials", fields: [userId], references: [id])
+
+  isFeatured  Boolean  @default(false)
+  isVisible   Boolean  @default(true)
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Location {
+  id          String    @id @default(uuid())
+  name        String
+  address     String
+  isActive    Boolean   @default(true)
+
+  sellerId    String
+  seller      User      @relation("SellerLocations", fields: [sellerId], references: [id])
+
+  products    Product[] @relation("ProductLocation")
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 }

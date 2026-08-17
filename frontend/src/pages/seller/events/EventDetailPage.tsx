@@ -272,6 +272,8 @@ function ProductsTab({ eventId, allProducts }: { eventId: string; allProducts: P
   };
 
   useEffect(() => {
+    // Efeito legítimo de busca de dados ao trocar o evento.
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadEventProducts();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [eventId]);

@@ -8,8 +8,19 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { SafeUser, stripPassword } from '../users/user.utils';
+import { getErrorMessage } from '../common/error.util';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
+
+/** Subset of the Google tokeninfo response that we rely on. */
+interface GoogleTokenInfo {
+  aud?: string;
+  email?: string;
+  email_verified?: string;
+  name?: string;
+  picture?: string;
+}
 
 @Injectable()
 export class AuthService {
@@ -19,13 +30,20 @@ export class AuthService {
     private configService: ConfigService,
   ) {}
 
-  async validateUser(email: string, pass: string): Promise<any> {
+  async validateUser(email: string, pass: string): Promise<SafeUser | null> {
     const user = await this.usersService.findOne(email);
     if (user && (await bcrypt.compare(pass, user.password))) {
-      const { password, ...result } = user;
-      return result;
+      return stripPassword(user);
     }
     return null;
+  }
+
+  async updateProfile(
+    userId: string,
+    updateData: { name?: string; phone?: string; avatarUrl?: string },
+  ): Promise<SafeUser> {
+    const user = await this.usersService.update(userId, updateData);
+    return stripPassword(user);
   }
 
   async login(loginDto: LoginDto) {
@@ -51,7 +69,7 @@ export class AuthService {
       ...registerDto,
       password: hashedPassword,
     });
-    const { password, ...result } = user;
+    const result = stripPassword(user);
 
     const payload = { email: user.email, sub: user.id, role: user.role };
     return {
@@ -64,8 +82,13 @@ export class AuthService {
   async googleLogin(token: string) {
     try {
       // Mock bypass for local development testing
-      if (token === 'mock-google-token' && this.configService.get<string>('NODE_ENV') !== 'production') {
-        let user = await this.usersService.findOne('mock-google-user@example.com');
+      if (
+        token === 'mock-google-token' &&
+        this.configService.get<string>('NODE_ENV') !== 'production'
+      ) {
+        let user = await this.usersService.findOne(
+          'mock-google-user@example.com',
+        );
         if (!user) {
           const dummyPassword = await bcrypt.hash(crypto.randomUUID(), 10);
           user = await this.usersService.create({
@@ -75,7 +98,7 @@ export class AuthService {
             role: 'USER',
           });
         }
-        const { password, ...result } = user;
+        const result = stripPassword(user);
         const jwtPayload = { email: user.email, sub: user.id, role: user.role };
         return {
           token: this.jwtService.sign(jwtPayload),
@@ -84,12 +107,14 @@ export class AuthService {
         };
       }
 
-      const response = await fetch(`https://oauth2.googleapis.com/tokeninfo?id_token=${token}`);
+      const response = await fetch(
+        `https://oauth2.googleapis.com/tokeninfo?id_token=${token}`,
+      );
       if (!response.ok) {
         throw new UnauthorizedException('Invalid Google token');
       }
 
-      const payload = await response.json();
+      const payload = (await response.json()) as GoogleTokenInfo;
 
       // Validate Client ID if configured in env
       const googleClientId = this.configService.get<string>('GOOGLE_CLIENT_ID');
@@ -121,7 +146,7 @@ export class AuthService {
         });
       }
 
-      const { password, ...result } = user;
+      const result = stripPassword(user);
       const jwtPayload = { email: user.email, sub: user.id, role: user.role };
 
       return {
@@ -133,7 +158,9 @@ export class AuthService {
       if (error instanceof UnauthorizedException) {
         throw error;
       }
-      throw new UnauthorizedException(`Google authentication failed: ${error.message}`);
+      throw new UnauthorizedException(
+        `Google authentication failed: ${getErrorMessage(error)}`,
+      );
     }
   }
 }

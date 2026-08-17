@@ -13,7 +13,7 @@ import { useAuthStore } from '@/store/authStore';
 import { Card } from '@/components/common/Card';
 import { Badge } from '@/components/common/Badge';
 import { Button } from '@/components/common/Button';
-import { Select } from '@/components/common/Select';
+import { DropdownSelect } from '@/components/common/DropdownSelect';
 import { Skeleton } from '@/components/common/Skeleton';
 import { StatCard } from '@/components/common/StatCard';
 import { SearchInput } from '@/components/common/SearchInput';
@@ -28,16 +28,17 @@ const currency = (value: number, curr = 'BRL') =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: curr }).format(value);
 
 const STATUS_LABEL: Record<string, string> = {
-  completed: 'Concluído',
-  pending: 'Pendente',
-  cancelled: 'Cancelado',
-  refunded: 'Reembolsado',
+  COMPLETED: 'Concluído',
+  PENDING: 'Pendente',
+  CANCELLED: 'Cancelado',
+  REFUNDED: 'Reembolsado',
 };
 
 function statusVariant(status: string): 'success' | 'warning' | 'error' | 'gray' {
-  if (status === 'completed') return 'success';
-  if (status === 'pending') return 'warning';
-  if (status === 'cancelled' || status === 'refunded') return 'error';
+  const upperStatus = status.toUpperCase();
+  if (upperStatus === 'COMPLETED') return 'success';
+  if (upperStatus === 'PENDING') return 'warning';
+  if (upperStatus === 'CANCELLED' || upperStatus === 'REFUNDED') return 'error';
   return 'gray';
 }
 
@@ -66,8 +67,14 @@ export default function SalesPage() {
     if (!user) return [];
     return purchases.filter((purchase) => {
       if (purchase.sellerId !== user.id) return false;
-      if (searchTerm && !purchase.id.toLowerCase().includes(searchTerm.toLowerCase())) return false;
-      if (statusFilter !== 'all' && purchase.status !== statusFilter) return false;
+      if (
+        searchTerm &&
+        !purchase.id.toLowerCase().includes(searchTerm.toLowerCase()) &&
+        !purchase.product?.name.toLowerCase().includes(searchTerm.toLowerCase())
+      ) {
+        return false;
+      }
+      if (statusFilter !== 'all' && purchase.status.toUpperCase() !== statusFilter.toUpperCase()) return false;
 
       if (dateRange !== 'all') {
         const date = new Date(purchase.purchaseDate);
@@ -90,8 +97,8 @@ export default function SalesPage() {
   const stats = useMemo(() => {
     const total = filteredSales.length;
     const revenue = filteredSales.reduce((acc, curr) => acc + curr.price, 0);
-    const pending = filteredSales.filter((s) => s.status === 'pending').length;
-    const completed = filteredSales.filter((s) => s.status === 'completed').length;
+    const pending = filteredSales.filter((s) => s.status.toUpperCase() === 'PENDING').length;
+    const completed = filteredSales.filter((s) => s.status.toUpperCase() === 'COMPLETED').length;
     return { total, revenue, pending, completed };
   }, [filteredSales]);
 
@@ -135,35 +142,33 @@ export default function SalesPage() {
       </div>
 
       {/* Filtros */}
-      <Card flush>
+      <Card flush overflowVisible className="relative z-40">
         <div className="p-4 flex flex-col md:flex-row gap-3 md:items-center">
           <div className="flex-1">
             <SearchInput
-              placeholder="Buscar por ID da venda..."
+              placeholder="Buscar por nome do produto ou ID da venda..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               onClear={() => setSearchTerm('')}
             />
           </div>
           <div className="flex flex-col sm:flex-row gap-3">
-            <div className="w-full sm:w-44">
-              <Select
-                aria-label="Filtrar por status"
+            <div className="w-full sm:w-48 z-20">
+              <DropdownSelect
                 value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
+                onChange={(v) => setStatusFilter(v)}
                 options={[
                   { value: 'all', label: 'Todos os status' },
-                  { value: 'completed', label: 'Concluído' },
-                  { value: 'pending', label: 'Pendente' },
-                  { value: 'cancelled', label: 'Cancelado' },
+                  { value: 'COMPLETED', label: 'Concluído' },
+                  { value: 'PENDING', label: 'Pendente' },
+                  { value: 'CANCELLED', label: 'Cancelado' },
                 ]}
               />
             </div>
-            <div className="w-full sm:w-44">
-              <Select
-                aria-label="Filtrar por período"
+            <div className="w-full sm:w-48 z-10">
+              <DropdownSelect
                 value={dateRange}
-                onChange={(e) => setDateRange(e.target.value)}
+                onChange={(v) => setDateRange(v)}
                 options={[
                   { value: 'all', label: 'Todo o período' },
                   { value: 'today', label: 'Hoje' },
@@ -218,7 +223,7 @@ export default function SalesPage() {
                       </td>
                       <td className="px-5 py-3.5">
                         <Badge variant={statusVariant(sale.status)} dot>
-                          {STATUS_LABEL[sale.status] ?? sale.status}
+                          {STATUS_LABEL[sale.status.toUpperCase()] ?? sale.status}
                         </Badge>
                       </td>
                       <td className="px-5 py-3.5 text-right">
@@ -239,7 +244,7 @@ export default function SalesPage() {
                       #{sale.id.split('-')[1]}
                     </span>
                     <Badge variant={statusVariant(sale.status)} dot>
-                      {STATUS_LABEL[sale.status] ?? sale.status}
+                      {STATUS_LABEL[sale.status.toUpperCase()] ?? sale.status}
                     </Badge>
                   </div>
                   <div className="mt-1 flex items-center justify-between">

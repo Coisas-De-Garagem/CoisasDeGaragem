@@ -10,6 +10,7 @@ import {
   faBagShopping,
   faClockRotateLeft,
   faCalendarDays,
+  faMapMarkerAlt,
 } from '@fortawesome/free-solid-svg-icons';
 import type { DashboardType } from '@/types';
 
@@ -38,6 +39,7 @@ export const NAVIGATION: Record<DashboardType, NavGroup[]> = {
         { label: 'Produtos', path: '/seller/products', icon: faBox },
         { label: 'Vendas', path: '/seller/sales', icon: faTags },
         { label: 'Eventos', path: '/seller/events', icon: faCalendarDays },
+        { label: 'Locais', path: '/seller/locations', icon: faMapMarkerAlt },
       ],
     },
     {

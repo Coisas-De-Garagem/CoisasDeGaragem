@@ -4,13 +4,15 @@ import {
   Body,
   Get,
   UseGuards,
-  Request,
   BadRequestException,
+  Put,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { CurrentUser } from './current-user.decorator';
+import { AuthenticatedUser } from './auth-user.interface';
 import {
   ApiTags,
   ApiOperation,
@@ -34,7 +36,7 @@ export class AuthController {
     description: 'Login realizado com sucesso',
     schema: {
       example: {
-        access_token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        access_token: '<jwt-access-token>',
         user: {
           id: 'user-id',
           email: 'usuario@exemplo.com',
@@ -85,7 +87,10 @@ export class AuthController {
     schema: {
       example: {
         statusCode: 400,
-        message: ['email must be an email', 'password must be longer than or equal to 6 characters'],
+        message: [
+          'email must be an email',
+          'password must be longer than or equal to 6 characters',
+        ],
         error: 'Bad Request',
       },
     },
@@ -109,14 +114,15 @@ export class AuthController {
   @Post('google')
   @ApiOperation({
     summary: 'Autenticação com Google',
-    description: 'Autentica o usuário a partir de um ID Token do Google. Se o usuário não existir, ele é registrado automaticamente.',
+    description:
+      'Autentica o usuário a partir de um ID Token do Google. Se o usuário não existir, ele é registrado automaticamente.',
   })
   @ApiResponse({
     status: 200,
     description: 'Login realizado com sucesso',
     schema: {
       example: {
-        token: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        token: '<jwt-token>',
         expiresIn: 3600,
         user: {
           id: 'user-id',
@@ -167,7 +173,21 @@ export class AuthController {
       },
     },
   })
-  getProfile(@Request() req) {
-    return req.user;
+  getProfile(@CurrentUser() user: AuthenticatedUser) {
+    return user;
+  }
+
+  @UseGuards(AuthGuard('jwt'))
+  @Put('me')
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Atualizar perfil do usuário atual',
+    description: 'Atualiza informações do usuário autenticado',
+  })
+  async updateProfile(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() updateData: { name?: string; phone?: string; avatarUrl?: string },
+  ) {
+    return this.authService.updateProfile(user.userId, updateData);
   }
 }

@@ -40,8 +40,12 @@ async function bootstrap() {
     rawBody: true,
   });
 
-  const corsOrigins = process.env.CORS_ORIGIN
-    ? process.env.CORS_ORIGIN.split(',')
+  const corsOriginRaw = process.env.CORS_ORIGIN ?? process.env.CORS_ORIGINS;
+  const corsOrigins = corsOriginRaw
+    ? corsOriginRaw
+        .split(',')
+        .map((o) => o.trim())
+        .filter(Boolean)
     : [];
 
   app.enableCors({
@@ -60,7 +64,9 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('Coisas de Garagem API')
-    .setDescription('API completa para marketplace de Garage Sales Coisas De Garagem. Permite usuários venderem e comprarem itens através de QR codes, com sistema de autenticação JWT, gestão de produtos, compras, analytics e etc.')
+    .setDescription(
+      'API completa para marketplace de Garage Sales Coisas De Garagem. Permite usuários venderem e comprarem itens através de QR codes, com sistema de autenticação JWT, gestão de produtos, compras, analytics e etc.',
+    )
     .setVersion('1.0')
     .addBearerAuth()
     .build();
@@ -69,4 +75,4 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT ?? 3000);
 }
-bootstrap();
+void bootstrap();

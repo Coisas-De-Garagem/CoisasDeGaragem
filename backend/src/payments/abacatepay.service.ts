@@ -1,5 +1,22 @@
-import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { getErrorMessage } from '../common/error.util';
+
+/** Standard envelope returned by the Abacate Pay API. */
+export interface AbacatePayResponse<T = unknown> {
+  data?: T;
+  error?: string;
+  message?: string;
+}
+
+/** Extracts a readable error message from an Abacate Pay response envelope. */
+function responseError(result: AbacatePayResponse): string {
+  return result.error || result.message || 'Erro desconhecido';
+}
 
 @Injectable()
 export class AbacatePayService {
@@ -9,16 +26,24 @@ export class AbacatePayService {
 
   constructor(private configService: ConfigService) {
     this.apiKey = this.configService.get<string>('ABACATEPAY_API_KEY') || '';
-    this.apiUrl = this.configService.get<string>('ABACATEPAY_API_URL') || 'https://api.abacatepay.com/v2';
+    this.apiUrl =
+      this.configService.get<string>('ABACATEPAY_API_URL') ||
+      'https://api.abacatepay.com/v2';
   }
 
   /**
    * Creates a customer in Abacate Pay or retrieves existing one if possible.
    * Only email is required.
    */
-  async getOrCreateCustomer(buyer: { email: string; name: string; phone?: string }): Promise<string> {
+  async getOrCreateCustomer(buyer: {
+    email: string;
+    name: string;
+    phone?: string;
+  }): Promise<string> {
     try {
-      this.logger.log(`Gerenciando cliente no Abacate Pay para o email: ${buyer.email}`);
+      this.logger.log(
+        `Gerenciando cliente no Abacate Pay para o email: ${buyer.email}`,
+      );
       const response = await fetch(`${this.apiUrl}/customers/create`, {
         method: 'POST',
         headers: {
@@ -32,17 +57,26 @@ export class AbacatePayService {
         }),
       });
 
-      const result: any = await response.json();
+      const result = (await response.json()) as AbacatePayResponse<{
+        id: string;
+      }>;
       if (!response.ok) {
-        this.logger.error(`Erro da API Abacate Pay ao criar cliente: ${JSON.stringify(result)}`);
-        throw new Error(result.error || result.message || 'Erro desconhecido');
+        this.logger.error(
+          `Erro da API Abacate Pay ao criar cliente: ${JSON.stringify(result)}`,
+        );
+        throw new Error(responseError(result));
       }
 
-      this.logger.log(`Cliente gerenciado com sucesso. ID: ${result.data.id}`);
-      return result.data.id;
+      this.logger.log(`Cliente gerenciado com sucesso. ID: ${result.data!.id}`);
+      return result.data!.id;
     } catch (error) {
-      this.logger.error(`Falha ao criar/recuperar cliente no Abacate Pay: ${error.message}`);
-      throw new InternalServerErrorException(`Erro no gateway de pagamento: ${error.message}`);
+      const message = getErrorMessage(error);
+      this.logger.error(
+        `Falha ao criar/recuperar cliente no Abacate Pay: ${message}`,
+      );
+      throw new InternalServerErrorException(
+        `Erro no gateway de pagamento: ${message}`,
+      );
     }
   }
 
@@ -57,7 +91,9 @@ export class AbacatePayService {
     currency?: string;
   }): Promise<string> {
     try {
-      this.logger.log(`Criando produto no Abacate Pay: externalId=${params.externalId}`);
+      this.logger.log(
+        `Criando produto no Abacate Pay: externalId=${params.externalId}`,
+      );
       const response = await fetch(`${this.apiUrl}/products/create`, {
         method: 'POST',
         headers: {
@@ -73,17 +109,26 @@ export class AbacatePayService {
         }),
       });
 
-      const result: any = await response.json();
+      const result = (await response.json()) as AbacatePayResponse<{
+        id: string;
+      }>;
       if (!response.ok) {
-        this.logger.error(`Erro da API Abacate Pay ao criar produto: ${JSON.stringify(result)}`);
-        throw new Error(result.error || result.message || 'Erro desconhecido');
+        this.logger.error(
+          `Erro da API Abacate Pay ao criar produto: ${JSON.stringify(result)}`,
+        );
+        throw new Error(responseError(result));
       }
 
-      this.logger.log(`Produto criado com sucesso no Abacate Pay. ID: ${result.data.id}`);
-      return result.data.id;
+      this.logger.log(
+        `Produto criado com sucesso no Abacate Pay. ID: ${result.data!.id}`,
+      );
+      return result.data!.id;
     } catch (error) {
-      this.logger.error(`Falha ao criar produto no Abacate Pay: ${error.message}`);
-      throw new InternalServerErrorException(`Erro ao registrar produto no gateway: ${error.message}`);
+      const message = getErrorMessage(error);
+      this.logger.error(`Falha ao criar produto no Abacate Pay: ${message}`);
+      throw new InternalServerErrorException(
+        `Erro ao registrar produto no gateway: ${message}`,
+      );
     }
   }
 
@@ -98,8 +143,10 @@ export class AbacatePayService {
     expiresInSeconds: number;
   }): Promise<{ brCode: string; brCodeBase64: string; chargeId: string }> {
     try {
-      this.logger.log(`Criando PIX transparente para a compra: ${params.purchaseId}`);
-      
+      this.logger.log(
+        `Criando PIX transparente para a compra: ${params.purchaseId}`,
+      );
+
       const payload = {
         method: 'PIX',
         data: {
@@ -119,48 +166,77 @@ export class AbacatePayService {
         body: JSON.stringify(payload),
       });
 
-      const result: any = await response.json();
+      const result = (await response.json()) as AbacatePayResponse<{
+        id: string;
+        brCode: string;
+        brCodeBase64: string;
+      }>;
       if (!response.ok) {
-        this.logger.error(`Erro da API Abacate Pay ao criar transparent: ${JSON.stringify(result)}`);
-        throw new Error(result.error || result.message || 'Erro desconhecido');
+        this.logger.error(
+          `Erro da API Abacate Pay ao criar transparent: ${JSON.stringify(result)}`,
+        );
+        throw new Error(responseError(result));
       }
 
-      this.logger.log(`PIX transparente criado com sucesso para compra ${params.purchaseId}`);
+      this.logger.log(
+        `PIX transparente criado com sucesso para compra ${params.purchaseId}`,
+      );
       return {
-        brCode: result.data.brCode,
-        brCodeBase64: result.data.brCodeBase64,
-        chargeId: result.data.id,
+        brCode: result.data!.brCode,
+        brCodeBase64: result.data!.brCodeBase64,
+        chargeId: result.data!.id,
       };
     } catch (error) {
-      this.logger.error(`Falha ao criar transparent PIX no Abacate Pay: ${error.message}`);
-      throw new InternalServerErrorException(`Erro ao gerar PIX transparente: ${error.message}`);
+      const message = getErrorMessage(error);
+      this.logger.error(
+        `Falha ao criar transparent PIX no Abacate Pay: ${message}`,
+      );
+      throw new InternalServerErrorException(
+        `Erro ao gerar PIX transparente: ${message}`,
+      );
     }
   }
 
   /**
    * Simulates a payment for a transparent checkout charge (Dev mode only).
    */
-  async simulateTransparentPix(chargeId: string): Promise<any> {
+  async simulateTransparentPix(
+    chargeId: string,
+  ): Promise<AbacatePayResponse<unknown>> {
     try {
-      this.logger.log(`Simulando pagamento no Abacate Pay para cobrança: ${chargeId}`);
-      const response = await fetch(`${this.apiUrl}/transparents/simulate-payment?id=${chargeId}`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${this.apiKey}`,
+      this.logger.log(
+        `Simulando pagamento no Abacate Pay para cobrança: ${chargeId}`,
+      );
+      const response = await fetch(
+        `${this.apiUrl}/transparents/simulate-payment?id=${chargeId}`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${this.apiKey}`,
+          },
         },
-      });
+      );
 
-      const result: any = await response.json();
+      const result = (await response.json()) as AbacatePayResponse;
       if (!response.ok) {
-        this.logger.error(`Erro da API Abacate Pay ao simular pagamento: ${JSON.stringify(result)}`);
-        throw new Error(result.error || result.message || 'Erro desconhecido');
+        this.logger.error(
+          `Erro da API Abacate Pay ao simular pagamento: ${JSON.stringify(result)}`,
+        );
+        throw new Error(responseError(result));
       }
 
-      this.logger.log(`Simulação de pagamento enviada com sucesso para cobrança ${chargeId}`);
+      this.logger.log(
+        `Simulação de pagamento enviada com sucesso para cobrança ${chargeId}`,
+      );
       return result;
     } catch (error) {
-      this.logger.error(`Falha ao simular pagamento no Abacate Pay: ${error.message}`);
-      throw new InternalServerErrorException(`Erro ao simular pagamento: ${error.message}`);
+      const message = getErrorMessage(error);
+      this.logger.error(
+        `Falha ao simular pagamento no Abacate Pay: ${message}`,
+      );
+      throw new InternalServerErrorException(
+        `Erro ao simular pagamento: ${message}`,
+      );
     }
   }
 
@@ -174,8 +250,12 @@ export class AbacatePayService {
     paymentMethod: 'PIX' | 'CARD';
   }): Promise<{ url: string; id: string }> {
     try {
-      this.logger.log(`Criando checkout de pagamento para a compra: ${params.purchaseId}`);
-      const frontendUrl = this.configService.get<string>('FRONTEND_URL') || 'http://localhost:5173';
+      this.logger.log(
+        `Criando checkout de pagamento para a compra: ${params.purchaseId}`,
+      );
+      const frontendUrl =
+        this.configService.get<string>('FRONTEND_URL') ||
+        'http://localhost:5173';
 
       const payload = {
         customerId: params.customerId,
@@ -203,20 +283,30 @@ export class AbacatePayService {
         body: JSON.stringify(payload),
       });
 
-      const result: any = await response.json();
+      const result = (await response.json()) as AbacatePayResponse<{
+        url: string;
+        id: string;
+      }>;
       if (!response.ok) {
-        this.logger.error(`Erro da API Abacate Pay ao criar checkout: ${JSON.stringify(result)}`);
-        throw new Error(result.error || result.message || 'Erro desconhecido');
+        this.logger.error(
+          `Erro da API Abacate Pay ao criar checkout: ${JSON.stringify(result)}`,
+        );
+        throw new Error(responseError(result));
       }
 
-      this.logger.log(`Sessão de checkout criada com sucesso. URL: ${result.data.url}`);
+      this.logger.log(
+        `Sessão de checkout criada com sucesso. URL: ${result.data!.url}`,
+      );
       return {
-        url: result.data.url,
-        id: result.data.id,
+        url: result.data!.url,
+        id: result.data!.id,
       };
     } catch (error) {
-      this.logger.error(`Falha ao criar checkout no Abacate Pay: ${error.message}`);
-      throw new InternalServerErrorException(`Erro ao gerar link de pagamento: ${error.message}`);
+      const message = getErrorMessage(error);
+      this.logger.error(`Falha ao criar checkout no Abacate Pay: ${message}`);
+      throw new InternalServerErrorException(
+        `Erro ao gerar link de pagamento: ${message}`,
+      );
     }
   }
 }

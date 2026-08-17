@@ -16,6 +16,7 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { UserRole } from '@prisma/client';
 import { CurrentUser } from '../auth/current-user.decorator';
+import { AuthenticatedUser } from '../auth/auth-user.interface';
 import {
   ApiTags,
   ApiOperation,
@@ -42,7 +43,10 @@ export class EventsController {
   @ApiResponse({ status: 400, description: 'Dados inválidos' })
   @ApiResponse({ status: 401, description: 'Não autorizado' })
   @ApiBody({ type: CreateEventDto })
-  create(@Body() createEventDto: CreateEventDto, @CurrentUser() user: any) {
+  create(
+    @Body() createEventDto: CreateEventDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
     return this.eventsService.create(createEventDto, user.userId);
   }
 
@@ -52,14 +56,15 @@ export class EventsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Listar eventos do vendedor' })
   @ApiResponse({ status: 200, description: 'Lista de eventos' })
-  findAll(@CurrentUser() user: any) {
+  findAll(@CurrentUser() user: AuthenticatedUser) {
     return this.eventsService.findAllBySeller(user.userId);
   }
 
   @Get(':id/public')
   @ApiOperation({
     summary: 'Vitrine pública do evento',
-    description: 'Retorna dados públicos do evento + produtos vinculados (sem autenticação).',
+    description:
+      'Retorna dados públicos do evento + produtos vinculados (sem autenticação).',
   })
   @ApiParam({ name: 'id', description: 'ID do evento' })
   @ApiResponse({ status: 200, description: 'Dados públicos do evento' })
@@ -76,7 +81,7 @@ export class EventsController {
   @ApiParam({ name: 'id', description: 'ID do evento' })
   @ApiResponse({ status: 200, description: 'Detalhes do evento' })
   @ApiResponse({ status: 404, description: 'Evento não encontrado' })
-  findOne(@Param('id') id: string, @CurrentUser() user: any) {
+  findOne(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.eventsService.findOne(id, user.userId);
   }
 
@@ -92,7 +97,7 @@ export class EventsController {
   update(
     @Param('id') id: string,
     @Body() updateEventDto: UpdateEventDto,
-    @CurrentUser() user: any,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.eventsService.update(id, updateEventDto, user.userId);
   }
@@ -106,7 +111,7 @@ export class EventsController {
   @ApiResponse({ status: 200, description: 'Evento excluído' })
   @ApiResponse({ status: 403, description: 'Sem permissão' })
   @ApiResponse({ status: 409, description: 'Evento possui vendas vinculadas' })
-  remove(@Param('id') id: string, @CurrentUser() user: any) {
+  remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.eventsService.remove(id, user.userId);
   }
 
@@ -120,11 +125,14 @@ export class EventsController {
   @ApiParam({ name: 'id', description: 'ID do evento' })
   @ApiParam({ name: 'productId', description: 'ID do produto' })
   @ApiResponse({ status: 200, description: 'Produto vinculado' })
-  @ApiResponse({ status: 409, description: 'Produto já vinculado a outro evento' })
+  @ApiResponse({
+    status: 409,
+    description: 'Produto já vinculado a outro evento',
+  })
   linkProduct(
     @Param('id') id: string,
     @Param('productId') productId: string,
-    @CurrentUser() user: any,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.eventsService.linkProduct(id, productId, user.userId);
   }
@@ -139,7 +147,7 @@ export class EventsController {
   unlinkProduct(
     @Param('id') id: string,
     @Param('productId') productId: string,
-    @CurrentUser() user: any,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.eventsService.unlinkProduct(id, productId, user.userId);
   }
@@ -153,7 +161,7 @@ export class EventsController {
   @ApiOperation({ summary: 'Gerar QR Code do evento' })
   @ApiParam({ name: 'id', description: 'ID do evento' })
   @ApiResponse({ status: 200, description: 'QR Code gerado' })
-  getQr(@Param('id') id: string, @CurrentUser() user: any) {
+  getQr(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.eventsService.getEventQr(id, user.userId);
   }
 
@@ -176,7 +184,7 @@ export class EventsController {
   @ApiOperation({ summary: 'Relatórios/insights do evento' })
   @ApiParam({ name: 'id', description: 'ID do evento' })
   @ApiResponse({ status: 200, description: 'Insights do evento' })
-  getInsights(@Param('id') id: string, @CurrentUser() user: any) {
+  getInsights(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.eventsService.getInsights(id, user.userId);
   }
 }

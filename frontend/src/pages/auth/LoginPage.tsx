@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { LoginForm } from '@/components/auth/LoginForm';
 import { AuthLayout } from '@/components/auth/AuthLayout';
-import { Alert } from '@/components/common/Alert';
 import { Button } from '@/components/common/Button';
+import { useUIStore } from '@/store/uiStore';
+import { makeNotifier } from '@/utils/notifications';
 import { GoogleIcon } from '@/components/auth/GoogleIcon';
 import type { LoginFormData } from '@/utils/validationSchemas';
 
@@ -16,8 +17,9 @@ interface GoogleAccountsId {
 
 export default function LoginPage() {
   const { login, loginWithGoogle } = useAuth();
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { addNotification } = useUIStore();
+  const notify = useMemo(() => makeNotifier(addNotification), [addNotification]);
 
   const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
   const showMockButton = !googleClientId;
@@ -28,12 +30,11 @@ export default function LoginPage() {
       google.accounts.id.initialize({
         client_id: googleClientId,
         callback: async (response: { credential: string }) => {
-          setError('');
           setLoading(true);
           try {
             await loginWithGoogle(response.credential);
           } catch (err) {
-            setError(err instanceof Error ? err.message : 'Erro ao fazer login com o Google');
+            notify('error', 'Erro', err instanceof Error ? err.message : 'Erro ao fazer login com o Google');
           } finally {
             setLoading(false);
           }
@@ -49,27 +50,25 @@ export default function LoginPage() {
         });
       }
     }
-  }, [googleClientId, loginWithGoogle]);
+  }, [googleClientId, loginWithGoogle, notify]);
 
   const handleMockGoogleLogin = async () => {
-    setError('');
     setLoading(true);
     try {
       await loginWithGoogle('mock-google-token');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao fazer login simulado');
+      notify('error', 'Erro', err instanceof Error ? err.message : 'Erro ao fazer login simulado');
     } finally {
       setLoading(false);
     }
   };
 
   const handleSubmit = async (data: LoginFormData) => {
-    setError('');
     setLoading(true);
     try {
       await login(data.email, data.password);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao fazer login');
+      notify('error', 'Erro', err instanceof Error ? err.message : 'Erro ao fazer login');
     } finally {
       setLoading(false);
     }
@@ -88,14 +87,6 @@ export default function LoginPage() {
         </>
       }
     >
-      {error && (
-        <div className="mb-4">
-          <Alert variant="error" dismissible onDismiss={() => setError('')}>
-            {error}
-          </Alert>
-        </div>
-      )}
-
       <LoginForm onSubmit={handleSubmit} isLoading={loading} />
 
       {/* Separador */}

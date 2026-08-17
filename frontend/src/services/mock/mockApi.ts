@@ -25,6 +25,8 @@ import type {
   TestimonialFilters,
   Notification,
   NotificationFilters,
+  Pagination,
+  ProductQRCode,
   ApiResponse,
   ApiError,
 } from '@/types';
@@ -127,7 +129,7 @@ export const mockApi = {
   },
 
   // Get products
-  getProducts: async (filters?: ProductFilters): Promise<ApiResponse<{ products: Product[]; pagination: any }>> => {
+  getProducts: async (filters?: ProductFilters): Promise<ApiResponse<{ products: Product[]; pagination: Pagination }>> => {
     await delay();
     let filteredProducts = [...mockProducts];
 
@@ -167,7 +169,7 @@ export const mockApi = {
   },
 
   // Get my products
-  getMyProducts: async (filters?: ProductFilters): Promise<ApiResponse<{ products: Product[]; pagination: any }>> => {
+  getMyProducts: async (filters?: ProductFilters): Promise<ApiResponse<{ products: Product[]; pagination: Pagination }>> => {
     // For mock API, just return the same as getProducts, or simulate a specific user
     return mockApi.getProducts(filters);
   },
@@ -283,7 +285,7 @@ export const mockApi = {
   },
 
   // Get QR code for product
-  getQRCode: async (productId: string): Promise<ApiResponse<any> | ApiError> => {
+  getQRCode: async (productId: string): Promise<ApiResponse<ProductQRCode> | ApiError> => {
     await delay(200);
     const product = mockProducts.find((p) => p.id === productId);
 
@@ -298,15 +300,13 @@ export const mockApi = {
       return error;
     }
 
+    const productUrl = `http://localhost:5173/product/${productId}`;
     return {
       success: true,
       data: {
-        id: 'qr-' + productId,
-        productId,
+        url: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(productUrl)}`,
         code: product.qrCode,
-        imageUrl: product.qrCodeUrl,
-        generatedAt: new Date().toISOString(),
-        scanCount: 0,
+        productUrl,
       },
     };
   },
@@ -341,7 +341,7 @@ export const mockApi = {
   },
 
   // Get purchases
-  getPurchases: async (filters?: PurchaseFilters): Promise<ApiResponse<{ purchases: Purchase[]; pagination: any }>> => {
+  getPurchases: async (filters?: PurchaseFilters): Promise<ApiResponse<{ purchases: Purchase[]; pagination: Pagination }>> => {
     await delay();
     let filteredPurchases = [...mockPurchases];
 

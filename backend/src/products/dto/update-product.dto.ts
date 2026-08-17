@@ -11,14 +11,16 @@ export class UpdateProductDto extends PartialType(CreateProductDto) {
   name?: string;
 
   @ApiPropertyOptional({
-    description: 'Descrição detalhada do produto (opcional para atualização parcial)',
+    description:
+      'Descrição detalhada do produto (opcional para atualização parcial)',
     example: 'Bicicleta em excelente estado, com novos acessórios.',
   })
   description?: string;
 
   @ApiPropertyOptional({
-    description: 'Preço do produto em reais (opcional para atualização parcial)',
-    example: 1800.00,
+    description:
+      'Preço do produto em reais (opcional para atualização parcial)',
+    example: 1800.0,
     minimum: 0,
   })
   price?: number;

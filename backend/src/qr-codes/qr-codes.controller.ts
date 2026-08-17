@@ -29,7 +29,8 @@ export class QrCodesController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Gerar QR Code do produto',
-    description: 'Gera um QR Code que redireciona para a página do produto no frontend',
+    description:
+      'Gera um QR Code que redireciona para a página do produto no frontend',
   })
   @ApiParam({
     name: 'productId',
@@ -78,7 +79,8 @@ export class QrCodesController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Escanear QR Code',
-    description: 'Valida um QR Code e retorna os dados do produto e do vendedor',
+    description:
+      'Valida um QR Code e retorna os dados do produto e do vendedor',
   })
   @ApiBody({
     schema: {
@@ -103,7 +105,7 @@ export class QrCodesController {
           sellerId: 'seller-id',
           name: 'Bicicleta Mountain Bike',
           description: 'Bicicleta em ótimo estado',
-          price: 1500.00,
+          price: 1500.0,
           currency: 'BRL',
           imageUrl: 'https://example.com/image.jpg',
           category: 'Esportes',

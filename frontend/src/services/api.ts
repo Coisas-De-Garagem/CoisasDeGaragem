@@ -21,9 +21,16 @@ import type {
   NotificationFilters,
   GarageEvent,
   EventInsights,
+  CreateLocationRequest,
+  UpdateLocationRequest,
+  Location,
   CreateEventRequest,
   UpdateEventRequest,
   PublicEvent,
+  Pagination,
+  ProductQRCode,
+  PaymentSimulationResult,
+  CreationResult,
 
   ApiResult,
 } from '@/types';
@@ -32,7 +39,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000
 const ENABLE_MOCK_DATA = import.meta.env.VITE_ENABLE_MOCK_DATA === 'true';
 
 // Helper function to build query string
-function buildQueryString(params?: Record<string, any>): string {
+function buildQueryString(params?: object): string {
   if (!params || Object.keys(params).length === 0) {
     return '';
   }
@@ -122,7 +129,7 @@ export const api = {
             id: 'mock-google-user-id',
             email: 'mock-google-user@example.com',
             name: 'Mock Google User',
-            role: 'user' as any,
+            role: 'user' as UserRole,
             password: '',
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
@@ -181,12 +188,26 @@ export const api = {
     });
   },
 
+  updateProfile: async (data: { name?: string; phone?: string; avatarUrl?: string }): Promise<ApiResult<User>> => {
+    if (ENABLE_MOCK_DATA) {
+      // For mock, just return success with updated data overlaid on a mock user
+      return { success: true, data: { id: '1', email: 'mock@example.com', role: 'user', isActive: true, createdAt: new Date().toISOString(), updatedAt: new Date().toISOString(), ...data } as unknown as User };
+    }
+    return fetchApi<User>('/auth/me', {
+      method: 'PUT',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: JSON.stringify(data),
+    });
+  },
+
   // Products
-  getProducts: async (filters?: ProductFilters): Promise<ApiResult<{ products: Product[]; pagination: any }>> => {
+  getProducts: async (filters?: ProductFilters): Promise<ApiResult<{ products: Product[]; pagination: Pagination }>> => {
     if (ENABLE_MOCK_DATA) {
       return mockApi.getProducts(filters);
     }
-    return fetchApi<{ products: Product[]; pagination: any }>(
+    return fetchApi<{ products: Product[]; pagination: Pagination }>(
       `/products${buildQueryString(filters)}`,
       {
         method: 'GET',
@@ -194,11 +215,11 @@ export const api = {
     );
   },
 
-  getMyProducts: async (filters?: ProductFilters): Promise<ApiResult<{ products: Product[]; pagination: any }>> => {
+  getMyProducts: async (filters?: ProductFilters): Promise<ApiResult<{ products: Product[]; pagination: Pagination }>> => {
     if (ENABLE_MOCK_DATA) {
       return mockApi.getMyProducts(filters);
     }
-    return fetchApi<{ products: Product[]; pagination: any }>(
+    return fetchApi<{ products: Product[]; pagination: Pagination }>(
       `/products/my-products${buildQueryString(filters)}`,
       {
         method: 'GET',
@@ -249,7 +270,7 @@ export const api = {
 
   reserveProduct: async (id: string): Promise<ApiResult<Product>> => {
     if (ENABLE_MOCK_DATA) {
-      return mockApi.updateProduct(id, { isAvailable: false, isReserved: true } as any);
+      return mockApi.updateProduct(id, { isAvailable: false, isReserved: true });
     }
     return fetchApi<Product>(`/products/${id}/reserve`, {
       method: 'PATCH',
@@ -258,7 +279,7 @@ export const api = {
 
   unreserveProduct: async (id: string): Promise<ApiResult<Product>> => {
     if (ENABLE_MOCK_DATA) {
-      return mockApi.updateProduct(id, { isAvailable: true, isReserved: false } as any);
+      return mockApi.updateProduct(id, { isAvailable: true, isReserved: false });
     }
     return fetchApi<Product>(`/products/${id}/unreserve`, {
       method: 'PATCH',
@@ -270,7 +291,7 @@ export const api = {
 
   markProductAsSold: async (id: string): Promise<ApiResult<Product>> => {
     if (ENABLE_MOCK_DATA) {
-      return mockApi.updateProduct(id, { isAvailable: false, isReserved: false, isSold: true } as any);
+      return mockApi.updateProduct(id, { isAvailable: false, isReserved: false, isSold: true });
     }
     return fetchApi<Product>(`/products/${id}/sold`, {
       method: 'PATCH',
@@ -293,11 +314,11 @@ export const api = {
   },
 
   // QR Codes
-  getQRCode: async (productId: string): Promise<ApiResult<any>> => {
+  getQRCode: async (productId: string): Promise<ApiResult<ProductQRCode>> => {
     if (ENABLE_MOCK_DATA) {
       return mockApi.getQRCode(productId);
     }
-    return fetchApi<any>(`/qr-codes/${productId}`, {
+    return fetchApi<ProductQRCode>(`/qr-codes/${productId}`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
@@ -321,11 +342,11 @@ export const api = {
   },
 
   // Purchases
-  getPurchases: async (filters?: PurchaseFilters): Promise<ApiResult<{ purchases: Purchase[]; pagination: any }>> => {
+  getPurchases: async (filters?: PurchaseFilters): Promise<ApiResult<{ purchases: Purchase[]; pagination: Pagination }>> => {
     if (ENABLE_MOCK_DATA) {
       return mockApi.getPurchases(filters);
     }
-    return fetchApi<{ purchases: Purchase[]; pagination: any }>(
+    return fetchApi<{ purchases: Purchase[]; pagination: Pagination }>(
       `/purchases${buildQueryString(filters)}`,
       {
         method: 'GET',
@@ -336,12 +357,12 @@ export const api = {
     );
   },
 
-  getSales: async (filters?: PurchaseFilters): Promise<ApiResult<{ purchases: Purchase[]; pagination: any }>> => {
+  getSales: async (filters?: PurchaseFilters): Promise<ApiResult<{ purchases: Purchase[]; pagination: Pagination }>> => {
     if (ENABLE_MOCK_DATA) {
       // Fallback or specific mock impl
       return mockApi.getPurchases(filters);
     }
-    return fetchApi<{ purchases: Purchase[]; pagination: any }>(
+    return fetchApi<{ purchases: Purchase[]; pagination: Pagination }>(
       `/purchases/sales${buildQueryString(filters)}`,
       {
         method: 'GET',
@@ -389,8 +410,8 @@ export const api = {
     });
   },
 
-  simulatePayment: async (chargeId: string, purchaseId?: string): Promise<ApiResult<any>> => {
-    return fetchApi<any>('/payments/simulate', {
+  simulatePayment: async (chargeId: string, purchaseId?: string): Promise<ApiResult<PaymentSimulationResult>> => {
+    return fetchApi<PaymentSimulationResult>('/payments/simulate', {
       method: 'POST',
       body: JSON.stringify({ chargeId, purchaseId }),
     });
@@ -415,8 +436,25 @@ export const api = {
   getTestimonials: async (
     filters?: TestimonialFilters,
   ): Promise<ApiResult<Testimonial[]>> => {
-    // Always use mock for testimonials
-    return mockApi.getTestimonials(filters);
+    if (ENABLE_MOCK_DATA) {
+      return mockApi.getTestimonials(filters);
+    }
+    return fetchApi<Testimonial[]>('/reviews/public', {
+      method: 'GET',
+    });
+  },
+
+  createTestimonial: async (data: { rating: number; content: string }): Promise<ApiResult<CreationResult>> => {
+    if (ENABLE_MOCK_DATA) {
+      return { success: true, data: { id: 'mock-testimonial' } };
+    }
+    return fetchApi<CreationResult>('/reviews/testimonials', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: JSON.stringify(data),
+    });
   },
 
   // Notifications
@@ -433,6 +471,32 @@ export const api = {
 
   markAllNotificationsAsRead: async (): Promise<ApiResult<{ message: string }>> => {
     return mockApi.markAllNotificationsAsRead();
+  },
+
+  // Reviews
+  getPendingReviews: async (): Promise<ApiResult<Purchase[]>> => {
+    if (ENABLE_MOCK_DATA) {
+      return { success: true, data: [] };
+    }
+    return fetchApi<Purchase[]>('/reviews/pending', {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+    });
+  },
+
+  createReview: async (data: { purchaseId: string; rating: number; comment?: string }): Promise<ApiResult<CreationResult>> => {
+    if (ENABLE_MOCK_DATA) {
+      return { success: true, data: { id: 'mock-review' } };
+    }
+    return fetchApi<CreationResult>('/reviews', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${localStorage.getItem('token')}`,
+      },
+      body: JSON.stringify(data),
+    });
   },
 
   // ---- Events / Garage Sales ----
@@ -518,5 +582,47 @@ export const api = {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
     });
     return response;
+  },
+
+  // Locations API
+  getLocations: async (): Promise<ApiResult<Location[]>> => {
+    if (ENABLE_MOCK_DATA) {
+      return { success: true, data: [] }; // Mock if needed
+    }
+    return fetchApi<Location[]>('/locations', {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    });
+  },
+
+  createLocation: async (data: CreateLocationRequest): Promise<ApiResult<Location>> => {
+    if (ENABLE_MOCK_DATA) {
+      return { success: true, data: { id: 'mock-id', ...data, sellerId: 'seller', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() } as Location };
+    }
+    return fetchApi<Location>('/locations', {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      body: JSON.stringify(data),
+    });
+  },
+
+  updateLocation: async (id: string, data: UpdateLocationRequest): Promise<ApiResult<Location>> => {
+    if (ENABLE_MOCK_DATA) {
+      return { success: true, data: { id, name: data.name || '', address: data.address || '', isActive: data.isActive ?? true, sellerId: 'seller', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() } };
+    }
+    return fetchApi<Location>(`/locations/${id}`, {
+      method: 'PUT',
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+      body: JSON.stringify(data),
+    });
+  },
+
+  toggleLocationStatus: async (id: string): Promise<ApiResult<Location>> => {
+    if (ENABLE_MOCK_DATA) {
+      return { success: true, data: { id, name: 'Mock', address: 'Mock', isActive: false, sellerId: 'seller', createdAt: new Date().toISOString(), updatedAt: new Date().toISOString() } };
+    }
+    return fetchApi<Location>(`/locations/${id}/toggle`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+    });
   },
 };

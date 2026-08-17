@@ -11,12 +11,13 @@ import {
   faRightFromBracket,
 } from '@fortawesome/free-solid-svg-icons';
 import { ProfileForm } from '@/components/buyer/ProfileForm';
-import { useAuthStore } from '@/store/authStore';
+import { useAuth } from '@/hooks/useAuth';
 import { Spinner } from '@/components/common/Spinner';
-import { Alert } from '@/components/common/Alert';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
+import { useUIStore } from '@/store/uiStore';
+import { makeNotifier } from '@/utils/notifications';
 import type { DashboardType } from '@/types';
 
 interface ProfilePageProps {
@@ -24,22 +25,19 @@ interface ProfilePageProps {
 }
 
 export default function ProfilePage({ mode = 'buyer' }: ProfilePageProps) {
-  const { user, logout } = useAuthStore();
+  const { user, logout, updateProfile } = useAuth();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const { addNotification } = useUIStore();
+  const notify = makeNotifier(addNotification);
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (data: { name?: string; phone?: string; avatarUrl?: string }) => {
     setIsLoading(true);
-    setError('');
-    setSuccess('');
     try {
-      // TODO: Implementar chamada à API de atualização de perfil.
-      setSuccess('Perfil atualizado com sucesso!');
-      setTimeout(() => setSuccess(''), 3000);
+      await updateProfile(data);
+      notify('success', 'Sucesso', 'Perfil atualizado com sucesso!');
     } catch {
-      setError('Erro ao atualizar perfil. Por favor, tente novamente.');
+      notify('error', 'Erro', 'Erro ao atualizar perfil. Por favor, tente novamente.');
     } finally {
       setIsLoading(false);
     }
@@ -65,21 +63,6 @@ export default function ProfilePage({ mode = 'buyer' }: ProfilePageProps) {
           Atualize suas informações de conta
         </p>
       </div>
-
-      {error && (
-        <div className="mb-4">
-          <Alert variant="error" dismissible onDismiss={() => setError('')}>
-            {error}
-          </Alert>
-        </div>
-      )}
-      {success && (
-        <div className="mb-4">
-          <Alert variant="success" dismissible onDismiss={() => setSuccess('')}>
-            {success}
-          </Alert>
-        </div>
-      )}
 
       {/* Formulário */}
       <Card className="mb-6">

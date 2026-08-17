@@ -3,21 +3,22 @@ import { Link } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { RegisterForm } from '@/components/auth/RegisterForm';
 import { AuthLayout } from '@/components/auth/AuthLayout';
-import { Alert } from '@/components/common/Alert';
+import { useUIStore } from '@/store/uiStore';
+import { makeNotifier } from '@/utils/notifications';
 import type { RegisterFormData } from '@/utils/validationSchemas';
 
 export default function RegisterPage() {
   const { register } = useAuth();
-  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { addNotification } = useUIStore();
+  const notify = makeNotifier(addNotification);
 
   const handleSubmit = async (data: RegisterFormData) => {
-    setError('');
     setLoading(true);
     try {
       await register(data.email, data.password, data.name, data.role, data.phone || undefined);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Erro ao fazer cadastro');
+      notify('error', 'Erro', err instanceof Error ? err.message : 'Erro ao fazer cadastro');
     } finally {
       setLoading(false);
     }
@@ -36,14 +37,6 @@ export default function RegisterPage() {
         </>
       }
     >
-      {error && (
-        <div className="mb-4">
-          <Alert variant="error" dismissible onDismiss={() => setError('')}>
-            {error}
-          </Alert>
-        </div>
-      )}
-
       <RegisterForm onSubmit={handleSubmit} isLoading={loading} />
     </AuthLayout>
   );

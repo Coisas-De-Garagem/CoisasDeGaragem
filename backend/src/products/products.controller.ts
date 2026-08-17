@@ -17,6 +17,7 @@ import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
 import { UserRole } from '@prisma/client';
 import { CurrentUser } from '../auth/current-user.decorator';
+import { AuthenticatedUser } from '../auth/auth-user.interface';
 import {
   ApiTags,
   ApiOperation,
@@ -38,7 +39,8 @@ export class ProductsController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Criar novo produto',
-    description: 'Cria um novo produto no sistema. O usuário autenticado será o vendedor.',
+    description:
+      'Cria um novo produto no sistema. O usuário autenticado será o vendedor.',
   })
   @ApiResponse({
     status: 201,
@@ -49,7 +51,7 @@ export class ProductsController {
         sellerId: 'user-id',
         name: 'Bicicleta Mountain Bike',
         description: 'Bicicleta em ótimo estado',
-        price: 1500.00,
+        price: 1500.0,
         currency: 'BRL',
         imageUrl: 'https://example.com/image.jpg',
         category: 'Esportes',
@@ -72,14 +74,18 @@ export class ProductsController {
     description: 'Não autorizado',
   })
   @ApiBody({ type: CreateProductDto })
-  create(@Body() createProductDto: CreateProductDto, @CurrentUser() user: any) {
+  create(
+    @Body() createProductDto: CreateProductDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
     return this.productsService.create(createProductDto, user.userId);
   }
 
   @Get()
   @ApiOperation({
     summary: 'Listar todos os produtos',
-    description: 'Retorna uma lista de todos os produtos disponíveis no sistema',
+    description:
+      'Retorna uma lista de todos os produtos disponíveis no sistema',
   })
   @ApiResponse({
     status: 200,
@@ -91,7 +97,7 @@ export class ProductsController {
           sellerId: 'user-id',
           name: 'Bicicleta Mountain Bike',
           description: 'Bicicleta em ótimo estado',
-          price: 1500.00,
+          price: 1500.0,
           currency: 'BRL',
           imageUrl: 'https://example.com/image.jpg',
           category: 'Esportes',
@@ -106,8 +112,22 @@ export class ProductsController {
       ],
     },
   })
-  findAll() {
-    return this.productsService.findAll();
+  @ApiQuery({ name: 'search', required: false, type: String })
+  @ApiQuery({ name: 'category', required: false, type: String })
+  @ApiQuery({ name: 'minPrice', required: false, type: Number })
+  @ApiQuery({ name: 'maxPrice', required: false, type: Number })
+  findAll(
+    @Query('search') search?: string,
+    @Query('category') category?: string,
+    @Query('minPrice') minPrice?: string,
+    @Query('maxPrice') maxPrice?: string,
+  ) {
+    return this.productsService.findAll({
+      search,
+      category,
+      minPrice: minPrice ? parseFloat(minPrice) : undefined,
+      maxPrice: maxPrice ? parseFloat(maxPrice) : undefined,
+    });
   }
 
   @Get('my-products')
@@ -116,7 +136,8 @@ export class ProductsController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Listar meus produtos',
-    description: 'Retorna todos os produtos cadastrados pelo usuário autenticado',
+    description:
+      'Retorna todos os produtos cadastrados pelo usuário autenticado',
   })
   @ApiResponse({
     status: 200,
@@ -126,7 +147,7 @@ export class ProductsController {
     status: 401,
     description: 'Não autorizado',
   })
-  getMyProducts(@CurrentUser() user: any) {
+  getMyProducts(@CurrentUser() user: AuthenticatedUser) {
     return this.productsService.getSellerProducts(user.userId);
   }
 
@@ -158,7 +179,8 @@ export class ProductsController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Atualizar produto',
-    description: 'Atualiza os dados de um produto existente. Apenas o vendedor pode atualizar.',
+    description:
+      'Atualiza os dados de um produto existente. Apenas o vendedor pode atualizar.',
   })
   @ApiParam({
     name: 'id',
@@ -189,7 +211,7 @@ export class ProductsController {
   update(
     @Param('id') id: string,
     @Body() updateProductDto: UpdateProductDto,
-    @CurrentUser() user: any,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.productsService.update(id, updateProductDto, user.userId);
   }
@@ -200,7 +222,8 @@ export class ProductsController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Deletar produto',
-    description: 'Remove um produto do sistema. Apenas o vendedor pode deletar.',
+    description:
+      'Remove um produto do sistema. Apenas o vendedor pode deletar.',
   })
   @ApiParam({
     name: 'id',
@@ -223,7 +246,7 @@ export class ProductsController {
     status: 404,
     description: 'Produto não encontrado',
   })
-  remove(@Param('id') id: string, @CurrentUser() user: any) {
+  remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.productsService.remove(id, user.userId);
   }
 
@@ -255,7 +278,8 @@ export class ProductsController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Cancelar reserva do produto',
-    description: 'Remove a reserva de um produto. Apenas o vendedor pode cancelar.',
+    description:
+      'Remove a reserva de um produto. Apenas o vendedor pode cancelar.',
   })
   @ApiParam({
     name: 'id',
@@ -278,7 +302,7 @@ export class ProductsController {
     status: 404,
     description: 'Produto não encontrado',
   })
-  unreserve(@Param('id') id: string, @CurrentUser() user: any) {
+  unreserve(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.productsService.unreserve(id, user.userId);
   }
 
@@ -288,7 +312,8 @@ export class ProductsController {
   @ApiBearerAuth()
   @ApiOperation({
     summary: 'Marcar produto como vendido',
-    description: 'Marca um produto como vendido. Apenas o vendedor pode marcar.',
+    description:
+      'Marca um produto como vendido. Apenas o vendedor pode marcar.',
   })
   @ApiParam({
     name: 'id',
@@ -311,7 +336,7 @@ export class ProductsController {
     status: 404,
     description: 'Produto não encontrado',
   })
-  markAsSold(@Param('id') id: string, @CurrentUser() user: any) {
+  markAsSold(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     return this.productsService.markAsSold(id, user.userId);
   }
 }

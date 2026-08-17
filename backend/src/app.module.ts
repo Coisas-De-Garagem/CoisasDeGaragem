@@ -18,6 +18,8 @@ import { QrCodesModule } from './qr-codes/qr-codes.module';
 import { HealthModule } from './health/health.module';
 import { PaymentsModule } from './payments/payments.module';
 import { EventsModule } from './events/events.module';
+import { ReviewsModule } from './reviews/reviews.module';
+import { LocationsModule } from './locations/locations.module';
 import { Request, Response, NextFunction } from 'express';
 
 @Module({
@@ -43,6 +45,8 @@ import { Request, Response, NextFunction } from 'express';
     HealthModule,
     PaymentsModule,
     EventsModule,
+    ReviewsModule,
+    LocationsModule,
   ],
   controllers: [AppController],
   providers: [

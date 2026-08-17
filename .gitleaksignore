@@ -1,9 +1,9 @@
 # Gitleaks ignore file for CoisasDeGaragem root
-# Ignore false positive swagger dummy tokens in backend auth.controller.ts
-backend\src\auth\auth.controller.ts:generic-api-key:37
-backend\src\auth\auth.controller.ts:generic-api-key:119
-backend/src/auth/auth.controller.ts:generic-api-key:37
-backend/src/auth/auth.controller.ts:generic-api-key:119
+#
+# Obs.: os antigos tokens dummy do Swagger em backend/src/auth/auth.controller.ts
+# foram substituídos por placeholders "<jwt-token>" / "<jwt-access-token>", que
+# não disparam mais a regra generic-api-key (o '<' quebra a char-class do regex).
+# Por isso não há mais linhas de ignore para esse arquivo aqui.
 
 # Ignore dummy CircleCI token in backend README.md template
 backend/README.md:generic-api-key:5

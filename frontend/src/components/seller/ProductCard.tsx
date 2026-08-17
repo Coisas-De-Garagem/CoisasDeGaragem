@@ -23,6 +23,7 @@ interface ProductCardProps {
   onDownloadPDF?: (product: Product) => void;
   onStatusChange?: (productId: string, status: 'available' | 'reserved' | 'sold') => void;
   showActions?: boolean;
+  onClick?: (product: Product) => void;
 }
 
 export function ProductCard({
@@ -33,6 +34,7 @@ export function ProductCard({
   onDownloadPDF,
   onStatusChange,
   showActions = true,
+  onClick,
 }: ProductCardProps) {
   const conditionLabel = formatProductCondition(product.condition);
   const conditionVariant = getConditionVariant(product.condition);
@@ -42,7 +44,12 @@ export function ProductCard({
   }).format(product.price);
 
   return (
-    <Card hoverable flush className="h-full flex flex-col">
+    <Card 
+      hoverable 
+      flush 
+      className="h-full flex flex-col" 
+      onClick={() => onClick?.(product)}
+    >
       {/* Imagem */}
       <div className="relative h-48 bg-surface-sunken overflow-hidden">
         {product.imageUrl ? (

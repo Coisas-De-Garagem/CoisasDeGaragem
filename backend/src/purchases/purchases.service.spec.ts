@@ -8,7 +8,9 @@ const abacatePayServiceMock = {
   getOrCreateCustomer: jest.fn(),
   createCheckout: jest.fn(),
   createProduct: jest.fn().mockResolvedValue('ap-prod-id'),
-  createTransparentPix: jest.fn().mockResolvedValue({ brCode: 'pix-code', brCodeBase64: 'pix-base64' }),
+  createTransparentPix: jest
+    .fn()
+    .mockResolvedValue({ brCode: 'pix-code', brCodeBase64: 'pix-base64' }),
 };
 
 describe('PurchasesService', () => {

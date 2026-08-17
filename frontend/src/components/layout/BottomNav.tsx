@@ -15,27 +15,38 @@ export function BottomNav({ mode }: BottomNavProps) {
   const items = BOTTOM_NAV[mode];
 
   return (
-    <nav
-      className="lg:hidden fixed bottom-0 inset-x-0 z-30 bg-surface border-t border-border pb-safe"
-      aria-label="Navegação principal"
-    >
-      <ul className="flex items-stretch justify-around h-14">
-        {items.map((item) => (
-          <li key={item.path} className="flex-1">
-            <NavLink
-              to={item.path}
-              className={({ isActive }) =>
-                `flex flex-col items-center justify-center gap-0.5 h-full text-[10px] transition-colors ${
-                  isActive ? 'text-primary' : 'text-text-subtle'
-                }`
-              }
-            >
-              <FontAwesomeIcon icon={item.icon} className="w-5 h-5" />
-              <span className="truncate max-w-full px-1">{item.label}</span>
-            </NavLink>
-          </li>
-        ))}
-      </ul>
-    </nav>
+    <div className="md:hidden fixed bottom-5 inset-x-4 z-40 pb-safe pointer-events-none">
+      <nav
+        className="bg-surface/95 backdrop-blur-md border border-border/60 shadow-[0_8px_30px_rgb(0,0,0,0.12)] rounded-3xl overflow-hidden pointer-events-auto"
+        aria-label="Navegação principal"
+      >
+        <ul className="flex items-center justify-around h-[68px] px-2 gap-1">
+          {items.map((item) => (
+            <li key={item.path} className="flex-1 h-full py-1.5">
+              <NavLink
+                to={item.path}
+                className={({ isActive }) =>
+                  `relative flex flex-col items-center justify-center h-full rounded-2xl transition-all duration-300 ${
+                    isActive
+                      ? 'text-primary bg-primary/10'
+                      : 'text-text-subtle hover:bg-surface-hover hover:text-text-main'
+                  }`
+                }
+              >
+                {({ isActive }) => (
+                  <>
+                    {isActive && (
+                      <span className="absolute top-1.5 w-1.5 h-1.5 rounded-full bg-orange-500" />
+                    )}
+                    <FontAwesomeIcon icon={item.icon} className={`w-[20px] h-[20px] transition-all ${isActive ? 'mt-2 mb-0.5' : 'mb-1'}`} />
+                    <span className="text-[10px] font-medium tracking-wide">{item.label}</span>
+                  </>
+                )}
+              </NavLink>
+            </li>
+          ))}
+        </ul>
+      </nav>
+    </div>
   );
 }
