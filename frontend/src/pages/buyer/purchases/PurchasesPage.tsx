@@ -23,7 +23,7 @@ const currency = (value: number) =>
 export default function PurchasesPage() {
   const { purchases, fetchPurchases } = usePurchases();
   const { addNotification } = useUIStore();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -64,7 +64,27 @@ export default function PurchasesPage() {
     setCurrentPage(1);
   }, [searchTerm, sortBy, sortOrder, category]);
 
-  const loadPurchases = async () => {
+  useEffect(() => {
+    let isMounted = true;
+    fetchPurchases()
+      .catch((err) => {
+        if (!isMounted) return;
+        const errorMsg = err instanceof Error ? err.message : 'Erro ao carregar compras';
+        setError(errorMsg);
+        notify('error', 'Erro ao carregar compras', errorMsg);
+      })
+      .finally(() => {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [fetchPurchases, notify]);
+
+  const handleRetry = async () => {
     setIsLoading(true);
     setError('');
     try {
@@ -77,11 +97,6 @@ export default function PurchasesPage() {
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    loadPurchases();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const handleViewDetails = (purchase: Purchase) => {
     console.log('View details for order:', purchase.id);
@@ -218,7 +233,7 @@ export default function PurchasesPage() {
             title="Não foi possível carregar as compras"
             description={error}
             action={
-              <Button variant="primary" onClick={() => loadPurchases()}>
+              <Button variant="primary" onClick={handleRetry}>
                 Tentar novamente
               </Button>
             }

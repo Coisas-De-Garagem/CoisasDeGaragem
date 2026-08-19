@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faPenToSquare,
@@ -6,6 +7,9 @@ import {
   faImage,
   faCalendarDay,
   faFilePdf,
+  faChevronLeft,
+  faChevronRight,
+  faCamera,
 } from '@fortawesome/free-solid-svg-icons';
 import { Card } from '@/components/common/Card';
 import { Button } from '@/components/common/Button';
@@ -36,6 +40,16 @@ export function ProductCard({
   showActions = true,
   onClick,
 }: ProductCardProps) {
+  const images = (
+    product.images && product.images.length > 0
+      ? product.images
+      : product.imageUrl
+        ? [product.imageUrl]
+        : []
+  ).filter((img): img is string => Boolean(img && img.trim().length > 0));
+
+  const [activeImgIndex, setActiveImgIndex] = useState(0);
+
   const conditionLabel = formatProductCondition(product.condition);
   const conditionVariant = getConditionVariant(product.condition);
   const price = new Intl.NumberFormat('pt-BR', {
@@ -43,20 +57,41 @@ export function ProductCard({
     currency: product.currency,
   }).format(product.price);
 
+  const handleNextImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (images.length > 1) {
+      setActiveImgIndex((prev) => (prev + 1) % images.length);
+    }
+  };
+
+  const handlePrevImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (images.length > 1) {
+      setActiveImgIndex((prev) => (prev - 1 + images.length) % images.length);
+    }
+  };
+
+  const currentImg = images[activeImgIndex];
+
   return (
     <Card 
       hoverable 
       flush 
-      className="h-full flex flex-col" 
+      className="h-full flex flex-col group cursor-pointer" 
       onClick={() => onClick?.(product)}
     >
-      {/* Imagem */}
-      <div className="relative h-48 bg-surface-sunken overflow-hidden">
-        {product.imageUrl ? (
+      {/* Imagem / Carrossel no Card */}
+      <div className="relative h-48 bg-surface-sunken overflow-hidden select-none">
+        {currentImg ? (
           <img
-            src={product.imageUrl}
+            src={currentImg}
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+              target.parentElement!.classList.add('flex', 'items-center', 'justify-center', 'text-text-subtle');
+            }}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center text-text-subtle">
@@ -64,7 +99,8 @@ export function ProductCard({
           </div>
         )}
 
-        <div className="absolute top-3 right-3 z-10">
+        {/* Status Badge */}
+        <div className="absolute top-3 right-3 z-10 pointer-events-none">
           {product.isSold ? (
             <Badge variant="error">Vendido</Badge>
           ) : product.isReserved ? (
@@ -76,9 +112,42 @@ export function ProductCard({
           )}
         </div>
 
-        <div className="absolute bottom-3 left-3 z-10">
+        {/* Badge de Quantidade de Fotos (se > 1) */}
+        {images.length > 1 && (
+          <div className="absolute top-3 left-3 z-10 pointer-events-none">
+            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-neutral-950/70 text-white backdrop-blur-md border border-white/10 shadow-sm">
+              <FontAwesomeIcon icon={faCamera} className="w-2.5 h-2.5" />
+              {activeImgIndex + 1}/{images.length}
+            </span>
+          </div>
+        )}
+
+        {/* Condition Badge */}
+        <div className="absolute bottom-3 left-3 z-10 pointer-events-none">
           <Badge variant={conditionVariant}>{conditionLabel}</Badge>
         </div>
+
+        {/* Setas de navegação rápida no card se houver mais de 1 foto */}
+        {images.length > 1 && (
+          <div className="absolute inset-y-0 inset-x-1 flex items-center justify-between pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-10">
+            <button
+              type="button"
+              onClick={handlePrevImage}
+              className="w-7 h-7 rounded-full bg-neutral-950/70 hover:bg-neutral-900 text-white flex items-center justify-center pointer-events-auto backdrop-blur-sm transition-transform active:scale-90"
+              aria-label="Foto anterior"
+            >
+              <FontAwesomeIcon icon={faChevronLeft} className="w-2.5 h-2.5" />
+            </button>
+            <button
+              type="button"
+              onClick={handleNextImage}
+              className="w-7 h-7 rounded-full bg-neutral-950/70 hover:bg-neutral-900 text-white flex items-center justify-center pointer-events-auto backdrop-blur-sm transition-transform active:scale-90"
+              aria-label="Próxima foto"
+            >
+              <FontAwesomeIcon icon={faChevronRight} className="w-2.5 h-2.5" />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Info */}

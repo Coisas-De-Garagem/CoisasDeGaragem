@@ -50,6 +50,7 @@
     "winston-loki": "^6.1.4"
   },
   "overrides": {
+    "deepmerge-ts": "^8.0.0",
     "hono": "^4.12.25",
     "@hono/node-server": "^1.19.13",
     "multer": "^1.4.5-lts.1",

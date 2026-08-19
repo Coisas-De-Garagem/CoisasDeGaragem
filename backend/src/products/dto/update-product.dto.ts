@@ -32,6 +32,14 @@ export class UpdateProductDto extends PartialType(CreateProductDto) {
   imageUrl?: string;
 
   @ApiPropertyOptional({
+    description:
+      'Lista de URLs das imagens do produto (opcional para atualização parcial)',
+    example: ['https://example.com/images/bike-updated1.jpg'],
+    type: [String],
+  })
+  images?: string[];
+
+  @ApiPropertyOptional({
     description: 'Categoria do produto (opcional para atualização parcial)',
     example: 'Esportes',
   })

@@ -49,6 +49,7 @@ export interface Product {
   price: number;
   currency: string;
   imageUrl?: string;
+  images?: string[];
   qrCode: string;
   qrCodeUrl?: string;
   category?: string;
@@ -206,6 +207,7 @@ export interface CreateProductRequest {
   price: number;
   currency: string;
   imageUrl?: string;
+  images?: string[];
   category?: string;
   condition?: ProductCondition;
   locationId?: string;
@@ -216,6 +218,7 @@ export interface UpdateProductRequest {
   description?: string;
   price?: number;
   imageUrl?: string;
+  images?: string[];
   category?: string;
   condition?: ProductCondition;
   isAvailable?: boolean;

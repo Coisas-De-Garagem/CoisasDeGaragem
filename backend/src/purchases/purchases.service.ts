@@ -153,13 +153,18 @@ export class PurchasesService {
     }
 
     const safePage = Math.max(1, isNaN(Number(page)) ? 1 : Number(page));
-    const safeLimit = Math.max(1, Math.min(100, isNaN(Number(limit)) ? 20 : Number(limit)));
+    const safeLimit = Math.max(
+      1,
+      Math.min(100, isNaN(Number(limit)) ? 20 : Number(limit)),
+    );
     const skip = (safePage - 1) * safeLimit;
     const where: Prisma.PurchaseWhereInput = { buyerId };
 
     if (status) {
       const upperStatus = status.toUpperCase();
-      if (Object.values(PurchaseStatus).includes(upperStatus as PurchaseStatus)) {
+      if (
+        Object.values(PurchaseStatus).includes(upperStatus as PurchaseStatus)
+      ) {
         where.status = upperStatus as PurchaseStatus;
       }
     }
@@ -214,13 +219,18 @@ export class PurchasesService {
     }
 
     const safePage = Math.max(1, isNaN(Number(page)) ? 1 : Number(page));
-    const safeLimit = Math.max(1, Math.min(100, isNaN(Number(limit)) ? 20 : Number(limit)));
+    const safeLimit = Math.max(
+      1,
+      Math.min(100, isNaN(Number(limit)) ? 20 : Number(limit)),
+    );
     const skip = (safePage - 1) * safeLimit;
     const where: Prisma.PurchaseWhereInput = { sellerId };
 
     if (status) {
       const upperStatus = status.toUpperCase();
-      if (Object.values(PurchaseStatus).includes(upperStatus as PurchaseStatus)) {
+      if (
+        Object.values(PurchaseStatus).includes(upperStatus as PurchaseStatus)
+      ) {
         where.status = upperStatus as PurchaseStatus;
       }
     }

@@ -10,9 +10,17 @@ export class ProductsService {
   constructor(private prisma: PrismaService) {}
 
   async create(createProductDto: CreateProductDto, sellerId: string) {
+    const images =
+      createProductDto.images ||
+      (createProductDto.imageUrl ? [createProductDto.imageUrl] : []);
+    const imageUrl =
+      createProductDto.imageUrl || (images.length > 0 ? images[0] : null);
+
     return this.prisma.product.create({
       data: {
         ...createProductDto,
+        images,
+        imageUrl,
         sellerId,
         qrCode: randomUUID(),
       },
@@ -70,9 +78,31 @@ export class ProductsService {
       // In real app, check for forbidden, but let's assume controller checks ownership or role
       // Ideally throws ForbiddenException
     }
+
+    const data: Prisma.ProductUpdateInput = {
+      ...updateProductDto,
+    };
+
+    if (updateProductDto.images !== undefined) {
+      data.images = updateProductDto.images;
+      if (!updateProductDto.imageUrl) {
+        data.imageUrl =
+          updateProductDto.images.length > 0
+            ? updateProductDto.images[0]
+            : null;
+      }
+    } else if (
+      updateProductDto.imageUrl !== undefined &&
+      !product.images?.length
+    ) {
+      data.images = updateProductDto.imageUrl
+        ? [updateProductDto.imageUrl]
+        : [];
+    }
+
     return this.prisma.product.update({
       where: { id },
-      data: updateProductDto,
+      data,
     });
   }
 

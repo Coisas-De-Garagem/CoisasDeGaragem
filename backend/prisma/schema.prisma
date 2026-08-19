@@ -76,6 +76,7 @@ model Product {
   price       Decimal          @db.Decimal(10, 2)
   currency    String           @default("BRL")
   imageUrl    String?
+  images      String[]         @default([])
   
   category    String?
   condition   ProductCondition?
