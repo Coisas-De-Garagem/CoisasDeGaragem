@@ -200,6 +200,9 @@ export const mockApi = {
   // Create product
   createProduct: async (data: CreateProductRequest): Promise<ApiResponse<Product>> => {
     await delay();
+    const images = data.images || (data.imageUrl ? [data.imageUrl] : []);
+    const imageUrl = data.imageUrl || (images.length > 0 ? images[0] : undefined);
+
     const newProduct: Product = {
       id: 'product-' + Date.now(),
       sellerId: 'user-1', // Mock seller ID
@@ -207,7 +210,8 @@ export const mockApi = {
       description: data.description,
       price: data.price,
       currency: data.currency,
-      imageUrl: data.imageUrl,
+      imageUrl,
+      images,
       category: data.category,
       condition: data.condition,
       qrCode: 'QR-PRODUCT-' + Date.now(),
@@ -245,9 +249,21 @@ export const mockApi = {
       return error;
     }
 
+    const current = mockProducts[productIndex];
+    let images = data.images !== undefined ? data.images : current.images;
+    let imageUrl = data.imageUrl !== undefined ? data.imageUrl : current.imageUrl;
+
+    if (data.images !== undefined && !data.imageUrl) {
+      imageUrl = data.images.length > 0 ? data.images[0] : undefined;
+    } else if (data.imageUrl !== undefined && !data.images) {
+      images = data.imageUrl ? [data.imageUrl] : [];
+    }
+
     mockProducts[productIndex] = {
-      ...mockProducts[productIndex],
+      ...current,
       ...data,
+      images,
+      imageUrl,
       updatedAt: new Date().toISOString(),
     };
 

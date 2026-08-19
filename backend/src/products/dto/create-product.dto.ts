@@ -4,6 +4,7 @@ import {
   IsNumber,
   IsOptional,
   IsEnum,
+  IsArray,
   Min,
 } from 'class-validator';
 import { ProductCondition } from '@prisma/client';
@@ -41,11 +42,24 @@ export class CreateProductDto {
 
   @ApiPropertyOptional({
     example: 'https://example.com/images/bike.jpg',
-    description: 'URL da imagem do produto',
+    description: 'URL da imagem principal do produto',
   })
   @IsOptional()
   @IsString()
   imageUrl?: string;
+
+  @ApiPropertyOptional({
+    example: [
+      'https://example.com/images/bike1.jpg',
+      'https://example.com/images/bike2.jpg',
+    ],
+    description: 'Lista de URLs das imagens do produto',
+    type: [String],
+  })
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  images?: string[];
 
   @ApiPropertyOptional({
     example: 'Esportes',

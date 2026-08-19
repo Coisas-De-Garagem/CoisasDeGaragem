@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faQrcode,
-  faBagShopping,
   faLightbulb,
   faStore,
 } from '@fortawesome/free-solid-svg-icons';
@@ -12,6 +11,7 @@ import { Button } from '@/components/common/Button';
 import { Badge } from '@/components/common/Badge';
 import { Card } from '@/components/common/Card';
 import { Select } from '@/components/common/Select';
+import { ProductImageGallery } from '@/components/common/ProductImageGallery';
 import type { Product, User } from '@/types';
 import { api } from '@/services/api';
 import { SearchInput } from '@/components/common/SearchInput';
@@ -229,16 +229,16 @@ export default function BuyerDashboard() {
       >
         {scannedProduct && (
           <div className="space-y-5">
-            {/* Imagem */}
-            <div className="aspect-video bg-surface-sunken rounded-lg overflow-hidden">
-              {scannedProduct.imageUrl ? (
-                <img src={scannedProduct.imageUrl} alt={scannedProduct.name} className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full flex items-center justify-center text-text-subtle">
-                  <FontAwesomeIcon icon={faBagShopping} className="w-10 h-10" />
-                </div>
-              )}
-            </div>
+            {/* Galeria de Fotos */}
+            <ProductImageGallery
+              images={scannedProduct.images}
+              imageUrl={scannedProduct.imageUrl}
+              alt={scannedProduct.name}
+              aspectRatio="aspect-video"
+              showThumbnails={true}
+              showIndicators={true}
+              allowFullscreen={true}
+            />
 
             <div>
               <div className="flex justify-between items-start gap-3 mb-1">

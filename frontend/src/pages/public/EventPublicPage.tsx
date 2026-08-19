@@ -7,6 +7,7 @@ import {
   faBoxOpen,
   faCircleExclamation,
   faStore,
+  faCamera,
 } from '@fortawesome/free-solid-svg-icons';
 import { api } from '@/services/api';
 import { Card } from '@/components/common/Card';
@@ -176,13 +177,32 @@ export default function EventPublicPage() {
               <Card key={product.id} flush className="overflow-hidden flex flex-col">
                 {/* Imagem */}
                 <div className="relative h-44 bg-surface-sunken">
-                  {product.imageUrl ? (
-                    <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
+                  {(product.images?.[0] || product.imageUrl) ? (
+                    <img
+                      src={product.images?.[0] || product.imageUrl}
+                      alt={product.name}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        const target = e.target as HTMLImageElement;
+                        target.style.display = 'none';
+                        target.parentElement!.classList.add('flex', 'items-center', 'justify-center', 'text-text-subtle');
+                      }}
+                    />
                   ) : (
                     <div className="w-full h-full flex items-center justify-center text-text-subtle">
                       <FontAwesomeIcon icon={faBoxOpen} className="w-10 h-10 opacity-40" />
                     </div>
                   )}
+
+                  {product.images && product.images.length > 1 && (
+                    <div className="absolute top-2 right-2 z-10">
+                      <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-neutral-950/70 text-white backdrop-blur-md border border-white/10 shadow-sm">
+                        <FontAwesomeIcon icon={faCamera} className="w-2.5 h-2.5" />
+                        {product.images.length}
+                      </span>
+                    </div>
+                  )}
+
                   <div className="absolute top-2 left-2">
                     {isSold ? (
                       <Badge variant="error">Vendido</Badge>

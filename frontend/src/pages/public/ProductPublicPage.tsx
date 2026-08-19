@@ -5,7 +5,6 @@ import {
   faStore,
   faCircleCheck,
   faCircleExclamation,
-  faImage,
 } from '@fortawesome/free-solid-svg-icons';
 import { api } from '@/services/api';
 import { Button } from '@/components/common/Button';
@@ -15,6 +14,7 @@ import { Modal } from '@/components/common/Modal';
 import { Skeleton } from '@/components/common/Skeleton';
 import { Alert } from '@/components/common/Alert';
 import { EmptyState } from '@/components/common/EmptyState';
+import { ProductImageGallery } from '@/components/common/ProductImageGallery';
 import type { Product } from '@/types';
 import { useUIStore } from '@/store/uiStore';
 import { formatProductCondition, getConditionVariant } from '@/utils/formatters';
@@ -100,8 +100,8 @@ export default function ProductPublicPage() {
         <Card flush className="overflow-hidden">
           <div className="grid grid-cols-1 md:grid-cols-2">
             {/* Imagem */}
-            <div className="h-72 sm:h-96 md:h-[28rem] bg-surface-2">
-              <Skeleton height="h-full" rounded="rounded-none" />
+            <div className="h-72 sm:h-96 md:h-[28rem] bg-surface-2 p-4">
+              <Skeleton height="h-full" rounded="rounded-xl" />
             </div>
             {/* Detalhes */}
             <div className="p-6 sm:p-8 flex flex-col gap-4">
@@ -150,27 +150,28 @@ export default function ProductPublicPage() {
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 sm:py-12">
-      <Card flush className="overflow-hidden">
-        <div className="grid grid-cols-1 md:grid-cols-2">
-          {/* Imagem */}
-          <div className="relative h-72 sm:h-96 md:h-auto bg-surface-2">
-            {product.imageUrl ? (
-              <img src={product.imageUrl} alt={product.name} className="w-full h-full object-cover" />
-            ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center text-text-subtle gap-2">
-                <FontAwesomeIcon icon={faImage} className="w-10 h-10 opacity-40" />
-                <span className="text-sm">Sem imagem</span>
-              </div>
-            )}
-            <div className="absolute top-3 left-3">
-              {isSold ? (
-                <Badge variant="error">Vendido</Badge>
-              ) : isReserved ? (
-                <Badge variant="warning">Reservado</Badge>
-              ) : (
-                <Badge variant="success" dot>Disponível</Badge>
-              )}
-            </div>
+      <Card flush className="overflow-hidden shadow-lg border-border">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-0">
+          {/* Galeria de Imagens Touch / Swipe */}
+          <div className="p-4 sm:p-6 bg-surface-sunken/30 flex flex-col justify-center">
+            <ProductImageGallery
+              images={product.images}
+              imageUrl={product.imageUrl}
+              alt={product.name}
+              aspectRatio="aspect-square"
+              showThumbnails={true}
+              showIndicators={true}
+              allowFullscreen={true}
+              badge={
+                isSold ? (
+                  <Badge variant="error">Vendido</Badge>
+                ) : isReserved ? (
+                  <Badge variant="warning">Reservado</Badge>
+                ) : (
+                  <Badge variant="success" dot>Disponível</Badge>
+                )
+              }
+            />
           </div>
 
           {/* Detalhes */}
