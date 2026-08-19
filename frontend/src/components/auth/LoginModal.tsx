@@ -57,7 +57,6 @@ export function LoginModal({ isOpen, onClose, onSuccess }: LoginModalProps) {
             theme: 'outline',
             size: 'large',
             text: 'signin_with',
-            width: '100%',
           });
         }
       }, 100);
