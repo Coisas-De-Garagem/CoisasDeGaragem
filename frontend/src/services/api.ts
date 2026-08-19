@@ -153,9 +153,8 @@ export const api = {
     if (ENABLE_MOCK_DATA) {
       return mockApi.logout();
     }
-    return fetchApi<{ message: string }>('/auth/logout', {
-      method: 'POST',
-    });
+    // No backend endpoint exists for logout, handle it client-side
+    return { success: true, data: { message: 'Logged out successfully' } };
   },
 
   register: async (data: RegisterRequest): Promise<ApiResult<LoginResponse>> => {

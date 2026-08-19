@@ -36,7 +36,7 @@ export function Sidebar({ mode }: SidebarProps) {
 
   return (
     <aside
-      className="hidden md:flex flex-col fixed inset-y-0 left-0 z-30 bg-surface border-r border-border w-20"
+      className="hidden md:flex flex-col fixed inset-y-0 left-0 z-50 bg-surface border-r border-border w-20"
       aria-label={`Menu do ${mode === 'seller' ? 'vendedor' : 'comprador'}`}
     >
       {/* Logo */}
@@ -95,7 +95,10 @@ export function Sidebar({ mode }: SidebarProps) {
         <Tooltip content="Sair da conta" side="right">
           <button
             type="button"
-            onClick={() => setShowLogoutModal(true)}
+            onClick={(e) => {
+              setShowLogoutModal(true);
+              e.currentTarget.blur();
+            }}
             aria-label="Sair da conta"
             className="flex items-center justify-center w-10 h-10 rounded-lg text-text-subtle hover:text-error hover:bg-error/10 transition-colors"
           >

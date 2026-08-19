@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBagShopping, faMagnifyingGlass, faBoxOpen, faMoneyBillWave } from '@fortawesome/free-solid-svg-icons';
@@ -32,7 +32,7 @@ export default function PurchasesPage() {
   const [category, setCategory] = useState<string>('all');
   const pageSize = 9;
 
-  const notify = makeNotifier(addNotification);
+  const notify = useMemo(() => makeNotifier(addNotification), [addNotification]);
 
   const filteredPurchases = purchases.filter((purchase) => {
     const matchesSearch =
@@ -58,11 +58,10 @@ export default function PurchasesPage() {
   const startIndex = (currentPage - 1) * pageSize;
   const paginatedPurchases = sortedPurchases.slice(startIndex, startIndex + pageSize);
 
-  // Reseta a paginação quando filtros/ordenação mudam.
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
+  // Reset page when it goes out of bounds
+  if (totalPages > 0 && currentPage > totalPages) {
     setCurrentPage(1);
-  }, [searchTerm, sortBy, sortOrder, category]);
+  }
 
   useEffect(() => {
     let isMounted = true;
