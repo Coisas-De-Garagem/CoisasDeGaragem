@@ -410,6 +410,9 @@ export const api = {
   },
 
   simulatePayment: async (chargeId: string, purchaseId?: string): Promise<ApiResult<PaymentSimulationResult>> => {
+    if (ENABLE_MOCK_DATA) {
+      return mockApi.simulatePayment(chargeId, purchaseId);
+    }
     return fetchApi<PaymentSimulationResult>('/payments/simulate', {
       method: 'POST',
       body: JSON.stringify({ chargeId, purchaseId }),
