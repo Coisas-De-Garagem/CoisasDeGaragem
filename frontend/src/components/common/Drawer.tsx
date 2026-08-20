@@ -3,6 +3,8 @@ import type { ReactNode } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
 
+import { lockScroll, unlockScroll } from '@/utils/scrollLock';
+
 interface DrawerProps {
   isOpen: boolean;
   onClose: () => void;
@@ -34,9 +36,9 @@ export function Drawer({
 
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      lockScroll();
       return () => {
-        document.body.style.overflow = '';
+        unlockScroll();
       };
     }
   }, [isOpen]);

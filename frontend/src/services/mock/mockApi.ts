@@ -29,6 +29,7 @@ import type {
   ProductQRCode,
   ApiResponse,
   ApiError,
+  PaymentSimulationResult,
 } from '@/types';
 
 // Simulate network delay
@@ -425,7 +426,7 @@ export const mockApi = {
       return error;
     }
 
-    const newPurchase: Purchase = {
+    const newPurchase: Purchase & { paymentUrl?: string; qrCode?: string; pixKey?: string; chargeId?: string; expiresInSeconds?: number } = {
       id: 'purchase-' + Date.now(),
       productId: data.productId,
       buyerId: 'user-2', // Mock buyer ID
@@ -439,15 +440,41 @@ export const mockApi = {
       qrCodeScanned: true,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      // gitleaks:allow
+      pixKey: 'mock-pix-copia-e-cola-chave-teste',
+      qrCode: 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=pix-mock-test',
+      chargeId: 'charge-mock-123',
+      expiresInSeconds: 300,
     };
 
     mockPurchases.push(newPurchase);
 
-    const success: ApiResponse<Purchase> = {
+    const success: ApiResponse<Purchase & { paymentUrl?: string; qrCode?: string; pixKey?: string; chargeId?: string; expiresInSeconds?: number }> = {
       success: true,
       data: newPurchase,
     };
     return success;
+  },
+
+  // Simulate Payment
+  simulatePayment: async (
+    _chargeId: string,
+    purchaseId?: string,
+  ): Promise<ApiResponse<PaymentSimulationResult>> => {
+    await delay(300);
+    if (purchaseId) {
+      const purchase = mockPurchases.find((p) => p.id === purchaseId);
+      if (purchase) {
+        purchase.status = 'completed';
+      }
+    }
+    return {
+      success: true,
+      data: {
+        success: true,
+        localSync: true,
+      },
+    };
   },
 
   // Get analytics

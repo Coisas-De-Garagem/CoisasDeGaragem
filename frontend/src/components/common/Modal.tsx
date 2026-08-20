@@ -16,6 +16,8 @@ interface ModalProps {
   hideCloseButton?: boolean;
 }
 
+import { lockScroll, unlockScroll } from '@/utils/scrollLock';
+
 const SIZE_CLASSES = {
   sm: 'sm:max-w-md',
   md: 'sm:max-w-lg',
@@ -42,12 +44,12 @@ export function Modal({
     return () => document.removeEventListener('keydown', handleEscape);
   }, [isOpen, onClose]);
 
-  // Trava o scroll do body quando aberto.
+  // Trava o scroll do body e html quando aberto.
   useEffect(() => {
     if (isOpen) {
-      document.body.style.overflow = 'hidden';
+      lockScroll();
       return () => {
-        document.body.style.overflow = '';
+        unlockScroll();
       };
     }
   }, [isOpen]);
@@ -56,21 +58,17 @@ export function Modal({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4 animate-fade-in"
-      onMouseDown={(e) => {
-        // Fecha ao clicar fora (no backdrop).
-        if (e.target === e.currentTarget) onClose();
-      }}
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4 animate-fade-in overscroll-contain"
     >
       <div
-        className={`relative w-full ${SIZE_CLASSES[size]} bg-surface text-text-main rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[92vh] flex flex-col animate-slide-up sm:animate-scale-in`}
+        className={`relative w-full ${SIZE_CLASSES[size]} bg-surface text-text-main rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[92vh] flex flex-col animate-slide-up sm:animate-scale-in overscroll-contain`}
         role="dialog"
         aria-modal="true"
         aria-labelledby={title ? 'modal-title' : undefined}
       >
         {/* Cabecalho */}
         {(title || !hideCloseButton) && (
-          <div className="flex items-start justify-between gap-4 px-5 py-4 border-b border-border">
+          <div className="flex items-start justify-between gap-4 px-5 py-4 border-b border-border select-none">
             <div className="min-w-0">
               {title && (
                 <h2 id="modal-title" className="text-lg font-semibold text-text-main">
@@ -95,7 +93,7 @@ export function Modal({
         )}
 
         {/* Conteudo */}
-        <div className="flex-1 overflow-y-auto px-5 py-4">{children}</div>
+        <div className="flex-1 overflow-y-auto px-5 py-4 overscroll-contain">{children}</div>
 
         {/* Rodape */}
         {footer && (

@@ -28,6 +28,7 @@ export function DropdownSelect({
 }: DropdownSelectProps) {
   const [isOpen, setIsOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -38,6 +39,16 @@ export function DropdownSelect({
     
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      const timer = setTimeout(() => {
+        menuRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+        });
+      }, 60);
+      return () => {
+        document.removeEventListener('mousedown', handleClickOutside);
+        clearTimeout(timer);
+      };
     }
     
     return () => {
@@ -105,6 +116,7 @@ export function DropdownSelect({
               );
             })}
           </ul>
+          <div ref={menuRef} className="h-0 w-full" />
         </div>
       )}
     </div>
