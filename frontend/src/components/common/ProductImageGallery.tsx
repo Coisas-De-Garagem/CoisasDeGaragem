@@ -7,6 +7,7 @@ import {
   faXmark,
   faImage,
 } from '@fortawesome/free-solid-svg-icons';
+import { lockScroll, unlockScroll } from './Modal';
 
 interface ProductImageGalleryProps {
   images?: string[];
@@ -145,16 +146,14 @@ export function ProductImageGallery({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isFullscreen, goToNext, goToPrev]);
 
-  // Lock body scroll when in fullscreen
+  // Lock body & html scroll when in fullscreen
   useEffect(() => {
     if (isFullscreen) {
-      document.body.style.overflow = 'hidden';
-    } else {
-      document.body.style.overflow = '';
+      lockScroll();
+      return () => {
+        unlockScroll();
+      };
     }
-    return () => {
-      document.body.style.overflow = '';
-    };
   }, [isFullscreen]);
 
   const handleImageError = (index: number) => {
