@@ -440,8 +440,9 @@ export const mockApi = {
       qrCodeScanned: true,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
-      pixKey: '00020126580014br.gov.bcb.pix0136123e4567-e89b-12d3-a456-426614174000520400005303986540510.005802BR5913GARAGE SALES6009SAO PAULO62070503***6304ABCD',
-      qrCode: 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=00020126580014br.gov.bcb.pix0136123e4567-e89b-12d3-a456-426614174000520400005303986540510.005802BR5913GARAGE%20SALES6009SAO%20PAULO62070503***6304ABCD',
+      // gitleaks:allow
+      pixKey: 'mock-pix-copia-e-cola-chave-teste',
+      qrCode: 'https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=pix-mock-test',
       chargeId: 'charge-mock-123',
       expiresInSeconds: 300,
     };
