@@ -57,10 +57,6 @@ export function Modal({
   return (
     <div
       className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/50 backdrop-blur-sm p-0 sm:p-4 animate-fade-in"
-      onMouseDown={(e) => {
-        // Fecha ao clicar fora (no backdrop).
-        if (e.target === e.currentTarget) onClose();
-      }}
     >
       <div
         className={`relative w-full ${SIZE_CLASSES[size]} bg-surface text-text-main rounded-t-2xl sm:rounded-2xl shadow-xl max-h-[92vh] flex flex-col animate-slide-up sm:animate-scale-in`}

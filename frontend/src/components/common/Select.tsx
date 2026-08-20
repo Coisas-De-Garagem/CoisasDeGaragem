@@ -58,6 +58,10 @@ export function Select({
             error ? `${selectId}-error` : helperText ? `${selectId}-helper` : undefined
           }
           {...props}
+          onFocus={(e) => {
+            e.currentTarget.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            props.onFocus?.(e);
+          }}
         >
           {placeholder && (
             <option value="" disabled>

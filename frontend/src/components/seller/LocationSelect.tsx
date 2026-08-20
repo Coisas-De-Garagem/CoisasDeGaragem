@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useLocations } from '@/hooks/useLocations';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faMapMarkerAlt, faChevronDown, faCheck } from '@fortawesome/free-solid-svg-icons';
@@ -13,6 +13,24 @@ export function LocationSelect({ value, onChange, error }: LocationSelectProps) 
   const { locations } = useLocations();
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const dropdownBottomRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (isOpen) {
+      const timer = setTimeout(() => {
+        // Evita que o browser force o scroll apenas para o input ao focar
+        searchInputRef.current?.focus({ preventScroll: true });
+
+        // Rola até o rodapé das opções para garantir que todas as opções fiquem visíveis
+        dropdownBottomRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'nearest',
+        });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [isOpen]);
 
   // Active locations only
   const activeLocations = locations.filter((loc) => loc.isActive);
@@ -53,9 +71,12 @@ export function LocationSelect({ value, onChange, error }: LocationSelectProps) 
       {isOpen && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute z-50 w-full mt-1 bg-surface border border-border rounded-lg shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+          <div
+            className="absolute z-50 w-full mt-1 bg-surface border border-border rounded-lg shadow-xl overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200"
+          >
             <div className="p-2 border-b border-border">
               <input
+                ref={searchInputRef}
                 type="text"
                 placeholder="Buscar local..."
                 className="w-full px-3 py-2 text-sm bg-background border border-border rounded-md focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
@@ -94,6 +115,7 @@ export function LocationSelect({ value, onChange, error }: LocationSelectProps) 
                 })
               )}
             </ul>
+            <div ref={dropdownBottomRef} className="h-0 w-full" />
           </div>
         </>
       )}
