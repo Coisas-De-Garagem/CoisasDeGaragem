@@ -16,30 +16,14 @@ interface ModalProps {
   hideCloseButton?: boolean;
 }
 
+import { lockScroll, unlockScroll } from '@/utils/scrollLock';
+
 const SIZE_CLASSES = {
   sm: 'sm:max-w-md',
   md: 'sm:max-w-lg',
   lg: 'sm:max-w-xl',
   xl: 'sm:max-w-3xl',
 };
-
-let activeModalCount = 0;
-
-export function lockScroll() {
-  if (activeModalCount === 0) {
-    document.body.style.overflow = 'hidden';
-    document.documentElement.style.overflow = 'hidden';
-  }
-  activeModalCount++;
-}
-
-export function unlockScroll() {
-  activeModalCount = Math.max(0, activeModalCount - 1);
-  if (activeModalCount === 0) {
-    document.body.style.overflow = '';
-    document.documentElement.style.overflow = '';
-  }
-}
 
 export function Modal({
   isOpen,

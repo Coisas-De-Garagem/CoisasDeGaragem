@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faXmark } from '@fortawesome/free-solid-svg-icons';
 
-import { lockScroll, unlockScroll } from './Modal';
+import { lockScroll, unlockScroll } from '@/utils/scrollLock';
 
 interface DrawerProps {
   isOpen: boolean;

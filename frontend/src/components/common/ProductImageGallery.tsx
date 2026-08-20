@@ -7,7 +7,7 @@ import {
   faXmark,
   faImage,
 } from '@fortawesome/free-solid-svg-icons';
-import { lockScroll, unlockScroll } from './Modal';
+import { lockScroll, unlockScroll } from '@/utils/scrollLock';
 
 interface ProductImageGalleryProps {
   images?: string[];

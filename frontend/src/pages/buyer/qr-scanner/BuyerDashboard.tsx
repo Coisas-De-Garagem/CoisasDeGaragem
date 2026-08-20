@@ -170,7 +170,6 @@ export default function BuyerDashboard() {
   // Poll de status + countdown quando o checkout está ativo.
   useEffect(() => {
     if (!checkoutData) return;
-    if (checkoutData.paymentMethod === 'CARD') setIframeLoading(true);
 
     const timer = setInterval(() => {
       setTimeLeft((prev) => {
@@ -253,6 +252,7 @@ export default function BuyerDashboard() {
 
       if (result.success) {
         if (paymentMethod === 'pix' || paymentMethod === 'card') {
+          if (paymentMethod === 'card') setIframeLoading(true);
           setCheckoutData({
             purchaseId: result.data.id,
             paymentMethod: paymentMethod.toUpperCase(),
