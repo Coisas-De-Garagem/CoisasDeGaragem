@@ -17,7 +17,8 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "seed:staging": "prisma db seed"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"
@@ -52,7 +53,7 @@
   "overrides": {
     "hono": "^4.12.25",
     "@hono/node-server": "^1.19.13",
-    "multer": "^1.4.5-lts.1",
+    "multer": "^2.2.0",
     "path-to-regexp": "^0.1.12 || ^1.9.0 || ^8.3.0",
     "picomatch": "^2.3.2 || ^4.0.3",
     "protobufjs": "^7.6.3",

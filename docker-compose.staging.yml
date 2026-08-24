@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  staging_postgres:
+    image: postgres:15-alpine
+    container_name: garage_sale_postgres_staging
+    environment:
+      POSTGRES_USER: test_user
+      POSTGRES_PASSWORD: test_password
+      POSTGRES_DB: garagedb_test
+    ports:
+      - "5433:5432"
+    volumes:
+      - staging_postgres_data:/var/lib/postgresql/data
+    networks:
+      - garage_sale_staging_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U test_user -d garagedb_test"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  staging_backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: garage_sale_backend_staging
+    ports:
+      - "3001:3000"
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: "postgresql://test_user:test_password@staging_postgres:5432/garagedb_test?schema=public"
+      JWT_SECRET: "staging-super-secret-jwt-key-simulating-prod"
+      JWT_EXPIRES_IN: "7d"
+      CORS_ORIGIN: "http://localhost:4280,http://localhost:3001,http://localhost:5173"
+      ABACATEPAY_API_KEY: "abc_dev_mjstkDZMNCFCG66YNpyHgkxZ"
+      ABACATEPAY_API_URL: "https://api.abacatepay.com/v2"
+    depends_on:
+      staging_postgres:
+        condition: service_healthy
+    networks:
+      - garage_sale_staging_network
+
+volumes:
+  staging_postgres_data:
+
+networks:
+  garage_sale_staging_network:
+    driver: bridge

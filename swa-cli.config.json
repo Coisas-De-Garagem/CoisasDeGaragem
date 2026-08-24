@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json.schemastore.org/swa-cli-config-1.0.0.json",
+  "configurations": {
+    "coisas-de-garagem": {
+      "appLocation": "./frontend",
+      "apiLocation": "http://localhost:3000/api/v1",
+      "outputLocation": "./dist",
+      "appBuildCommand": "npm run build",
+      "run": "npm run dev --prefix frontend",
+      "appDevserverUrl": "http://localhost:5173",
+      "apiDevserverUrl": "http://localhost:3000",
+      "port": 4280,
+      "host": "localhost",
+      "ssl": false
+    }
+  }
+}
