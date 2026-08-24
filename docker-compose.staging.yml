@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   staging_postgres:
     image: postgres:15-alpine
