@@ -3,12 +3,9 @@
   "configurations": {
     "coisas-de-garagem": {
       "appLocation": "./frontend",
-      "apiLocation": "http://localhost:3000/api/v1",
+      "apiLocation": "http://localhost:3000",
       "outputLocation": "./dist",
-      "appBuildCommand": "npm run build",
-      "run": "npm run dev --prefix frontend",
       "appDevserverUrl": "http://localhost:5173",
-      "apiDevserverUrl": "http://localhost:3000",
       "port": 4280,
       "host": "localhost",
       "ssl": false
