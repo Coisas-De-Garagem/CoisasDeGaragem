@@ -25,8 +25,8 @@ export default function App() {
       <StatusBar style="auto" />
       <WebView
         // 👇👇 COLOQUE A URL DO SEU SITE EM PRODUÇÃO AQUI 👇👇
-        // Exemplo: 'https://coisasdegaragem.vercel.app'
-        source={{ uri: 'https://coisas-de-garagem-test.vercel.app/' }}
+        // Exemplo: 'https://coisasdegaragem.com.br'
+        source={{ uri: 'https://coisasdegaragem.com.br' }}
         style={{ flex: 1 }}
         allowsInlineMediaPlayback={true}
         mediaPlaybackRequiresUserAction={false}

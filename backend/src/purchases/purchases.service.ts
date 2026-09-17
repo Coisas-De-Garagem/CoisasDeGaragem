@@ -7,12 +7,14 @@ import { Prisma, PurchaseStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
 import { AbacatePayService } from '../payments/abacatepay.service';
+import { PurchaseCleanupService } from './purchase-cleanup.service';
 
 @Injectable()
 export class PurchasesService {
   constructor(
     private prisma: PrismaService,
     private abacatePayService: AbacatePayService,
+    private purchaseCleanupService: PurchaseCleanupService,
   ) {}
 
   async create(createPurchaseDto: CreatePurchaseDto, buyerId: string) {
@@ -35,7 +37,7 @@ export class PurchasesService {
     }
 
     // Start transaction
-    return this.prisma.$transaction(async (prisma) => {
+    const result = await this.prisma.$transaction(async (prisma) => {
       // Create purchase
       const purchase = await prisma.purchase.create({
         data: {
@@ -132,6 +134,18 @@ export class PurchasesService {
         expiresInSeconds,
       };
     });
+
+    if (
+      createPurchaseDto.paymentMethod === 'PIX' ||
+      createPurchaseDto.paymentMethod === 'CARD'
+    ) {
+      this.purchaseCleanupService.schedulePurchaseTimeout(
+        result.id,
+        (result.expiresInSeconds || 60) * 1000,
+      );
+    }
+
+    return result;
   }
 
   async findAllByBuyer(
@@ -283,35 +297,6 @@ export class PurchasesService {
   }
 
   async cleanExpiredPurchases() {
-    const expireTimeSeconds = 60; // Checkout expires in 60 seconds
-    const expirationDate = new Date(Date.now() - expireTimeSeconds * 1000);
-
-    const expiredPurchases = await this.prisma.purchase.findMany({
-      where: {
-        status: PurchaseStatus.PENDING,
-        createdAt: { lt: expirationDate },
-        paymentMethod: { in: ['PIX', 'CARD'] },
-      },
-    });
-
-    if (expiredPurchases.length === 0) return;
-
-    await this.prisma.$transaction(async (prisma) => {
-      for (const purchase of expiredPurchases) {
-        await prisma.purchase.update({
-          where: { id: purchase.id },
-          data: { status: PurchaseStatus.CANCELLED },
-        });
-
-        await prisma.product.update({
-          where: { id: purchase.productId },
-          data: {
-            isAvailable: true,
-            isReserved: false,
-            isSold: false,
-          },
-        });
-      }
-    });
+    await this.purchaseCleanupService.cleanupExpiredPurchases();
   }
 }
