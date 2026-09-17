@@ -25,6 +25,7 @@ export function Footer() {
             <ul className="space-y-2">
               <li><Link to="/" className="text-sm text-text-muted hover:text-primary">Início</Link></li>
               <li><Link to="/about" className="text-sm text-text-muted hover:text-primary">Sobre</Link></li>
+              <li><Link to="/mobile" className="text-sm text-text-muted hover:text-primary inline-flex items-center gap-1.5">App Android <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded font-semibold">APK</span></Link></li>
               <li><Link to="/auth/register" className="text-sm text-text-muted hover:text-primary">Cadastrar</Link></li>
             </ul>
           </div>

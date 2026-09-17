@@ -41,6 +41,7 @@ const TermsPage = lazy(() => import('@/pages/public/TermsPage'));
 const PrivacyPage = lazy(() => import('@/pages/public/PrivacyPage'));
 const ProductPublicPage = lazy(() => import('@/pages/public/ProductPublicPage'));
 const EventPublicPage = lazy(() => import('@/pages/public/EventPublicPage'));
+const MobileDownloadPage = lazy(() => import('@/pages/public/MobileDownloadPage'));
 
 function SessionManager() {
   useSessionTimeout();
@@ -149,6 +150,9 @@ export default function App() {
           <Route path="/privacy" element={<Suspended><PageLayout><PrivacyPage /></PageLayout></Suspended>} />
           <Route path="/product/:id" element={<Suspended><PageLayout><ProductPublicPage /></PageLayout></Suspended>} />
           <Route path="/event/:id" element={<Suspended><PageLayout showHeader><EventPublicPage /></PageLayout></Suspended>} />
+          <Route path="/mobile" element={<Suspended><PageLayout showHeader showFooter><MobileDownloadPage /></PageLayout></Suspended>} />
+          <Route path="/app" element={<Navigate to="/mobile" replace />} />
+          <Route path="/download" element={<Navigate to="/mobile" replace />} />
 
           {/* Erros */}
           <Route path="/500" element={<Suspended><PageLayout showHeader showFooter={false}><ServerErrorPage /></PageLayout></Suspended>} />
