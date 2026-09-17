@@ -3,6 +3,7 @@ import { PurchasesService } from './purchases.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { prismaMock } from '../prisma/__mocks__/prisma.service';
 import { AbacatePayService } from '../payments/abacatepay.service';
+import { PurchaseCleanupService } from './purchase-cleanup.service';
 
 const abacatePayServiceMock = {
   getOrCreateCustomer: jest.fn(),
@@ -11,6 +12,12 @@ const abacatePayServiceMock = {
   createTransparentPix: jest
     .fn()
     .mockResolvedValue({ brCode: 'pix-code', brCodeBase64: 'pix-base64' }),
+};
+
+const purchaseCleanupServiceMock = {
+  schedulePurchaseTimeout: jest.fn(),
+  cleanupExpiredPurchases: jest.fn().mockResolvedValue(undefined),
+  cancelPurchaseIfPending: jest.fn().mockResolvedValue(undefined),
 };
 
 describe('PurchasesService', () => {
@@ -22,6 +29,10 @@ describe('PurchasesService', () => {
         PurchasesService,
         { provide: PrismaService, useValue: prismaMock },
         { provide: AbacatePayService, useValue: abacatePayServiceMock },
+        {
+          provide: PurchaseCleanupService,
+          useValue: purchaseCleanupServiceMock,
+        },
       ],
     }).compile();
 

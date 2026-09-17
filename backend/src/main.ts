@@ -41,12 +41,23 @@ async function bootstrap() {
   });
 
   const corsOriginRaw = process.env.CORS_ORIGIN ?? process.env.CORS_ORIGINS;
-  const corsOrigins = corsOriginRaw
+  const defaultOrigins = [
+    'https://www.coisasdegaragem.com.br',
+    'https://coisasdegaragem.com.br',
+    'https://coisas-de-garagem.vercel.app',
+    'https://coisas-de-garagem-test.vercel.app',
+    'http://localhost:5173',
+    'http://localhost:3000',
+  ];
+  const configuredOrigins = corsOriginRaw
     ? corsOriginRaw
         .split(',')
         .map((o) => o.trim())
         .filter(Boolean)
     : [];
+  const corsOrigins = Array.from(
+    new Set([...defaultOrigins, ...configuredOrigins]),
+  );
 
   app.enableCors({
     origin: corsOrigins,

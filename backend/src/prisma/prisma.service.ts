@@ -11,7 +11,11 @@ export class PrismaService
 {
   constructor(config: ConfigService) {
     const connectionString = config.get<string>('DATABASE_URL');
-    const pool = new Pool({ connectionString });
+    const pool = new Pool({
+      connectionString,
+      idleTimeoutMillis:
+        Number(config.get<string>('DB_POOL_IDLE_TIMEOUT_MS')) || 10000,
+    });
     const adapter = new PrismaPg(pool);
     super({ adapter });
   }

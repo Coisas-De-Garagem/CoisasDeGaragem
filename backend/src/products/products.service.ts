@@ -1,5 +1,5 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, PurchaseStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
 import { UpdateProductDto } from './dto/update-product.dto';
@@ -62,13 +62,44 @@ export class ProductsService {
   }
 
   async findOne(id: string) {
-    const product = await this.prisma.product.findUnique({
+    let product = await this.prisma.product.findUnique({
       where: { id },
       include: { seller: true, location: true },
     });
     if (!product) {
       throw new NotFoundException('Product not found');
     }
+
+    // Auto-healing sob demanda: se o produto estiver marcado como reservado mas não vendido,
+    // verifica se a compra pendente expirou (60s) e o libera na hora.
+    if (product.isReserved && !product.isSold) {
+      const expirationDate = new Date(Date.now() - 60 * 1000);
+      const activePending = await this.prisma.purchase.findFirst({
+        where: {
+          productId: product.id,
+          status: PurchaseStatus.PENDING,
+          createdAt: { gte: expirationDate },
+        },
+      });
+
+      if (!activePending) {
+        await this.prisma.purchase.updateMany({
+          where: {
+            productId: product.id,
+            status: PurchaseStatus.PENDING,
+            createdAt: { lt: expirationDate },
+          },
+          data: { status: PurchaseStatus.CANCELLED },
+        });
+
+        product = await this.prisma.product.update({
+          where: { id: product.id },
+          data: { isAvailable: true, isReserved: false },
+          include: { seller: true, location: true },
+        });
+      }
+    }
+
     return product;
   }
 

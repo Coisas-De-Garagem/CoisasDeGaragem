@@ -2,6 +2,7 @@ import {
   Injectable,
   UnauthorizedException,
   ConflictException,
+  Logger,
 } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
@@ -24,6 +25,8 @@ interface GoogleTokenInfo {
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
@@ -31,11 +34,22 @@ export class AuthService {
   ) {}
 
   async validateUser(email: string, pass: string): Promise<SafeUser | null> {
-    const user = await this.usersService.findOne(email);
-    if (user && (await bcrypt.compare(pass, user.password))) {
-      return stripPassword(user);
+    try {
+      const user = await this.usersService.findOne(email);
+      if (!user || !user.password) {
+        return null;
+      }
+      const isMatch = await bcrypt.compare(pass, user.password);
+      if (isMatch) {
+        return stripPassword(user);
+      }
+      return null;
+    } catch (error) {
+      this.logger.error(
+        `Erro ao validar credenciais do usuário ${email}: ${getErrorMessage(error)}`,
+      );
+      return null;
     }
-    return null;
   }
 
   async updateProfile(
@@ -52,8 +66,13 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
     const payload = { email: user.email, sub: user.id, role: user.role };
+    const secret =
+      this.configService.get<string>('JWT_SECRET') ||
+      process.env.JWT_SECRET ||
+      'coisas-de-garagem-jwt-secret-key-fallback';
+
     return {
-      token: this.jwtService.sign(payload),
+      token: this.jwtService.sign(payload, { secret }),
       expiresIn: 3600, // 1 hour
       user,
     };
