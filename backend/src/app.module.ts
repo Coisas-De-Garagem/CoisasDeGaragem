@@ -21,6 +21,13 @@ import { EventsModule } from './events/events.module';
 import { ReviewsModule } from './reviews/reviews.module';
 import { LocationsModule } from './locations/locations.module';
 import { Request, Response, NextFunction } from 'express';
+import * as crypto from 'crypto';
+
+function safeEqual(a: string, b: string): boolean {
+  const ab = Buffer.from(a);
+  const bb = Buffer.from(b);
+  return ab.length === bb.length && crypto.timingSafeEqual(ab, bb);
+}
 
 @Module({
   imports: [
@@ -77,8 +84,8 @@ export class AppModule implements NestModule {
         if (
           user &&
           pass &&
-          user === process.env.METRICS_USER &&
-          pass === process.env.METRICS_PASS
+          safeEqual(user, process.env.METRICS_USER || '') &&
+          safeEqual(pass, process.env.METRICS_PASS || '')
         ) {
           return next();
         } else {

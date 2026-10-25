@@ -251,9 +251,12 @@ export class ProductsController {
   }
 
   @Patch(':id/reserve')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(UserRole.USER)
+  @ApiBearerAuth()
   @ApiOperation({
     summary: 'Reservar produto',
-    description: 'Marca um produto como reservado',
+    description: 'Marca um produto como reservado. Requer autenticação.',
   })
   @ApiParam({
     name: 'id',

@@ -12,13 +12,8 @@ import { LocationsService } from './locations.service';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from '../auth/current-user.decorator';
 import { AuthenticatedUser } from '../auth/auth-user.interface';
-
-type CreateLocationDto = { name: string; address: string; isActive?: boolean };
-type UpdateLocationDto = {
-  name?: string;
-  address?: string;
-  isActive?: boolean;
-};
+import { CreateLocationDto } from './dto/create-location.dto';
+import { UpdateLocationDto } from './dto/update-location.dto';
 
 @Controller('locations')
 @UseGuards(AuthGuard('jwt'))

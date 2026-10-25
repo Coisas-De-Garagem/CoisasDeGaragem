@@ -140,14 +140,14 @@ export class QrCodesController {
     // Try to find by qrCode field first
     let product = await this.prisma.product.findUnique({
       where: { qrCode: data.qrCode },
-      include: { seller: true },
+      include: { seller: { select: { id: true, name: true } } },
     });
 
     // If not found, try to find by ID (in case the QR code contains the product ID)
     if (!product) {
       product = await this.prisma.product.findUnique({
         where: { id: data.qrCode },
-        include: { seller: true },
+        include: { seller: { select: { id: true, name: true } } },
       });
     }
 

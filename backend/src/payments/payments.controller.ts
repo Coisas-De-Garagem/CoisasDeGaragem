@@ -6,14 +6,19 @@ import {
   Res,
   HttpStatus,
   UnauthorizedException,
+  NotFoundException,
   Logger,
   Body,
   BadRequestException,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { Request, Response } from 'express';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
-import { PurchaseStatus } from '@prisma/client';
+import { PurchaseStatus, UserRole } from '@prisma/client';
+import { RolesGuard } from '../auth/roles.guard';
+import { Roles } from '../auth/roles.decorator';
 import * as crypto from 'crypto';
 import { AbacatePayService, AbacatePayResponse } from './abacatepay.service';
 import { getErrorMessage } from '../common/error.util';
@@ -39,8 +44,15 @@ export class PaymentsController {
     private configService: ConfigService,
     private abacatePayService: AbacatePayService,
   ) {
-    this.webhookSecret =
-      this.configService.get<string>('ABACATEPAY_WEBHOOK_SECRET') || '';
+    const webhookSecret = this.configService.get<string>(
+      'ABACATEPAY_WEBHOOK_SECRET',
+    );
+    if (!webhookSecret) {
+      throw new Error(
+        'ABACATEPAY_WEBHOOK_SECRET não configurado. Defina o segredo do webhook antes de iniciar a aplicação.',
+      );
+    }
+    this.webhookSecret = webhookSecret;
   }
 
   @Post('webhook')
@@ -195,10 +207,17 @@ export class PaymentsController {
   }
 
   @Post('simulate')
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @Roles(UserRole.ADMIN)
   async simulatePayment(
     @Body('chargeId') chargeId: string,
     @Body('purchaseId') purchaseId?: string,
   ) {
+    // Atalho de desenvolvimento: nunca disponível em produção.
+    if (process.env.NODE_ENV === 'production') {
+      throw new NotFoundException();
+    }
+
     if (!chargeId) {
       throw new BadRequestException('Missing chargeId');
     }
