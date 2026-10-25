@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateReviewDto } from './dto/create-review.dto';
+import { CreateTestimonialDto } from './dto/create-testimonial.dto';
 
 @Injectable()
 export class ReviewsService {
@@ -88,19 +89,15 @@ export class ReviewsService {
     }));
   }
 
-  async createTestimonial(
-    userId: string,
-    data: { rating: number; content: string },
-  ) {
-    if (!data.content || data.content.trim() === '') {
-      throw new BadRequestException('Content cannot be empty');
-    }
-
+  async createTestimonial(userId: string, data: CreateTestimonialDto) {
+    // Testemunho nasce invisível: passa por moderação antes de aparecer na
+    // vitrine pública (getPublicTestimonials filtra por isVisible: true).
     return this.prisma.testimonial.create({
       data: {
         userId,
         rating: data.rating,
         content: data.content,
+        isVisible: false,
       },
     });
   }
