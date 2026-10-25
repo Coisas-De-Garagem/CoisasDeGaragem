@@ -11,17 +11,16 @@ services:
       - no-new-privileges:true
     container_name: garage_sale_postgres
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: garagedb
-    ports:
-      - "5432:5432"
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-garagedb}
+    # Porta não publicada no host: acesso só pela rede interna do Docker.
     volumes:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - garage_sale_network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user -d garagedb"]
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -31,12 +30,13 @@ services:
     container_name: garage_sale_backend
     ports:
       - "3000:3000"
-      - "5555:5555"
+      # Prisma Studio (5555) não é publicado no host. Para usá-lo em dev,
+      # acesse via rede interna do Docker ou um túnel SSH.
     env_file:
       - ./backend/.env  # <--- This forces Docker to read your specific file
     environment:
       PORT: 3000
-      DATABASE_URL: "postgresql://user:password@postgres:5432/garagedb?schema=public"
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-garagedb}?schema=public"
     depends_on:
       postgres:
         condition: service_healthy

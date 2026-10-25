@@ -7,7 +7,6 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { SkipThrottle } from '@nestjs/throttler';
 import { PurchasesService } from './purchases.service';
 import { CreatePurchaseDto } from './dto/create-purchase.dto';
 import { AuthGuard } from '@nestjs/passport';
@@ -194,7 +193,6 @@ export class PurchasesController {
   }
 
   @Get(':id')
-  @SkipThrottle()
   @ApiOperation({
     summary: 'Buscar compra por ID',
     description: 'Retorna os detalhes de uma compra específica',
