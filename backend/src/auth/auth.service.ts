@@ -9,6 +9,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { SafeUser, stripPassword } from '../users/user.utils';
 import { getErrorMessage } from '../common/error.util';
 import * as bcrypt from 'bcrypt';
@@ -54,7 +55,7 @@ export class AuthService {
 
   async updateProfile(
     userId: string,
-    updateData: { name?: string; phone?: string; avatarUrl?: string },
+    updateData: UpdateProfileDto,
   ): Promise<SafeUser> {
     const user = await this.usersService.update(userId, updateData);
     return stripPassword(user);
@@ -66,13 +67,9 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
     const payload = { email: user.email, sub: user.id, role: user.role };
-    const secret =
-      this.configService.get<string>('JWT_SECRET') ||
-      process.env.JWT_SECRET ||
-      'coisas-de-garagem-jwt-secret-key-fallback';
 
     return {
-      token: this.jwtService.sign(payload, { secret }),
+      token: this.jwtService.sign(payload),
       expiresIn: 3600, // 1 hour
       user,
     };
@@ -100,32 +97,6 @@ export class AuthService {
 
   async googleLogin(token: string) {
     try {
-      // Mock bypass for local development testing
-      if (
-        token === 'mock-google-token' &&
-        this.configService.get<string>('NODE_ENV') !== 'production'
-      ) {
-        let user = await this.usersService.findOne(
-          'mock-google-user@example.com',
-        );
-        if (!user) {
-          const dummyPassword = await bcrypt.hash(crypto.randomUUID(), 10);
-          user = await this.usersService.create({
-            email: 'mock-google-user@example.com',
-            name: 'Mock Google User',
-            password: dummyPassword,
-            role: 'USER',
-          });
-        }
-        const result = stripPassword(user);
-        const jwtPayload = { email: user.email, sub: user.id, role: user.role };
-        return {
-          token: this.jwtService.sign(jwtPayload),
-          expiresIn: 3600,
-          user: result,
-        };
-      }
-
       const response = await fetch(
         `https://oauth2.googleapis.com/tokeninfo?id_token=${token}`,
       );
@@ -135,9 +106,13 @@ export class AuthService {
 
       const payload = (await response.json()) as GoogleTokenInfo;
 
-      // Validate Client ID if configured in env
+      // Audiência é obrigatória: GOOGLE_CLIENT_ID precisa estar configurado e
+      // o token precisa ter sido emitido para esta aplicação.
       const googleClientId = this.configService.get<string>('GOOGLE_CLIENT_ID');
-      if (googleClientId && payload.aud !== googleClientId) {
+      if (!googleClientId) {
+        throw new UnauthorizedException('Login com Google não configurado');
+      }
+      if (payload.aud !== googleClientId) {
         throw new UnauthorizedException('Token audience mismatch');
       }
 

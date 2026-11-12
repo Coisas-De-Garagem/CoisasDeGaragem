@@ -48,9 +48,15 @@ export class LocationsService {
     if (location.sellerId !== sellerId)
       throw new ForbiddenException('Acesso negado');
 
+    // Allowlist explícita: campos como sellerId não podem ser reatribuídos.
+    const allowed: { name?: string; address?: string; isActive?: boolean } = {};
+    if (data.name !== undefined) allowed.name = data.name;
+    if (data.address !== undefined) allowed.address = data.address;
+    if (data.isActive !== undefined) allowed.isActive = data.isActive;
+
     return this.prisma.location.update({
       where: { id: locationId },
-      data,
+      data: allowed,
     });
   }
 

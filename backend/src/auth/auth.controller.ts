@@ -10,6 +10,7 @@ import {
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { CurrentUser } from './current-user.decorator';
 import { AuthenticatedUser } from './auth-user.interface';
@@ -186,7 +187,7 @@ export class AuthController {
   })
   async updateProfile(
     @CurrentUser() user: AuthenticatedUser,
-    @Body() updateData: { name?: string; phone?: string; avatarUrl?: string },
+    @Body() updateData: UpdateProfileDto,
   ) {
     return this.authService.updateProfile(user.userId, updateData);
   }

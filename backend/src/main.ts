@@ -40,14 +40,17 @@ async function bootstrap() {
     rawBody: true,
   });
 
+  const isProduction = process.env.NODE_ENV === 'production';
   const corsOriginRaw = process.env.CORS_ORIGIN ?? process.env.CORS_ORIGINS;
   const defaultOrigins = [
     'https://www.coisasdegaragem.com.br',
     'https://coisasdegaragem.com.br',
     'https://coisas-de-garagem.vercel.app',
     'https://coisas-de-garagem-test.vercel.app',
-    'http://localhost:5173',
-    'http://localhost:3000',
+    // Origens de localhost só são liberadas fora de produção.
+    ...(isProduction
+      ? []
+      : ['http://localhost:5173', 'http://localhost:3000']),
   ];
   const configuredOrigins = corsOriginRaw
     ? corsOriginRaw
@@ -73,16 +76,19 @@ async function bootstrap() {
     }),
   );
 
-  const config = new DocumentBuilder()
-    .setTitle('Coisas de Garagem API')
-    .setDescription(
-      'API completa para marketplace de Garage Sales Coisas De Garagem. Permite usuários venderem e comprarem itens através de QR codes, com sistema de autenticação JWT, gestão de produtos, compras, analytics e etc.',
-    )
-    .setVersion('1.0')
-    .addBearerAuth()
-    .build();
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api', app, document);
+  // Swagger só é exposto fora de produção.
+  if (!isProduction) {
+    const config = new DocumentBuilder()
+      .setTitle('Coisas de Garagem API')
+      .setDescription(
+        'API completa para marketplace de Garage Sales Coisas De Garagem. Permite usuários venderem e comprarem itens através de QR codes, com sistema de autenticação JWT, gestão de produtos, compras, analytics e etc.',
+      )
+      .setVersion('1.0')
+      .addBearerAuth()
+      .build();
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api', app, document);
+  }
 
   await app.listen(process.env.PORT ?? 3000);
 }

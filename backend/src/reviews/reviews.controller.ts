@@ -1,6 +1,7 @@
 import { Controller, Post, Body, Get, UseGuards } from '@nestjs/common';
 import { ReviewsService } from './reviews.service';
 import { CreateReviewDto } from './dto/create-review.dto';
+import { CreateTestimonialDto } from './dto/create-testimonial.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/roles.guard';
 import { Roles } from '../auth/roles.decorator';
@@ -26,7 +27,7 @@ export class ReviewsController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Create a new testimonial (platform review)' })
   createTestimonial(
-    @Body() data: { rating: number; content: string },
+    @Body() data: CreateTestimonialDto,
     @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.reviewsService.createTestimonial(user.userId, data);

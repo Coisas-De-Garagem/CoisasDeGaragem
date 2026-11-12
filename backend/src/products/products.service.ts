@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { Prisma, PurchaseStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateProductDto } from './dto/create-product.dto';
@@ -106,8 +110,7 @@ export class ProductsService {
   async update(id: string, updateProductDto: UpdateProductDto, userId: string) {
     const product = await this.findOne(id);
     if (product.sellerId !== userId) {
-      // In real app, check for forbidden, but let's assume controller checks ownership or role
-      // Ideally throws ForbiddenException
+      throw new ForbiddenException('Você não pode editar este produto');
     }
 
     const data: Prisma.ProductUpdateInput = {
@@ -137,8 +140,11 @@ export class ProductsService {
     });
   }
 
-  async remove(id: string, _userId: string) {
-    // Check ownership
+  async remove(id: string, userId: string) {
+    const product = await this.findOne(id);
+    if (product.sellerId !== userId) {
+      throw new ForbiddenException('Você não pode excluir este produto');
+    }
     return this.prisma.product.delete({
       where: { id },
     });
