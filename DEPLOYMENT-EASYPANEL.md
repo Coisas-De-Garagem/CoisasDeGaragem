@@ -56,7 +56,7 @@ Fotos enviadas e removidas do formulario antes de salvar podem ficar sem referen
 
 ## 5. Frontend
 
-Fonte Git, Build Path `/frontend`, builder Dockerfile, arquivo `Dockerfile`, porta 80. Definir VITE_API_BASE_URL=https://API/api/v1 antes do build e VITE_ENABLE_MOCK_DATA=false. O Dockerfile declara o ARG e gera os arquivos estaticos servidos por Nginx; alterar a URL exige rebuild. Dominio publico HTTPS, CORS_ORIGIN no backend igual ao dominio do frontend.
+Fonte Git, Build Path `/frontend`, builder Dockerfile, arquivo `Dockerfile`, porta 8080. Definir VITE_API_BASE_URL=https://API/api/v1 antes do build e VITE_ENABLE_MOCK_DATA=false. O Dockerfile declara o ARG e gera os arquivos estaticos servidos por Nginx sem root na porta 8080; alterar a URL exige rebuild. Dominio publico HTTPS, CORS_ORIGIN no backend igual ao dominio do frontend.
 
 ## 6. Validacao e virada
 

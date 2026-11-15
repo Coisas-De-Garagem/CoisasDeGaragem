@@ -9,7 +9,12 @@ ENV VITE_ENABLE_MOCK_DATA=false
 RUN npm run build
 
 FROM public.ecr.aws/docker/library/nginx:alpine
+RUN mkdir -p /var/cache/nginx \
+    && chown -R nginx:nginx /var/cache/nginx \
+    && sed -i 's@pid .*;@pid /tmp/nginx.pid;@' /etc/nginx/nginx.conf \
+    && sed -i '/^user /d' /etc/nginx/nginx.conf
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
-EXPOSE 80
+USER nginx
+EXPOSE 8080
 CMD ["nginx", "-g", "daemon off;"]

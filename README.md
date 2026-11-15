@@ -264,30 +264,20 @@ npm run lint             # ESLint
 
 ## Deploy
 
-### Backend (Render)
+O sistema utiliza o Easypanel na VPS, no projeto `harz`:
 
-1. Push para GitHub
-2. Criar Web Service no Render
-3. Configurar:
-   - Root Directory: `backend`
-   - Build Command: `npm run build`
-   - Start Command: `npm run start:prod`
-4. Adicionar variáveis de ambiente
+- `cdg-postgres`: PostgreSQL 17, banco `cdgdb`, acesso interno.
+- `cdg-minio`: arquivos e fotos comprimidas em WebP, com volume persistente.
+- `cdg-backend`: API NestJS na porta interna 3000.
+- `cdg-frontend`: frontend Nginx sem root, na porta interna 8080.
 
-### Frontend (Vercel)
+Consulte [o guia do Easypanel](DEPLOYMENT-EASYPANEL.md) para os ambientes,
+migracao e configuracao dos servicos.
 
-```bash
-npm i -g vercel
-cd frontend
-vercel
-```
-
-### Database (Neon)
-
-1. Criar projeto no [Neon](https://neon.tech)
-2. Copiar connection string
-3. Atualizar `DATABASE_URL` no backend
-4. Executar migrations: `npx prisma migrate deploy`
+O workflow `.github/workflows/ci.yml` verifica PRs para `master`. Apos o merge,
+novas verificacoes precisam passar antes de disparar os dois deploys por secrets.
+Mantenha o Auto Deploy direto do Easypanel desligado e desconecte o projeto das
+integracoes externas de hospedagem anteriores.
 
 ---
 

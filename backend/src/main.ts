@@ -45,8 +45,6 @@ async function bootstrap() {
   const defaultOrigins = [
     'https://www.coisasdegaragem.com.br',
     'https://coisasdegaragem.com.br',
-    'https://coisas-de-garagem.vercel.app',
-    'https://coisas-de-garagem-test.vercel.app',
     // Origens de localhost só são liberadas fora de produção.
     ...(isProduction
       ? []
