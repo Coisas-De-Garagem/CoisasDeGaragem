@@ -323,3 +323,10 @@ run-security-checks.sh
 # Kilo / local agent config
 .kilocode/
 .kilo/
+# Versionar exclusoes de segredos dos builds
+!backend/.dockerignore
+!frontend/.dockerignore
+
+# Codigo-fonte do armazenamento (a regra media/ acima e apenas para dados locais)
+!backend/src/media/
+!backend/src/media/**

@@ -1,3 +1,4 @@
+import { MediaModule } from './media/media.module';
 import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler'; // 1. Import Throttler
@@ -43,6 +44,7 @@ function safeEqual(a: string, b: string): boolean {
       path: '/metrics',
     }),
     PrismaModule,
+    MediaModule,
     UsersModule,
     AuthModule,
     ProductsModule,

@@ -1,10 +1,11 @@
-name: Continuous Integration
+name: CDG | Checks and Deploy
 
 on:
   push:
     branches: [ master ]
   pull_request:
     branches: [ master ]
+  workflow_dispatch:
 
 jobs:
   # -------------------------------------------------------------
@@ -57,7 +58,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: './backend/package-lock.json'
 
@@ -91,7 +92,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: 'npm'
           cache-dependency-path: './frontend/package-lock.json'
 
@@ -104,3 +105,41 @@ jobs:
       - name: Verify Production Build
         run: npm run build
 
+
+  deploy-cdg:
+    name: Deploy CDG | Easypanel
+    needs: [security, backend-ci, frontend-ci]
+    if: github.ref == 'refs/heads/master' && (github.event_name == 'push' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-latest
+    concurrency:
+      group: cdg-production-deploy
+      cancel-in-progress: false
+    env:
+      BACKEND_DEPLOY_URL: ${{ secrets.CDG_BACKEND_DEPLOY_URL }}
+      FRONTEND_DEPLOY_URL: ${{ secrets.CDG_FRONTEND_DEPLOY_URL }}
+    steps:
+      - name: Validate deployment secrets
+        run: |
+          if [[ -z "$BACKEND_DEPLOY_URL" || -z "$FRONTEND_DEPLOY_URL" ]]; then
+            echo "::error::Configure CDG_BACKEND_DEPLOY_URL and CDG_FRONTEND_DEPLOY_URL in repository secrets."
+            exit 1
+          fi
+          if [[ "$BACKEND_DEPLOY_URL" == "$FRONTEND_DEPLOY_URL" ]]; then
+            echo "::error::Backend and frontend must have different deployment trigger URLs."
+            exit 1
+          fi
+
+      - name: Trigger CDG backend deployment
+        run: |
+          curl --fail --silent --show-error --output /dev/null \
+            --connect-timeout 15 --max-time 120 \
+            --url "$BACKEND_DEPLOY_URL"
+
+      - name: Trigger CDG frontend deployment
+        run: |
+          curl --fail --silent --show-error --output /dev/null \
+            --connect-timeout 15 --max-time 120 \
+            --url "$FRONTEND_DEPLOY_URL"
+
+      - name: Deployment requests accepted
+        run: echo "Check deployment build and runtime results in Easypanel."

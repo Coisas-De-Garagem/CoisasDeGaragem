@@ -1,13 +1,12 @@
+import { uploadImage } from '@/services/media';
 import { useState, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCamera,
-  faPlus,
   faTrashCan,
   faStar,
   faArrowLeft,
   faArrowRight,
-  faLink,
   faImages,
   faCircleExclamation,
 } from '@fortawesome/free-solid-svg-icons';
@@ -67,8 +66,6 @@ export function ProductForm({ product, onSubmit, onCancel, isLoading }: ProductF
   ).filter((img): img is string => Boolean(img && img.trim().length > 0));
 
   const [images, setImages] = useState<string[]>(initialImages);
-  const [urlInput, setUrlInput] = useState('');
-  const [showUrlInput, setShowUrlInput] = useState(false);
   const [isProcessingFiles, setIsProcessingFiles] = useState(false);
   const [isDragOver, setIsDragOver] = useState(false);
 
@@ -113,16 +110,10 @@ export function ProductForm({ product, onSubmit, onCancel, isLoading }: ProductF
       }
 
       try {
-        const base64 = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = reject;
-          reader.readAsDataURL(file);
-        });
-        newLoadedImages.push(base64);
+        newLoadedImages.push(await uploadImage(file));
       } catch (err) {
-        console.error('Error reading file:', err);
-        notify('error', 'Erro ao ler arquivo', `Não foi possível carregar "${file.name}".`);
+        console.error('Error uploading file:', err);
+        notify('error', 'Erro ao enviar foto', err instanceof Error ? err.message : 'Não foi possível enviar a foto.');
       }
     }
 
@@ -143,26 +134,6 @@ export function ProductForm({ product, onSubmit, onCancel, isLoading }: ProductF
     if (e.target.files) {
       processFiles(e.target.files);
     }
-  };
-
-  const handleAddUrl = () => {
-    const trimmed = urlInput.trim();
-    if (!trimmed) return;
-
-    if (images.length >= MAX_IMAGES) {
-      notify('warning', 'Limite atingido', `Máximo de ${MAX_IMAGES} fotos permitido.`);
-      return;
-    }
-
-    // Basic URL validation
-    if (!trimmed.startsWith('http://') && !trimmed.startsWith('https://') && !trimmed.startsWith('/')) {
-      notify('warning', 'URL inválida', 'A URL da imagem deve começar com http://, https:// ou /');
-      return;
-    }
-
-    setImages((prev) => [...prev, trimmed]);
-    setUrlInput('');
-    notify('success', 'Imagem adicionada', 'URL da foto vinculada.');
   };
 
   const handleRemoveImage = (index: number) => {
@@ -213,6 +184,7 @@ export function ProductForm({ product, onSubmit, onCancel, isLoading }: ProductF
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (isProcessingFiles) return;
     if (!name.trim()) return notify('warning', 'Atenção', 'Nome do produto é obrigatório');
     if (name.length < 3) return notify('warning', 'Atenção', 'Nome deve ter no mínimo 3 caracteres');
     if (!description.trim()) return notify('warning', 'Atenção', 'Descrição é obrigatória');
@@ -346,7 +318,7 @@ export function ProductForm({ product, onSubmit, onCancel, isLoading }: ProductF
         <input
           ref={fileInputRef}
           type="file"
-          accept="image/*"
+          accept="image/jpeg,image/png,image/webp"
           multiple
           className="hidden"
           onChange={handleFileInputChange}
@@ -391,50 +363,9 @@ export function ProductForm({ product, onSubmit, onCancel, isLoading }: ProductF
                 >
                   Selecionar fotos
                 </Button>
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="md"
-                  className="flex-1 min-w-[140px]"
-                  leftIcon={<FontAwesomeIcon icon={faLink} />}
-                  onClick={() => setShowUrlInput(!showUrlInput)}
-                  disabled={isLoading || isProcessingFiles}
-                >
-                  {showUrlInput ? 'Ocultar URL' : 'Adicionar via URL'}
-                </Button>
+
               </div>
             </div>
-          </div>
-        )}
-
-        {/* Campo Opcional de Adicionar por URL */}
-        {showUrlInput && images.length < MAX_IMAGES && (
-          <div className="p-3 bg-surface rounded-lg border border-border flex flex-col sm:flex-row gap-2 items-stretch">
-            <div className="flex-1">
-              <input
-                type="url"
-                placeholder="Cole a URL da imagem (https://exemplo.com/foto.jpg)"
-                value={urlInput}
-                onChange={(e) => setUrlInput(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    e.preventDefault();
-                    handleAddUrl();
-                  }
-                }}
-                className="w-full bg-surface-sunken border border-border-strong rounded-lg px-3 py-2 text-sm text-text-main placeholder:text-text-subtle focus:border-primary focus:ring-1 focus:ring-primary outline-none"
-              />
-            </div>
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={handleAddUrl}
-              leftIcon={<FontAwesomeIcon icon={faPlus} />}
-              disabled={!urlInput.trim()}
-            >
-              Adicionar
-            </Button>
           </div>
         )}
 
@@ -552,7 +483,7 @@ export function ProductForm({ product, onSubmit, onCancel, isLoading }: ProductF
             Cancelar
           </Button>
         )}
-        <Button type="submit" variant="primary" isLoading={isLoading}>
+        <Button type="submit" variant="primary" isLoading={isLoading || isProcessingFiles}>
           {product ? 'Atualizar produto' : 'Criar produto'}
         </Button>
       </div>

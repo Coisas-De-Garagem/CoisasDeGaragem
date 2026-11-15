@@ -1,63 +1,66 @@
-version: '3.8'
-
 services:
   postgres:
-    image: postgres:15-alpine
-    read_only: true
-    tmpfs:
-      - /tmp
-      - /var/run/postgresql
-    security_opt:
-      - no-new-privileges:true
-    container_name: garage_sale_postgres
+    image: postgres:17-alpine
     environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB:-garagedb}
-    # Porta não publicada no host: acesso só pela rede interna do Docker.
+      POSTGRES_USER: ${POSTGRES_USER:?Configure POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Configure POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB:-cdgdb}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    networks:
-      - garage_sale_network
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
+
+  minio:
+    build: ./infra/minio
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:?Configure MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:?Configure MINIO_ROOT_PASSWORD}
+    volumes:
+      - minio_data:/data
+    restart: unless-stopped
 
   backend:
     build: ./backend
-    container_name: garage_sale_backend
+    # Apenas loopback para uso local; no Easypanel usar Domains/porta interna 3000.
     ports:
-      - "3000:3000"
-      # Prisma Studio (5555) não é publicado no host. Para usá-lo em dev,
-      # acesse via rede interna do Docker ou um túnel SSH.
+      - "127.0.0.1:3001:3000"
     env_file:
-      - ./backend/.env  # <--- This forces Docker to read your specific file
+      - ./backend/.env
     environment:
+      NODE_ENV: production
       PORT: 3000
-      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-garagedb}?schema=public"
+      DATABASE_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-cdgdb}?schema=public"
+      DIRECT_URL: "postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-cdgdb}?schema=public"
+      MINIO_ENDPOINT: minio
+      MINIO_PORT: 9000
+      MINIO_USE_SSL: "false"
+      MINIO_ACCESS_KEY: ${MINIO_ROOT_USER}
+      MINIO_SECRET_KEY: ${MINIO_ROOT_PASSWORD}
+      MINIO_BUCKET: coisasdegaragem
+      PUBLIC_API_URL: ${PUBLIC_API_URL:-http://localhost:3001/api/v1}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:5173}
     depends_on:
       postgres:
         condition: service_healthy
-    networks:
-      - garage_sale_network
+      minio:
+        condition: service_started
+    restart: unless-stopped
 
   frontend:
-    build: ./frontend
-    container_name: garage_sale_frontend
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL:-http://localhost:3001/api/v1}
     ports:
-      - "5173:4173"
-    environment:
-      VITE_API_BASE_URL: http://backend:3000/api/v1
+      - "127.0.0.1:5173:80"
     depends_on:
       - backend
-    networks:
-      - garage_sale_network
+    restart: unless-stopped
 
 volumes:
   postgres_data:
-
-networks:
-  garage_sale_network:
-    driver: bridge
+  minio_data:

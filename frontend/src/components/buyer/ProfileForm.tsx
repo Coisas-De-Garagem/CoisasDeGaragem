@@ -1,3 +1,4 @@
+import { uploadImage } from '@/services/media';
 import { useState } from 'react';
 import { Input } from '@/components/common/Input';
 import { Button } from '@/components/common/Button';
@@ -16,12 +17,14 @@ export function ProfileForm({ user, onSubmit, isLoading }: ProfileFormProps) {
   const [name, setName] = useState(user.name || '');
   const [phone, setPhone] = useState(user.phone || '');
   const [avatarUrl, setAvatarUrl] = useState(user.avatarUrl || '');
+  const [uploading, setUploading] = useState(false);
   const { addNotification } = useUIStore();
   const notify = makeNotifier(addNotification);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    if (uploading) return;
     if (!name.trim()) {
       notify('warning', 'Atenção', 'Nome é obrigatório');
       return;
@@ -53,18 +56,25 @@ export function ProfileForm({ user, onSubmit, isLoading }: ProfileFormProps) {
       <div className="flex items-center gap-4">
         <Avatar name={name || user.name} src={avatarUrl} size="xl" />
         <div className="flex-1">
-          <Input
-            id="avatarUrl"
-            name="avatarUrl"
-            type="url"
-            label="URL da foto de perfil"
-            value={avatarUrl}
-            onChange={(e) => setAvatarUrl(e.target.value)}
-            placeholder="https://exemplo.com/foto.jpg"
-            fullWidth
-            disabled={isLoading}
-            helperText="Opcional — deixe vazio para usar as iniciais"
-          />
+          <label className="block text-sm">
+            Foto de perfil
+            <input type="file" accept="image/jpeg,image/png,image/webp"
+              disabled={isLoading || uploading} className="mt-2 block w-full"
+              onChange={async (event) => {
+                const file = event.target.files?.[0];
+                if (!file) return;
+                if (file.size > 10 * 1024 * 1024) {
+                  notify('error', 'Foto muito grande', 'O limite é de 10 MB.');
+                  event.target.value = '';
+                  return;
+                }
+                setUploading(true);
+                try { setAvatarUrl(await uploadImage(file)); }
+                catch (error) { notify('error', 'Erro ao enviar foto', error instanceof Error ? error.message : 'Tente novamente.'); }
+                finally { setUploading(false); }
+              }} />
+            {uploading && <span>Enviando foto...</span>}
+          </label>
         </div>
       </div>
 
@@ -97,7 +107,7 @@ export function ProfileForm({ user, onSubmit, isLoading }: ProfileFormProps) {
       />
 
       <div className="flex justify-end pt-1">
-        <Button type="submit" variant="primary" isLoading={isLoading}>
+        <Button type="submit" variant="primary" isLoading={isLoading || uploading}>
           Salvar perfil
         </Button>
       </div>
