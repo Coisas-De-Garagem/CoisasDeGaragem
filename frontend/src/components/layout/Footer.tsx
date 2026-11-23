@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { Logo } from './Logo';
+import { openCookiePreferences } from '@/utils/cookies';
 
 export function Footer() {
   const year = new Date().getFullYear();
@@ -41,8 +42,18 @@ export function Footer() {
           <div>
             <h4 className="text-xs font-semibold text-text-main mb-3 uppercase tracking-wide">Legal</h4>
             <ul className="space-y-2">
-              <li><Link to="/terms" className="text-sm text-text-muted hover:text-primary">Termos</Link></li>
+              <li><Link to="/terms" className="text-sm text-text-muted hover:text-primary">Termos de uso</Link></li>
               <li><Link to="/privacy" className="text-sm text-text-muted hover:text-primary">Privacidade</Link></li>
+              <li><Link to="/cookies" className="text-sm text-text-muted hover:text-primary">Política de cookies</Link></li>
+              <li>
+                <button
+                  type="button"
+                  onClick={openCookiePreferences}
+                  className="text-sm text-text-muted hover:text-primary cursor-pointer"
+                >
+                  Preferências de cookies
+                </button>
+              </li>
             </ul>
           </div>
         </div>

@@ -5,6 +5,7 @@ import { PageLayout } from '@/components/layout/PageLayout';
 import { AppShell } from '@/components/layout/AppShell';
 import { Spinner } from '@/components/common/Spinner';
 import { ProtectedRoute } from '@/components/common/ProtectedRoute';
+import { CookieBanner } from '@/components/common/CookieBanner';
 import { useSessionTimeout } from '@/hooks/useSessionTimeout';
 
 // Lazy load pages for code splitting
@@ -39,6 +40,7 @@ const ContactPage = lazy(() => import('@/pages/public/ContactPage'));
 const HelpPage = lazy(() => import('@/pages/public/HelpPage'));
 const TermsPage = lazy(() => import('@/pages/public/TermsPage'));
 const PrivacyPage = lazy(() => import('@/pages/public/PrivacyPage'));
+const CookiesPage = lazy(() => import('@/pages/public/CookiesPage'));
 const ProductPublicPage = lazy(() => import('@/pages/public/ProductPublicPage'));
 const EventPublicPage = lazy(() => import('@/pages/public/EventPublicPage'));
 const MobileDownloadPage = lazy(() => import('@/pages/public/MobileDownloadPage'));
@@ -148,6 +150,7 @@ export default function App() {
           <Route path="/help" element={<Suspended><PageLayout><HelpPage /></PageLayout></Suspended>} />
           <Route path="/terms" element={<Suspended><PageLayout><TermsPage /></PageLayout></Suspended>} />
           <Route path="/privacy" element={<Suspended><PageLayout><PrivacyPage /></PageLayout></Suspended>} />
+          <Route path="/cookies" element={<Suspended><PageLayout><CookiesPage /></PageLayout></Suspended>} />
           <Route path="/product/:id" element={<Suspended><PageLayout><ProductPublicPage /></PageLayout></Suspended>} />
           <Route path="/event/:id" element={<Suspended><PageLayout showHeader><EventPublicPage /></PageLayout></Suspended>} />
           <Route path="/mobile" element={<Suspended><PageLayout showHeader showFooter><MobileDownloadPage /></PageLayout></Suspended>} />
@@ -158,6 +161,7 @@ export default function App() {
           <Route path="/500" element={<Suspended><PageLayout showHeader showFooter={false}><ServerErrorPage /></PageLayout></Suspended>} />
           <Route path="*" element={<Suspended><PageLayout><NotFoundPage /></PageLayout></Suspended>} />
         </Routes>
+        <CookieBanner />
       </BrowserRouter>
     </ErrorBoundary>
   );
