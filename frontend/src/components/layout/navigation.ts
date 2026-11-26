@@ -49,10 +49,6 @@ export const NAVIGATION: Record<DashboardType, NavGroup[]> = {
         { label: 'Estatísticas', path: '/seller/analytics', icon: faChartPie },
       ],
     },
-    {
-      heading: 'Conta',
-      items: [{ label: 'Perfil', path: '/seller/profile', icon: faUser }],
-    },
   ],
   buyer: [
     {
@@ -62,10 +58,6 @@ export const NAVIGATION: Record<DashboardType, NavGroup[]> = {
         { label: 'Minhas Compras', path: '/buyer/purchases', icon: faBagShopping },
         { label: 'Histórico', path: '/buyer/history', icon: faClockRotateLeft },
       ],
-    },
-    {
-      heading: 'Conta',
-      items: [{ label: 'Perfil', path: '/buyer/profile', icon: faUser }],
     },
   ],
 };

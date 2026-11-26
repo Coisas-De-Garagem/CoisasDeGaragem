@@ -22,6 +22,7 @@ interface SidebarProps {
 export function Sidebar({ mode }: SidebarProps) {
   const groups = NAVIGATION[mode];
   const switchTarget = MODE_SWITCH[mode];
+  const profilePath = mode === 'seller' ? '/seller/profile' : '/buyer/profile';
   const { logout } = useAuth();
   const { user } = useAuthStore();
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -91,7 +92,22 @@ export function Sidebar({ mode }: SidebarProps) {
 
       {/* Perfil + logout */}
       <div className="border-t border-border p-3 flex flex-col items-center gap-3">
-        <Avatar name={user?.name} src={user?.avatarUrl} size="sm" />
+        <Tooltip content="Perfil" side="right">
+          <NavLink
+            to={profilePath}
+            onClick={(e) => handleNavClick(e, profilePath)}
+            aria-label="Perfil"
+            className={({ isActive }) =>
+              `rounded-full transition-all focus:outline-none ${
+                isActive
+                  ? 'ring-2 ring-primary ring-offset-2 ring-offset-surface'
+                  : 'hover:ring-2 hover:ring-border-strong hover:ring-offset-2 hover:ring-offset-surface'
+              }`
+            }
+          >
+            <Avatar name={user?.name} src={user?.avatarUrl} size="sm" />
+          </NavLink>
+        </Tooltip>
         <Tooltip content="Sair da conta" side="right">
           <button
             type="button"
