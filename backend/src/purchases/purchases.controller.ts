@@ -180,6 +180,27 @@ export class PurchasesController {
     summary: 'Histórico de vendas',
     description: 'Retorna todo o histórico de vendas do usuário autenticado',
   })
+  @ApiQuery({
+    name: 'page',
+    required: false,
+    type: Number,
+    description: 'Número da página (padrão: 1)',
+    example: 1,
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Itens por página (padrão: 20)',
+    example: 20,
+  })
+  @ApiQuery({
+    name: 'status',
+    required: false,
+    type: String,
+    description: 'Filtrar por status (PENDING, COMPLETED, CANCELLED, REFUNDED)',
+    example: 'COMPLETED',
+  })
   @ApiResponse({
     status: 200,
     description: 'Histórico de vendas',
@@ -188,8 +209,21 @@ export class PurchasesController {
     status: 401,
     description: 'Não autorizado',
   })
-  getSales(@CurrentUser() user: AuthenticatedUser) {
-    return this.purchasesService.findAllBySeller(user?.userId);
+  getSales(
+    @CurrentUser() user: AuthenticatedUser,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('status') status?: string,
+  ) {
+    const pageNumber = page ? parseInt(page, 10) : 1;
+    const limitNumber = limit ? parseInt(limit, 10) : 20;
+
+    return this.purchasesService.findAllBySeller(
+      user?.userId,
+      isNaN(pageNumber) ? 1 : pageNumber,
+      isNaN(limitNumber) ? 20 : limitNumber,
+      status,
+    );
   }
 
   @Get(':id')

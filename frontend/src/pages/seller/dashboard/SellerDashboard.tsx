@@ -45,7 +45,7 @@ export default function SellerDashboard() {
             startDate: startDate.toISOString(),
             endDate: endDate.toISOString(),
           }),
-          api.getPurchases({ limit: 10 }),
+          api.getSales({ limit: 100 }),
           api.getMyProducts({ limit: 5, sortBy: 'createdAt', sortOrder: 'desc' }),
         ]);
 

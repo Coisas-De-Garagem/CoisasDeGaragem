@@ -57,14 +57,21 @@ function toInputDate(date: Date): string {
   return `${y}-${m}-${d}`;
 }
 
+/** Considera apenas vendas concluídas e converte o preço (Decimal string ou number) com segurança. */
+function isCompletedSale(purchase: Purchase): boolean {
+  return String(purchase.status || '').toUpperCase() === 'COMPLETED';
+}
+
+function getNumericPrice(price: number | string): number {
+  const num = Number(price);
+  return Number.isFinite(num) ? num : 0;
+}
+
 /** Bucket por dia (dd/MM), usado para os períodos curtos. */
 function buildDailyBuckets(purchases: Purchase[], days: number) {
-  const grouped = purchases.reduce((acc, purchase) => {
-    const date = new Date(purchase.purchaseDate).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-    });
-    acc[date] = (acc[date] || 0) + purchase.price;
+  const grouped = purchases.filter(isCompletedSale).reduce((acc, purchase) => {
+    const key = toInputDate(new Date(purchase.purchaseDate));
+    acc[key] = (acc[key] || 0) + getNumericPrice(purchase.price);
     return acc;
   }, {} as Record<string, number>);
 
@@ -73,18 +80,19 @@ function buildDailyBuckets(purchases: Purchase[], days: number) {
   for (let i = days - 1; i >= 0; i--) {
     const d = new Date(today);
     d.setDate(today.getDate() - i);
+    const key = toInputDate(d);
     const dateStr = d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-    result.push({ date: dateStr, amount: grouped[dateStr] || 0 });
+    result.push({ date: dateStr, amount: grouped[key] || 0 });
   }
   return result;
 }
 
 /** Bucket por mês (mmm/aa), usado para o período de 12 meses. */
 function buildMonthlyBuckets(purchases: Purchase[]) {
-  const grouped = purchases.reduce((acc, purchase) => {
+  const grouped = purchases.filter(isCompletedSale).reduce((acc, purchase) => {
     const date = new Date(purchase.purchaseDate);
     const key = `${date.getFullYear()}-${date.getMonth()}`;
-    acc[key] = (acc[key] || 0) + purchase.price;
+    acc[key] = (acc[key] || 0) + getNumericPrice(purchase.price);
     return acc;
   }, {} as Record<string, number>);
 
@@ -109,15 +117,13 @@ function formatShortDateBr(input: string): string {
 /** Bucket por dia dentro de um intervalo custom (startDate..endDate). */
 function buildCustomRangeBuckets(purchases: Purchase[], startDate: Date, endDate: Date) {
   const filtered = purchases.filter((p) => {
+    if (!isCompletedSale(p)) return false;
     const d = new Date(p.purchaseDate);
     return d >= startDate && d <= endDate;
   });
   const grouped = filtered.reduce((acc, purchase) => {
-    const date = new Date(purchase.purchaseDate).toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-    });
-    acc[date] = (acc[date] || 0) + purchase.price;
+    const key = toInputDate(new Date(purchase.purchaseDate));
+    acc[key] = (acc[key] || 0) + getNumericPrice(purchase.price);
     return acc;
   }, {} as Record<string, number>);
 
@@ -126,8 +132,9 @@ function buildCustomRangeBuckets(purchases: Purchase[], startDate: Date, endDate
   // Limita a 366 buckets para evitar sobrecarga visual em intervalos grandes.
   let guard = 0;
   while (cursor <= endDate && guard < 366) {
+    const key = toInputDate(cursor);
     const dateStr = cursor.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
-    result.push({ date: dateStr, amount: grouped[dateStr] || 0 });
+    result.push({ date: dateStr, amount: grouped[key] || 0 });
     cursor.setDate(cursor.getDate() + 1);
     guard += 1;
   }
@@ -320,8 +327,9 @@ export function SalesChart({ data, purchases, loading = false }: SalesChartProps
                 <YAxis
                   axisLine={false}
                   tickLine={false}
+                  width={80}
                   tick={{ fill: 'var(--color-text-muted)', fontSize: 12 }}
-                  tickFormatter={(value) => `R$ ${value}`}
+                  tickFormatter={(value) => formatCurrency(Number(value))}
                 />
                 <Tooltip
                   cursor={{ stroke: PRIMARY, strokeWidth: 1, strokeDasharray: '4 4' }}

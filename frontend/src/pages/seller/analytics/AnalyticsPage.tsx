@@ -29,7 +29,7 @@ export default function AnalyticsPage() {
       setError('');
       const [analyticsRes, purchasesRes] = await Promise.all([
         api.getSellerAnalytics({ period: 'monthly' }),
-        api.getPurchases({ limit: 50 }),
+        api.getSales({ limit: 100 }),
       ]);
 
       if (analyticsRes.success) setAnalyticsData(analyticsRes.data);

@@ -90,15 +90,28 @@ export class ReviewsService {
   }
 
   async createTestimonial(userId: string, data: CreateTestimonialDto) {
-    // Testemunho nasce invisível: passa por moderação antes de aparecer na
-    // vitrine pública (getPublicTestimonials filtra por isVisible: true).
-    return this.prisma.testimonial.create({
+    const testimonial = await this.prisma.testimonial.create({
       data: {
         userId,
         rating: data.rating,
         content: data.content,
-        isVisible: false,
+        isVisible: true,
+      },
+      include: {
+        user: { select: { name: true, avatarUrl: true } },
       },
     });
+
+    return {
+      id: testimonial.id,
+      userId: testimonial.userId,
+      userName: testimonial.user.name,
+      userAvatarUrl: testimonial.user.avatarUrl,
+      content: testimonial.content,
+      rating: testimonial.rating,
+      isFeatured: testimonial.isFeatured,
+      isVisible: testimonial.isVisible,
+      createdAt: testimonial.createdAt,
+    };
   }
 }

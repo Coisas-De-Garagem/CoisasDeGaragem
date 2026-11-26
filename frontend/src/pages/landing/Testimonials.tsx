@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { useGSAP } from '@gsap/react';
@@ -32,19 +32,20 @@ export function Testimonials() {
   const { isAuthenticated, user } = useAuthStore();
   const containerRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const fetchTestimonials = async () => {
-      try {
-        const result = await api.getTestimonials({ isFeatured: true, isVisible: true, limit: 3 });
-        if (result.success) setTestimonials(result.data);
-      } catch (error) {
-        console.error('Failed to fetch testimonials:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchTestimonials();
+  const fetchTestimonials = useCallback(async () => {
+    try {
+      const result = await api.getTestimonials({ isFeatured: true, isVisible: true, limit: 9 });
+      if (result.success) setTestimonials(result.data);
+    } catch (error) {
+      console.error('Failed to fetch testimonials:', error);
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchTestimonials();
+  }, [fetchTestimonials]);
 
   const handleOpenReviewModal = () => {
     if (isAuthenticated) {
@@ -136,9 +137,8 @@ export function Testimonials() {
         setIsModalOpen(false);
         setRating(5);
         setContent('');
-        
-        // Optionally append the new testimonial to the local list if it should be immediately visible
-        // However, the backend might have it as isFeatured: false by default, so we may just reload the page or do nothing.
+        setCurrentPage(0);
+        await fetchTestimonials();
       } else {
         throw new Error(result.error?.message || 'Erro ao enviar avaliação');
       }
@@ -156,25 +156,6 @@ export function Testimonials() {
       setIsSubmitting(false);
     }
   };
-
-  useGSAP(
-    () => {
-      if (loading || testimonials.length === 0) return;
-      const cards = gsap.utils.toArray<HTMLElement>('.testimonial-card');
-      gsap.fromTo(
-        cards,
-        { y: 20, opacity: 0 },
-        {
-          y: 0,
-          opacity: 1,
-          duration: 0.5,
-          stagger: 0.1,
-          scrollTrigger: { trigger: containerRef.current, start: 'top 85%' },
-        },
-      );
-    },
-    { scope: containerRef, dependencies: [loading, testimonials] },
-  );
 
   if (loading) {
     return (
