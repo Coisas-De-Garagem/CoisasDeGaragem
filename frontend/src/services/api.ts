@@ -38,6 +38,47 @@ import type {
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:3000/api/v1';
 const ENABLE_MOCK_DATA = import.meta.env.VITE_ENABLE_MOCK_DATA === 'true';
 
+function isLocalHostname(hostname: string): boolean {
+  return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]';
+}
+
+/**
+ * Garante que QR Codes gerados em um domínio real (ex.: www.coisasdegaragem.com.br)
+ * nunca apontem para localhost caso o backend ainda esteja com FRONTEND_URL antigo.
+ */
+function ensureCurrentOriginQr(
+  targetPath: string,
+  returnedTargetUrl?: string,
+  returnedQrUrl?: string,
+): { targetUrl: string; qrUrl: string } {
+  const browserOrigin =
+    typeof window !== 'undefined' && window.location?.origin ? window.location.origin : '';
+  const browserIsLocal =
+    typeof window !== 'undefined' && isLocalHostname(window.location.hostname);
+
+  const fallbackTarget = `${browserOrigin || 'https://www.coisasdegaragem.com.br'}${targetPath}`;
+  let targetUrl = returnedTargetUrl || fallbackTarget;
+
+  if (browserOrigin && !browserIsLocal) {
+    try {
+      const parsed = new URL(targetUrl);
+      if (isLocalHostname(parsed.hostname)) {
+        targetUrl = `${browserOrigin}${targetPath}`;
+      }
+    } catch {
+      targetUrl = `${browserOrigin}${targetPath}`;
+    }
+  }
+
+  const shouldRebuildQr =
+    !returnedQrUrl || (returnedTargetUrl !== undefined && targetUrl !== returnedTargetUrl);
+  const qrUrl = shouldRebuildQr
+    ? `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(targetUrl)}`
+    : returnedQrUrl;
+
+  return { targetUrl, qrUrl };
+}
+
 // Helper function to build query string
 function buildQueryString(params?: object): string {
   if (!params || Object.keys(params).length === 0) {
@@ -317,12 +358,28 @@ export const api = {
     if (ENABLE_MOCK_DATA) {
       return mockApi.getQRCode(productId);
     }
-    return fetchApi<ProductQRCode>(`/qr-codes/${productId}`, {
+    const result = await fetchApi<ProductQRCode>(`/qr-codes/${productId}`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${localStorage.getItem('token')}`,
       },
     });
+    if (result.success) {
+      const normalized = ensureCurrentOriginQr(
+        `/product/${productId}`,
+        result.data.productUrl,
+        result.data.url,
+      );
+      return {
+        success: true,
+        data: {
+          ...result.data,
+          productUrl: normalized.targetUrl,
+          url: normalized.qrUrl,
+        },
+      };
+    }
+    return result;
   },
 
   scanQRCode: async (
@@ -569,6 +626,21 @@ export const api = {
       `/events/${eventId}/qr`,
       { headers: { Authorization: `Bearer ${localStorage.getItem('token')}` } },
     );
+    if (response.success) {
+      const normalized = ensureCurrentOriginQr(
+        `/event/${eventId}`,
+        response.data.eventUrl,
+        response.data.url,
+      );
+      return {
+        success: true,
+        data: {
+          ...response.data,
+          eventUrl: normalized.targetUrl,
+          url: normalized.qrUrl,
+        },
+      };
+    }
     return response;
   },
 

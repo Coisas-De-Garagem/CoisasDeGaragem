@@ -5,6 +5,7 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { getErrorMessage } from '../common/error.util';
+import { resolveFrontendUrl } from '../common/frontend-url.util';
 
 /** Standard envelope returned by the Abacate Pay API. */
 export interface AbacatePayResponse<T = unknown> {
@@ -253,9 +254,10 @@ export class AbacatePayService {
       this.logger.log(
         `Criando checkout de pagamento para a compra: ${params.purchaseId}`,
       );
-      const frontendUrl =
-        this.configService.get<string>('FRONTEND_URL') ||
-        'http://localhost:5173';
+      const frontendUrl = resolveFrontendUrl(
+        undefined,
+        this.configService.get<string>('FRONTEND_URL'),
+      );
 
       const payload = {
         customerId: params.customerId,

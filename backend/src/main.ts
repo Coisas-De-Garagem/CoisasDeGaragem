@@ -46,9 +46,7 @@ async function bootstrap() {
     'https://www.coisasdegaragem.com.br',
     'https://coisasdegaragem.com.br',
     // Origens de localhost só são liberadas fora de produção.
-    ...(isProduction
-      ? []
-      : ['http://localhost:5173', 'http://localhost:3000']),
+    ...(isProduction ? [] : ['http://localhost:5173', 'http://localhost:3000']),
   ];
   const configuredOrigins = corsOriginRaw
     ? corsOriginRaw

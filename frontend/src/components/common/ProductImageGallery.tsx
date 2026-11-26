@@ -4,10 +4,9 @@ import {
   faChevronLeft,
   faChevronRight,
   faExpand,
-  faXmark,
   faImage,
 } from '@fortawesome/free-solid-svg-icons';
-import { lockScroll, unlockScroll } from '@/utils/scrollLock';
+import { ImageLightboxModal } from '@/components/common/ImageLightboxModal';
 
 interface ProductImageGalleryProps {
   images?: string[];
@@ -131,30 +130,6 @@ export function ProductImageGallery({
     touchEndX.current = null;
     touchEndY.current = null;
   };
-
-  // Keyboard navigation when in fullscreen or focused
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (isFullscreen) {
-        if (e.key === 'ArrowRight') goToNext();
-        else if (e.key === 'ArrowLeft') goToPrev();
-        else if (e.key === 'Escape') setIsFullscreen(false);
-      }
-    };
-
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isFullscreen, goToNext, goToPrev]);
-
-  // Lock body & html scroll when in fullscreen
-  useEffect(() => {
-    if (isFullscreen) {
-      lockScroll();
-      return () => {
-        unlockScroll();
-      };
-    }
-  }, [isFullscreen]);
 
   const handleImageError = (index: number) => {
     setImageErrorMap((prev) => ({ ...prev, [index]: true }));
@@ -322,94 +297,16 @@ export function ProductImageGallery({
         </div>
       )}
 
-      {/* Fullscreen Lightbox Modal */}
+      {/* Fullscreen Lightbox Modal com Zoom e Navegação */}
       {isFullscreen && (
-        <div
-          className="fixed inset-0 z-50 bg-neutral-950/95 backdrop-blur-xl flex flex-col justify-between p-4 animate-fade-in"
-          onClick={() => setIsFullscreen(false)}
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between z-30 pt-2 px-2 text-white">
-            <span className="text-sm font-semibold bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full">
-              {currentIndex + 1} de {total}
-            </span>
-            <button
-              type="button"
-              onClick={() => setIsFullscreen(false)}
-              className="p-2.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-all active:scale-95 cursor-pointer"
-              aria-label="Fechar visualizador"
-            >
-              <FontAwesomeIcon icon={faXmark} className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Central Image with swipe */}
-          <div
-            className="relative flex-1 flex items-center justify-center my-auto max-h-[80vh] select-none"
-            onClick={(e) => e.stopPropagation()}
-            onTouchStart={handleTouchStart}
-            onTouchMove={handleTouchMove}
-            onTouchEnd={handleTouchEnd}
-          >
-            {isCurrentError ? (
-              <div className="flex flex-col items-center text-white/50 gap-2">
-                <FontAwesomeIcon icon={faImage} className="w-12 h-12" />
-                <span>Imagem indisponível</span>
-              </div>
-            ) : (
-              <img
-                src={currentImageSrc}
-                alt={`${alt} - Tela cheia ${currentIndex + 1}`}
-                className="max-h-[75vh] max-w-[95vw] object-contain rounded-lg shadow-2xl transition-transform"
-              />
-            )}
-
-            {/* Lightbox Nav Arrows */}
-            {total > 1 && (
-              <>
-                <button
-                  type="button"
-                  onClick={goToPrev}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md flex items-center justify-center transition-all active:scale-90 cursor-pointer"
-                  aria-label="Anterior"
-                >
-                  <FontAwesomeIcon icon={faChevronLeft} className="w-5 h-5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={goToNext}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full bg-white/10 hover:bg-white/20 text-white backdrop-blur-md flex items-center justify-center transition-all active:scale-90 cursor-pointer"
-                  aria-label="Próxima"
-                >
-                  <FontAwesomeIcon icon={faChevronRight} className="w-5 h-5" />
-                </button>
-              </>
-            )}
-          </div>
-
-          {/* Bottom Thumbnails in Lightbox */}
-          {total > 1 && (
-            <div
-              className="flex justify-center items-center gap-2 overflow-x-auto py-2 z-30"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {imageList.map((img, idx) => (
-                <button
-                  key={idx}
-                  type="button"
-                  onClick={() => goToIndex(idx)}
-                  className={`w-14 h-14 rounded-lg overflow-hidden border-2 transition-all cursor-pointer ${
-                    idx === currentIndex
-                      ? 'border-primary scale-110 shadow-lg'
-                      : 'border-white/30 opacity-60 hover:opacity-100'
-                  }`}
-                >
-                  <img src={img} alt={`Miniatura ${idx + 1}`} className="w-full h-full object-cover" />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        <ImageLightboxModal
+          key={`gallery-${currentIndex}`}
+          isOpen={isFullscreen}
+          images={imageList}
+          initialIndex={currentIndex}
+          title={alt}
+          onClose={() => setIsFullscreen(false)}
+        />
       )}
     </div>
   );

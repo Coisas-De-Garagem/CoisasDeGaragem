@@ -32,8 +32,10 @@ export class UsersService {
     // campos como `role` não possam ser gravados por mass assignment.
     const allowed: Prisma.UserUpdateInput = {};
     if (data.name !== undefined) allowed.name = data.name;
-    if (data.phone !== undefined) allowed.phone = data.phone;
-    if (data.avatarUrl !== undefined) allowed.avatarUrl = data.avatarUrl;
+    if (data.phone !== undefined) allowed.phone = data.phone || null;
+    if (data.avatarUrl !== undefined) {
+      allowed.avatarUrl = data.avatarUrl ? data.avatarUrl : null;
+    }
 
     return this.prisma.user.update({
       where: { id },

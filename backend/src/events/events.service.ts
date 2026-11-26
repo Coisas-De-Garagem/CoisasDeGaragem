@@ -10,6 +10,10 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
 import { randomUUID } from 'crypto';
+import {
+  resolveFrontendUrl,
+  type RequestLike,
+} from '../common/frontend-url.util';
 
 @Injectable()
 export class EventsService {
@@ -206,8 +210,8 @@ export class EventsService {
   // QR Code + Visitas
   // -----------------------------------------------------------------------
 
-  getEventQrUrl(eventId: string) {
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  getEventQrUrl(eventId: string, req?: RequestLike) {
+    const frontendUrl = resolveFrontendUrl(req);
     const eventUrl = `${frontendUrl}/event/${eventId}`;
     return {
       url: `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(eventUrl)}`,
@@ -215,7 +219,7 @@ export class EventsService {
     };
   }
 
-  async getEventQr(eventId: string, sellerId: string) {
+  async getEventQr(eventId: string, sellerId: string, req?: RequestLike) {
     const event = await this.prisma.garageEvent.findUnique({
       where: { id: eventId },
     });
@@ -224,7 +228,7 @@ export class EventsService {
       throw new ForbiddenException('Você não tem acesso a este evento');
     }
     return {
-      ...this.getEventQrUrl(eventId),
+      ...this.getEventQrUrl(eventId, req),
       code: event.qrCode,
     };
   }

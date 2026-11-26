@@ -62,8 +62,8 @@ export class PurchaseCleanupService implements OnApplicationBootstrap {
     purchaseId: string,
     delayMs: number = this.expirationMs,
   ) {
-    setTimeout(async () => {
-      await this.cancelPurchaseIfPending(purchaseId);
+    setTimeout(() => {
+      void this.cancelPurchaseIfPending(purchaseId);
     }, delayMs);
   }
 

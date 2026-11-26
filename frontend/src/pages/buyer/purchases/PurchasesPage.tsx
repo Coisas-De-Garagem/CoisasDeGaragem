@@ -12,9 +12,13 @@ import { Skeleton } from '@/components/common/Skeleton';
 import { StatCard } from '@/components/common/StatCard';
 import { EmptyState } from '@/components/common/EmptyState';
 import { Button } from '@/components/common/Button';
+import { Modal } from '@/components/common/Modal';
+import { Badge } from '@/components/common/Badge';
+import { ProductImageGallery } from '@/components/common/ProductImageGallery';
 import { useUIStore } from '@/store/uiStore';
 import { makeNotifier } from '@/utils/notifications';
 import { PageHeaderSkeleton, CardGridSkeleton } from '@/components/common/PageSkeletons';
+import { formatProductCondition, getConditionVariant } from '@/utils/formatters';
 import type { Purchase } from '@/types';
 
 const currency = (value: number) =>
@@ -30,6 +34,7 @@ export default function PurchasesPage() {
   const [sortBy, setSortBy] = useState<'date' | 'status' | 'price'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
   const [category, setCategory] = useState<string>('all');
+  const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(null);
   const pageSize = 9;
 
   const notify = useMemo(() => makeNotifier(addNotification), [addNotification]);
@@ -98,7 +103,7 @@ export default function PurchasesPage() {
   };
 
   const handleViewDetails = (purchase: Purchase) => {
-    console.log('View details for order:', purchase.id);
+    setSelectedPurchase(purchase);
   };
 
   if (isLoading) {
@@ -159,13 +164,15 @@ export default function PurchasesPage() {
         />
         <StatCard
           label="Valor total"
-          value={currency(sortedPurchases.reduce((sum, p) => sum + p.price, 0))}
+          value={currency(sortedPurchases.reduce((sum, p) => sum + Number(p.price), 0))}
           tone="success"
           icon={<FontAwesomeIcon icon={faMoneyBillWave} />}
         />
         <StatCard
           label="Concluídas"
-          value={sortedPurchases.filter((p) => p.status === 'completed').length}
+          value={
+            sortedPurchases.filter((p) => (p.status || '').toUpperCase() === 'COMPLETED').length
+          }
           tone="info"
           icon={<FontAwesomeIcon icon={faBoxOpen} />}
         />
@@ -284,6 +291,78 @@ export default function PurchasesPage() {
           )}
         </>
       )}
+
+      {/* Modal de detalhes da compra com galeria clicável */}
+      <Modal
+        isOpen={Boolean(selectedPurchase)}
+        onClose={() => setSelectedPurchase(null)}
+        title={selectedPurchase?.product?.name || 'Detalhes da compra'}
+        description={
+          selectedPurchase
+            ? `Pedido #${selectedPurchase.id.slice(-6)} · ${new Date(
+                selectedPurchase.purchaseDate || selectedPurchase.createdAt,
+              ).toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: 'long',
+                year: 'numeric',
+              })}`
+            : undefined
+        }
+        size="lg"
+      >
+        {selectedPurchase && (
+          <div className="space-y-5">
+            <ProductImageGallery
+              images={selectedPurchase.product?.images}
+              imageUrl={selectedPurchase.product?.imageUrl}
+              alt={selectedPurchase.product?.name || 'Produto comprado'}
+              aspectRatio="aspect-[4/3]"
+              showThumbnails
+              showIndicators
+              allowFullscreen
+            />
+
+            <div className="space-y-3">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <p className="text-2xl font-bold text-text-main">
+                  {currency(Number(selectedPurchase.price))}
+                </p>
+                <div className="flex items-center gap-2">
+                  {selectedPurchase.product?.category && (
+                    <Badge variant="info">{selectedPurchase.product.category}</Badge>
+                  )}
+                  {selectedPurchase.product?.condition && (
+                    <Badge variant={getConditionVariant(selectedPurchase.product.condition)}>
+                      {formatProductCondition(selectedPurchase.product.condition)}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+
+              {selectedPurchase.product?.description && (
+                <p className="text-sm text-text-muted leading-relaxed">
+                  {selectedPurchase.product.description}
+                </p>
+              )}
+
+              <div className="rounded-xl bg-surface-sunken/60 border border-border p-3.5 grid grid-cols-2 gap-3 text-sm">
+                <div>
+                  <span className="text-xs text-text-muted block">Vendedor</span>
+                  <span className="font-medium text-text-main">
+                    {selectedPurchase.seller?.name || 'Vendedor local'}
+                  </span>
+                </div>
+                <div>
+                  <span className="text-xs text-text-muted block">Pagamento</span>
+                  <span className="font-medium text-text-main uppercase">
+                    {selectedPurchase.paymentMethod || 'Não informado'}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

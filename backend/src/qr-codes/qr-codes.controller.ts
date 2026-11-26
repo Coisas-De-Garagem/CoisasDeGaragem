@@ -4,12 +4,15 @@ import {
   Post,
   Param,
   Body,
+  Req,
   NotFoundException,
   UseGuards,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuthGuard } from '@nestjs/passport';
 import { RolesGuard } from '../auth/roles.guard';
+import { resolveFrontendUrl } from '../common/frontend-url.util';
 import {
   ApiTags,
   ApiOperation,
@@ -56,15 +59,14 @@ export class QrCodesController {
     status: 404,
     description: 'Produto não encontrado',
   })
-  async getQRCode(@Param('productId') productId: string) {
+  async getQRCode(@Param('productId') productId: string, @Req() req?: Request) {
     const product = await this.prisma.product.findUnique({
       where: { id: productId },
     });
     if (!product) {
       throw new NotFoundException('Product not found');
     }
-    // Return Base64 QR code pointing to the frontend product page
-    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const frontendUrl = resolveFrontendUrl(req);
     const productUrl = `${frontendUrl}/product/${product.id}`;
 
     return {

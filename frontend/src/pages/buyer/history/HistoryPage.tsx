@@ -18,8 +18,12 @@ import { EmptyState } from '@/components/common/EmptyState';
 import { Alert } from '@/components/common/Alert';
 import { SearchInput } from '@/components/common/SearchInput';
 import { IconButton } from '@/components/common/IconButton';
+import { Modal } from '@/components/common/Modal';
+import { ProductImageGallery } from '@/components/common/ProductImageGallery';
+import { ImageLightboxModal } from '@/components/common/ImageLightboxModal';
 import { TableSkeleton } from '@/components/common/PageSkeletons';
 import { exportPurchasesToCSV } from '@/utils/export';
+import type { Purchase } from '@/types';
 
 const currency = (value: number, curr = 'BRL') =>
   new Intl.NumberFormat('pt-BR', { style: 'currency', currency: curr }).format(value);
@@ -43,7 +47,20 @@ export default function HistoryPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const [sortBy, setSortBy] = useState<'date' | 'status' | 'price'>('date');
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(null);
+  const [lightboxData, setLightboxData] = useState<{ images: string[]; title: string } | null>(null);
   const pageSize = 8;
+
+  const getProductImages = (purchase: Purchase): string[] => {
+    const product = purchase.product;
+    return (
+      product?.images && product.images.length > 0
+        ? product.images
+        : product?.imageUrl
+          ? [product.imageUrl]
+          : []
+    ).filter((img): img is string => Boolean(img && img.trim().length > 0));
+  };
 
   useEffect(() => {
     const loadPurchases = async () => {
@@ -240,11 +257,28 @@ export default function HistoryPage() {
                       <tr key={purchase.id} className="hover:bg-surface-hover transition-colors">
                         <td className="px-5 py-3.5 whitespace-nowrap">
                           <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 flex-shrink-0 rounded-lg overflow-hidden bg-surface-sunken">
-                              {purchase.product?.imageUrl ? (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const imgs = getProductImages(purchase);
+                                if (imgs.length > 0) {
+                                  setLightboxData({
+                                    images: imgs,
+                                    title: purchase.product?.name || 'Produto comprado',
+                                  });
+                                }
+                              }}
+                              className={`h-11 w-11 flex-shrink-0 rounded-lg overflow-hidden bg-surface-sunken border border-border ${
+                                getProductImages(purchase).length > 0
+                                  ? 'cursor-zoom-in hover:ring-2 hover:ring-primary/40 transition-all'
+                                  : ''
+                              }`}
+                              aria-label="Ampliar foto do produto"
+                            >
+                              {getProductImages(purchase)[0] ? (
                                 <img
-                                  src={purchase.product.imageUrl}
-                                  alt={purchase.product.name}
+                                  src={getProductImages(purchase)[0]}
+                                  alt={purchase.product?.name || 'Produto'}
                                   className="h-full w-full object-cover"
                                 />
                               ) : (
@@ -252,7 +286,7 @@ export default function HistoryPage() {
                                   <FontAwesomeIcon icon={faBagShopping} className="w-4 h-4" />
                                 </div>
                               )}
-                            </div>
+                            </button>
                             <div className="min-w-0">
                               <div className="text-sm font-medium text-text-main truncate">
                                 {purchase.product?.name || 'Produto indisponível'}
@@ -283,7 +317,10 @@ export default function HistoryPage() {
                           <Badge variant={status.variant} dot>{status.label}</Badge>
                         </td>
                         <td className="px-5 py-3.5 whitespace-nowrap text-right">
-                          <IconButton label="Ver detalhes">
+                          <IconButton
+                            label="Ver detalhes"
+                            onClick={() => setSelectedPurchase(purchase)}
+                          >
                             <FontAwesomeIcon icon={faArrowRight} />
                           </IconButton>
                         </td>
@@ -301,11 +338,26 @@ export default function HistoryPage() {
                 return (
                   <li key={purchase.id} className="p-4">
                     <div className="flex items-center gap-3 mb-2">
-                      <div className="h-10 w-10 flex-shrink-0 rounded-lg overflow-hidden bg-surface-sunken">
-                        {purchase.product?.imageUrl ? (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const imgs = getProductImages(purchase);
+                          if (imgs.length > 0) {
+                            setLightboxData({
+                              images: imgs,
+                              title: purchase.product?.name || 'Produto comprado',
+                            });
+                          }
+                        }}
+                        className={`h-11 w-11 flex-shrink-0 rounded-lg overflow-hidden bg-surface-sunken border border-border ${
+                          getProductImages(purchase).length > 0 ? 'cursor-zoom-in' : ''
+                        }`}
+                        aria-label="Ampliar foto do produto"
+                      >
+                        {getProductImages(purchase)[0] ? (
                           <img
-                            src={purchase.product.imageUrl}
-                            alt={purchase.product.name}
+                            src={getProductImages(purchase)[0]}
+                            alt={purchase.product?.name || 'Produto'}
                             className="h-full w-full object-cover"
                           />
                         ) : (
@@ -313,7 +365,7 @@ export default function HistoryPage() {
                             <FontAwesomeIcon icon={faBagShopping} className="w-4 h-4" />
                           </div>
                         )}
-                      </div>
+                      </button>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-text-main truncate">
                           {purchase.product?.name || 'Produto indisponível'}
@@ -328,7 +380,10 @@ export default function HistoryPage() {
                       <span className="text-sm font-semibold text-text-main">
                         {currency(purchase.price, purchase.currency)}
                       </span>
-                      <IconButton label="Ver detalhes">
+                      <IconButton
+                        label="Ver detalhes"
+                        onClick={() => setSelectedPurchase(purchase)}
+                      >
                         <FontAwesomeIcon icon={faArrowRight} />
                       </IconButton>
                     </div>
@@ -351,6 +406,59 @@ export default function HistoryPage() {
           </>
         )}
       </Card>
+
+      {/* Modal de detalhes da transação */}
+      <Modal
+        isOpen={Boolean(selectedPurchase)}
+        onClose={() => setSelectedPurchase(null)}
+        title={selectedPurchase?.product?.name || 'Detalhes da transação'}
+        description={
+          selectedPurchase
+            ? `Pedido #${selectedPurchase.id.slice(0, 8)} · ${new Date(
+                selectedPurchase.purchaseDate || selectedPurchase.createdAt,
+              ).toLocaleDateString('pt-BR')}`
+            : undefined
+        }
+        size="lg"
+      >
+        {selectedPurchase && (
+          <div className="space-y-4">
+            <ProductImageGallery
+              images={selectedPurchase.product?.images}
+              imageUrl={selectedPurchase.product?.imageUrl}
+              alt={selectedPurchase.product?.name || 'Produto comprado'}
+              aspectRatio="aspect-[4/3]"
+              showThumbnails
+              showIndicators
+              allowFullscreen
+            />
+            <div className="flex items-center justify-between">
+              <span className="text-xl font-bold text-text-main">
+                {currency(Number(selectedPurchase.price), selectedPurchase.currency)}
+              </span>
+              <Badge variant={statusMap(selectedPurchase.status).variant} dot>
+                {statusMap(selectedPurchase.status).label}
+              </Badge>
+            </div>
+            {selectedPurchase.product?.description && (
+              <p className="text-sm text-text-muted leading-relaxed">
+                {selectedPurchase.product.description}
+              </p>
+            )}
+          </div>
+        )}
+      </Modal>
+
+      {lightboxData && (
+        <ImageLightboxModal
+          key={lightboxData.title}
+          isOpen={Boolean(lightboxData)}
+          images={lightboxData.images}
+          initialIndex={0}
+          title={lightboxData.title}
+          onClose={() => setLightboxData(null)}
+        />
+      )}
     </div>
   );
 }

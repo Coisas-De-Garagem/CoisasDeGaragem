@@ -21,7 +21,7 @@ import { api } from '@/services/api';
 import { useProductsStore } from '@/store/productsStore';
 import { useUIStore } from '@/store/uiStore';
 import { makeNotifier } from '@/utils/notifications';
-import { generateProductPDF } from '@/utils/pdfGenerator';
+import { generateProductPDF, printProductLabel } from '@/utils/pdfGenerator';
 import type { Product, CreateProductRequest, UpdateProductRequest } from '@/types';
 
 export default function ProductsPage() {
@@ -392,7 +392,16 @@ export default function ProductsPage() {
           <QRCodeDisplay
             product={qrProduct}
             qrCodeUrl={qrProduct.qrCodeUrl}
-            onPrint={() => window.print()}
+            onPrint={() => {
+              if (!qrProduct.qrCodeUrl) return;
+              void printProductLabel({
+                name: qrProduct.name,
+                price: Number(qrProduct.price),
+                currency: qrProduct.currency,
+                qrCodeUrl: qrProduct.qrCodeUrl,
+                category: qrProduct.category,
+              });
+            }}
             onDownload={() => handleDownloadPDF(qrProduct)}
           />
         )}
