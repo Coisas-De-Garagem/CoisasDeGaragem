@@ -1,18 +1,34 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { PurchaseCleanupService } from './purchase-cleanup.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { prismaMock } from '../prisma/__mocks__/prisma.service';
 import { PurchaseStatus } from '@prisma/client';
 
 describe('PurchaseCleanupService', () => {
   let service: PurchaseCleanupService;
+  const mockPurchaseFindUnique = jest.fn();
+  const mockPurchaseFindMany = jest.fn();
+  const mockPurchaseUpdate = jest.fn();
+  const mockProductUpdate = jest.fn();
+  const mockTransaction = jest.fn();
+
+  const prismaStub = {
+    purchase: {
+      findUnique: mockPurchaseFindUnique,
+      findMany: mockPurchaseFindMany,
+      update: mockPurchaseUpdate,
+    },
+    product: {
+      update: mockProductUpdate,
+    },
+    $transaction: mockTransaction,
+  };
 
   beforeEach(async () => {
     jest.clearAllMocks();
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         PurchaseCleanupService,
-        { provide: PrismaService, useValue: prismaMock },
+        { provide: PrismaService, useValue: prismaStub },
       ],
     }).compile();
 
@@ -31,17 +47,16 @@ describe('PurchaseCleanupService', () => {
         status: PurchaseStatus.PENDING,
       };
 
-      prismaMock.$transaction.mockImplementation(async (callback: any) => {
-        return callback(prismaMock);
-      });
-      (prismaMock.purchase.findUnique as jest.Mock).mockResolvedValue(
-        pendingPurchase,
+      mockTransaction.mockImplementation(
+        (callback: (tx: typeof prismaStub) => Promise<unknown>) =>
+          callback(prismaStub),
       );
-      (prismaMock.purchase.update as jest.Mock).mockResolvedValue({
+      mockPurchaseFindUnique.mockResolvedValue(pendingPurchase);
+      mockPurchaseUpdate.mockResolvedValue({
         ...pendingPurchase,
         status: PurchaseStatus.CANCELLED,
       });
-      (prismaMock.product.update as jest.Mock).mockResolvedValue({
+      mockProductUpdate.mockResolvedValue({
         id: 'prod-1',
         isAvailable: true,
         isReserved: false,
@@ -50,11 +65,11 @@ describe('PurchaseCleanupService', () => {
 
       await service.cancelPurchaseIfPending('purchase-1');
 
-      expect(prismaMock.purchase.update).toHaveBeenCalledWith({
+      expect(mockPurchaseUpdate).toHaveBeenCalledWith({
         where: { id: 'purchase-1' },
         data: { status: PurchaseStatus.CANCELLED },
       });
-      expect(prismaMock.product.update).toHaveBeenCalledWith({
+      expect(mockProductUpdate).toHaveBeenCalledWith({
         where: { id: 'prod-1' },
         data: {
           isAvailable: true,
@@ -71,27 +86,26 @@ describe('PurchaseCleanupService', () => {
         status: PurchaseStatus.COMPLETED,
       };
 
-      prismaMock.$transaction.mockImplementation(async (callback: any) => {
-        return callback(prismaMock);
-      });
-      (prismaMock.purchase.findUnique as jest.Mock).mockResolvedValue(
-        completedPurchase,
+      mockTransaction.mockImplementation(
+        (callback: (tx: typeof prismaStub) => Promise<unknown>) =>
+          callback(prismaStub),
       );
+      mockPurchaseFindUnique.mockResolvedValue(completedPurchase);
 
       await service.cancelPurchaseIfPending('purchase-2');
 
-      expect(prismaMock.purchase.update).not.toHaveBeenCalled();
-      expect(prismaMock.product.update).not.toHaveBeenCalled();
+      expect(mockPurchaseUpdate).not.toHaveBeenCalled();
+      expect(mockProductUpdate).not.toHaveBeenCalled();
     });
   });
 
   describe('cleanupExpiredPurchases', () => {
     it('should do nothing if no expired purchases are found', async () => {
-      (prismaMock.purchase.findMany as jest.Mock).mockResolvedValue([]);
+      mockPurchaseFindMany.mockResolvedValue([]);
 
       await service.cleanupExpiredPurchases();
 
-      expect(prismaMock.$transaction).not.toHaveBeenCalled();
+      expect(mockTransaction).not.toHaveBeenCalled();
     });
   });
 });

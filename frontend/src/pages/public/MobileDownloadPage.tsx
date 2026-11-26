@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -23,7 +23,7 @@ export default function MobileDownloadPage() {
   const apkFileName = 'cdg_app.apk';
   const apkDownloadUrl = `/${apkFileName}`;
 
-  const handleDownload = () => {
+  const handleDownload = useCallback(() => {
     setDownloadTriggered(true);
     setDownloadCount((prev) => prev + 1);
 
@@ -33,7 +33,7 @@ export default function MobileDownloadPage() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-  };
+  }, [apkDownloadUrl, apkFileName]);
 
   // Dispara o download automaticamente ao carregar a página (após 1.2s para renderizar a UI suavemente)
   useEffect(() => {
@@ -42,7 +42,7 @@ export default function MobileDownloadPage() {
     }, 1200);
 
     return () => clearTimeout(timer);
-  }, []);
+  }, [handleDownload]);
 
   return (
     <div className="min-h-[80vh] py-8 sm:py-12 px-4 sm:px-6 lg:px-8 max-w-3xl mx-auto">

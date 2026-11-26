@@ -6,8 +6,10 @@ import {
   Patch,
   Param,
   Delete,
+  Req,
   UseGuards,
 } from '@nestjs/common';
+import type { Request } from 'express';
 import { EventsService } from './events.service';
 import { CreateEventDto } from './dto/create-event.dto';
 import { UpdateEventDto } from './dto/update-event.dto';
@@ -161,8 +163,12 @@ export class EventsController {
   @ApiOperation({ summary: 'Gerar QR Code do evento' })
   @ApiParam({ name: 'id', description: 'ID do evento' })
   @ApiResponse({ status: 200, description: 'QR Code gerado' })
-  getQr(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
-    return this.eventsService.getEventQr(id, user.userId);
+  getQr(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthenticatedUser,
+    @Req() req?: Request,
+  ) {
+    return this.eventsService.getEventQr(id, user.userId, req);
   }
 
   // ---- Visitas (público, sem auth) ----

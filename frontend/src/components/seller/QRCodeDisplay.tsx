@@ -32,7 +32,7 @@ export function QRCodeDisplay({
         {qrCodeUrl && <img src={qrCodeUrl} alt="QR Code" className="w-[400px] h-[400px] mb-4" />}
         <p className="text-5xl font-bold text-black mb-2">{currency(product.price, product.currency)}</p>
         <p className="text-xl text-black">{product.category}</p>
-        <p className="text-sm mt-8 text-neutral-500">coisasdegaragem.com</p>
+        <p className="text-sm mt-8 text-neutral-500">coisasdegaragem.com.br</p>
       </div>
 
       {/* View de tela */}
